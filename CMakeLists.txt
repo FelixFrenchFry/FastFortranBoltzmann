@@ -25,15 +25,15 @@ add_executable(FFB
     source/main.f90
 )
 
-# coarrays enabled and debug-friendly flags
+# coarrays enabled and debug-friendly flags for ifx
 target_compile_options(FFB PRIVATE
   -coarray
+  -warn all
+  -standard-semantics
   $<$<CONFIG:Debug>:-O0>
   $<$<CONFIG:Debug>:-g>
   $<$<CONFIG:Debug>:-traceback>
-  $<$<CONFIG:Debug>:-warn all>
   $<$<CONFIG:Debug>:-check all>
-  $<$<CONFIG:Debug>:-standard-semantics>
   $<$<CONFIG:Release>:-O3>
 )
 
