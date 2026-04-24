@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.24)
 
-project(FastFortranLattice
-  VERSION 0.1.0
-  LANGUAGES Fortran
+project(FastFortranBoltzmann
+    VERSION 0.1.0
+    LANGUAGES Fortran
 )
 
 # only support for Intel Fortran compiler
 if(NOT CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
-  message(FATAL_ERROR
+    message(FATAL_ERROR
     "This project requires Intel ifx, configured with -DCMAKE_Fortran_COMPILER=ifx"
   )
 endif()
@@ -20,12 +20,13 @@ set(CMAKE_Fortran_EXTENSIONS OFF)
 # executables in build/bin
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
-add_executable(FFL_Minimal
-  source/main.f90
+add_executable(FFB
+    source/initialization.f90
+    source/main.f90
 )
 
 # coarrays enabled and debug-friendly flags
-target_compile_options(FFL_Minimal PRIVATE
+target_compile_options(FFB PRIVATE
   -coarray
   $<$<CONFIG:Debug>:-O0>
   $<$<CONFIG:Debug>:-g>
@@ -36,6 +37,6 @@ target_compile_options(FFL_Minimal PRIVATE
   $<$<CONFIG:Release>:-O3>
 )
 
-target_link_options(FFL_Minimal PRIVATE
+target_link_options(FFB PRIVATE
   -coarray
 )
