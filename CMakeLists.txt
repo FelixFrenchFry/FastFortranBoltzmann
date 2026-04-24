@@ -23,6 +23,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 add_executable(FFB
     source/initialization.f90
     source/main.f90
+    source/simulation.f90
 )
 
 # coarrays enabled and debug-friendly flags for ifx
