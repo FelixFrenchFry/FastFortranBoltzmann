@@ -1,6 +1,6 @@
 program main
     ! imports
-    use iso_fortran_env, only: int32, int64, real32, real64
+    use iso_fortran_env, only: int32, int64, real32, real64, output_unit
     use initialization, only: apply_condition_shear_wave_decay
     use simulation, only: fuzed_pull_streaming_collision_shear_wave_decay, swap_distribution_function_buffers
     implicit none
@@ -10,9 +10,9 @@ program main
     integer(int32) :: step
 
     ! simulation size and duration
-    integer(int32), parameter :: N_X = 100
-    integer(int32), parameter :: N_Y = 100
-    integer(int32), parameter :: N_STEPS = 10000
+    integer(int32), parameter :: N_X = 200
+    integer(int32), parameter :: N_Y = 200
+    integer(int32), parameter :: N_STEPS = 1000
     integer(int64), parameter :: N_CELLS = int(N_X, int64) * int(N_Y, int64)
 
     ! D2Q9 lattice velocities and weights
@@ -52,20 +52,30 @@ program main
 
     ! specific params for shear wave decay
     real(real32), parameter :: u_max = 0.1_real32 ! initial velocity
-    real(real32), parameter :: n = 2.0_real32 ! num sin periods
-    real(real32), parameter :: k = (2.0_real32 * pi * n) / real(N_Y, real32) ! wave number
+    real(real32), parameter :: n_sin = 2.0_real32 ! num sin periods
+    real(real32), parameter :: k = (2.0_real32 * pi * n_sin) / real(N_Y, real32) ! wave number
 
     ! settings
     logical, parameter :: write_rho = .true.
     logical, parameter :: write_u_x = .true.
     logical, parameter :: write_u_y = .true.
 
-    ! timing
+    ! metrics
     integer(int64) :: clock_start
     integer(int64) :: clock_end
     integer(int64) :: clock_rate
+    integer(int64) :: clock_now
     real(real64) :: elapsed_seconds
     real(real64) :: seconds_per_step
+    real(real64) :: avg_millisec_per_step
+    real(real64) :: elapsed_now
+    real(real64) :: eta_seconds
+    real(real64) :: sim_percent
+    real(real64) :: mlups
+
+    ! progress settings
+    logical, parameter :: interactive_progress = .true.
+    integer(int32), parameter :: progress_interval = 100
 
     ! allocate sim data structures (double-buffered distribution functions)
     real(real32), allocatable :: f(:, :, :) ! read-version of distribution functions f(dir, x, y)
@@ -82,6 +92,23 @@ program main
     ! inital condition
     call apply_condition_shear_wave_decay(N_X, N_Y, N_DIRS, c_x_fp, c_y_fp, w, rho_0, u_max, k, f, rho, u_x, u_y)
 
+    ! print sim info
+    if (this_image() == 1) then
+        print '(A)', "--- [ simulation parameters ] -------------------------------------"
+        print '(A,I0)',    "N_X_TOTAL            = ", N_X
+        print '(A,I0)',    "N_Y_TOTAL            = ", N_Y
+        print '(A,I0)',    "N_STEPS              = ", N_STEPS
+        print '(A,F5.3)',  "omega                = ", omega
+        print '(A,F5.3)',  "rho_0                = ", rho_0
+        print '(A,F5.3)',  "u_max                = ", u_max
+        print '(A,F5.3)',  "n_sin                = ", n_sin
+        print '(A,L1)',    "write_rho            = ", write_rho
+        print '(A,L1)',    "write_u_x            = ", write_u_x
+        print '(A,L1)',    "write_u_y            = ", write_u_y
+        print '(A,L1)',    "shear_wave_decay     = ", .true.
+        print *
+    end if
+
     call system_clock(clock_start, clock_rate)
 
     ! simulation loop
@@ -93,8 +120,29 @@ program main
 
         call swap_distribution_function_buffers(f, f_next)
         
-        if (mod(step, 1000) == 0) then
-            print *, "completed step", step, "max |u_x|:", maxval(abs(u_x))
+        ! print sim progress info
+        if (this_image() == 1) then
+            if (mod(step, progress_interval) == 0 .or. step == N_STEPS) then
+                call system_clock(clock_now)
+
+                elapsed_now = real(clock_now - clock_start, real64) / real(clock_rate, real64)
+                avg_millisec_per_step = 1000.0_real64 * elapsed_now / real(step, real64)
+                eta_seconds = elapsed_now * real(N_STEPS - step, real64) / real(step, real64)
+                sim_percent = 100.0_real64 * real(step, real64) / real(N_STEPS, real64)
+
+                if (interactive_progress) then
+                    write(output_unit,'(A,F6.2,A,I0,A,I0,A,F10.3,A,F10.2,A)', advance='no') &
+                        achar(13), sim_percent, " %  ", step, "/", N_STEPS, &
+                        " steps | avg step: ", avg_millisec_per_step, &
+                        " ms | ETA: ", eta_seconds, " s"
+
+                    flush(output_unit)
+                else
+                    print '(F6.2,A,I0,A,I0,A,F10.3,A)', &
+                        sim_percent, " %  ", step, "/", N_STEPS, &
+                        " steps | avg step: ", avg_millisec_per_step, " ms"
+                end if
+            end if
         end if
 
     end do
@@ -103,13 +151,20 @@ program main
     call system_clock(clock_end)
     elapsed_seconds = real(clock_end - clock_start, real64) / real(clock_rate, real64)
     seconds_per_step = elapsed_seconds / real(N_STEPS, real64)
+    mlups = real(N_CELLS, real64) * real(N_STEPS, real64) / elapsed_seconds / 1.0e6_real64
 
-    print *, "--- [ final state ] -----------------------------------------------"
-    print *, "rho min/max: ", minval(rho), maxval(rho)
-    print *, "u_x min/max: ", minval(u_x), maxval(u_x)
-    print *, "u_y min/max: ", minval(u_y), maxval(u_y)
-    print *, "--- [ timing ] ----------------------------------------------------"
-    print *, "elapsed seconds:  ", elapsed_seconds
-    print *, "seconds per step: ", seconds_per_step
+    if (this_image() == 1) then
+        print '(A)', ""
+        print '(A)', ""
+        print '(A)', "--- [ final state ] -----------------------------------------------"
+        print '(A,2(F15.8,1X))', "rho min/max:      ", minval(rho), maxval(rho)
+        print '(A,2(F15.8,1X))', "u_x min/max:      ", minval(u_x), maxval(u_x)
+        print '(A,2(F15.8,1X))', "u_y min/max:      ", minval(u_y), maxval(u_y)
+
+        print '(A)', "--- [ timing ] ----------------------------------------------------"
+        print '(A,F10.3)', "elapsed seconds:  ", elapsed_seconds
+        print '(A,F10.3)', "ms per step:      ", seconds_per_step * 1000.0_real64
+        print '(A,F10.3)', "MLUPS:            ", mlups
+    end if
 
 end program main
