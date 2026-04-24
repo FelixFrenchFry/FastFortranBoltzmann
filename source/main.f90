@@ -10,9 +10,9 @@ program main
     integer(int32) :: step
 
     ! simulation size and duration
-    integer(int32), parameter :: N_X = 200
+    integer(int32), parameter :: N_X = 400
     integer(int32), parameter :: N_Y = 200
-    integer(int32), parameter :: N_STEPS = 1000
+    integer(int32), parameter :: N_STEPS = 500
     integer(int64), parameter :: N_CELLS = int(N_X, int64) * int(N_Y, int64)
 
     ! D2Q9 lattice velocities and weights
@@ -65,6 +65,10 @@ program main
     integer(int64) :: clock_end
     integer(int64) :: clock_rate
     integer(int64) :: clock_now
+    integer(int64) :: eta_total_seconds
+    integer(int64) :: eta_hours
+    integer(int64) :: eta_minutes
+    integer(int64) :: eta_seconds_int
     real(real64) :: elapsed_seconds
     real(real64) :: seconds_per_step
     real(real64) :: avg_millisec_per_step
@@ -72,10 +76,11 @@ program main
     real(real64) :: eta_seconds
     real(real64) :: sim_percent
     real(real64) :: mlups
+    character(len=10) :: current_time
 
     ! progress settings
     logical, parameter :: interactive_progress = .true.
-    integer(int32), parameter :: progress_interval = 100
+    integer(int32), parameter :: progress_interval = 10
 
     ! allocate sim data structures (double-buffered distribution functions)
     real(real32), allocatable :: f(:, :, :) ! read-version of distribution functions f(dir, x, y)
@@ -94,7 +99,7 @@ program main
 
     ! print sim info
     if (this_image() == 1) then
-        print '(A)', "--- [ simulation parameters ] -------------------------------------"
+        print '(A)', "--- [ simulation parameters ] ---------------------------------------------"
         print '(A,I0)',    "N_X_TOTAL            = ", N_X
         print '(A,I0)',    "N_Y_TOTAL            = ", N_Y
         print '(A,I0)',    "N_STEPS              = ", N_STEPS
@@ -107,6 +112,13 @@ program main
         print '(A,L1)',    "write_u_y            = ", write_u_y
         print '(A,L1)',    "shear_wave_decay     = ", .true.
         print *
+    end if
+
+    ! print sim launch timestamp
+    if (this_image() == 1) then
+        call date_and_time(time=current_time)
+        print '(A)', "[" // current_time(1:2) // ":" // current_time(3:4) // ":" // current_time(5:6) // "] &
+            launched -------------------------------------------------------"
     end if
 
     call system_clock(clock_start, clock_rate)
@@ -124,29 +136,48 @@ program main
         if (this_image() == 1) then
             if (mod(step, progress_interval) == 0 .or. step == N_STEPS) then
                 call system_clock(clock_now)
+                call date_and_time(time=current_time)
 
                 elapsed_now = real(clock_now - clock_start, real64) / real(clock_rate, real64)
                 avg_millisec_per_step = 1000.0_real64 * elapsed_now / real(step, real64)
                 eta_seconds = elapsed_now * real(N_STEPS - step, real64) / real(step, real64)
                 sim_percent = 100.0_real64 * real(step, real64) / real(N_STEPS, real64)
 
+                eta_total_seconds = int(eta_seconds + 0.999_real64, int64)
+                eta_hours = eta_total_seconds / 3600_int64
+                eta_minutes = modulo(eta_total_seconds, 3600_int64) / 60_int64
+                eta_seconds_int = modulo(eta_total_seconds, 60_int64)
+
                 if (interactive_progress) then
-                    write(output_unit,'(A,F6.2,A,I0,A,I0,A,F10.3,A,F10.2,A)', advance='no') &
-                        achar(13), sim_percent, " %  ", step, "/", N_STEPS, &
-                        " steps | avg step: ", avg_millisec_per_step, &
-                        " ms | ETA: ", eta_seconds, " s"
+                    write(output_unit,'(A,3A,F6.2,A,I2.2,A,I2.2,A,I2.2,A,I0,A,I0,A,F0.3,A)', advance='no') &
+                        achar(13), "[", current_time(1:2)//":"//current_time(3:4)//":"//current_time(5:6), "] ", &
+                        sim_percent, " %  (T-", &
+                        eta_hours, ":", eta_minutes, ":", eta_seconds_int, ")  ", &
+                        step, "/", N_STEPS, " steps  |  avg step: ", avg_millisec_per_step, " ms   "
 
                     flush(output_unit)
                 else
-                    print '(F6.2,A,I0,A,I0,A,F10.3,A)', &
-                        sim_percent, " %  ", step, "/", N_STEPS, &
-                        " steps | avg step: ", avg_millisec_per_step, " ms"
+                    print '(3A,F6.2,A,I2.2,A,I2.2,A,I2.2,A,I0,A,I0,A,F0.3,A)', &
+                        "[", current_time(1:2)//":"//current_time(3:4)//":"//current_time(5:6), "] ", &
+                        sim_percent, " %  (T-", &
+                        eta_hours, ":", eta_minutes, ":", eta_seconds_int, ")  ", &
+                        step, "/", N_STEPS, " steps  |  avg step: ", avg_millisec_per_step, " ms   "
                 end if
             end if
         end if
 
     end do
     
+    ! print sim finsih timestamp
+    if (this_image() == 1 .and. interactive_progress) then
+        print *
+    end if
+    if (this_image() == 1) then
+        call date_and_time(time=current_time)
+        print '(A)', "[" // current_time(1:2) // ":" // current_time(3:4) // ":" // current_time(5:6) // "] &
+            finished -------------------------------------------------------"
+    end if
+
     ! finalize timing and print metrics
     call system_clock(clock_end)
     elapsed_seconds = real(clock_end - clock_start, real64) / real(clock_rate, real64)
@@ -155,16 +186,16 @@ program main
 
     if (this_image() == 1) then
         print '(A)', ""
-        print '(A)', ""
-        print '(A)', "--- [ final state ] -----------------------------------------------"
+        print '(A)', "--- [ test stats ] --------------------------------------------------------"
         print '(A,2(F15.8,1X))', "rho min/max:      ", minval(rho), maxval(rho)
         print '(A,2(F15.8,1X))', "u_x min/max:      ", minval(u_x), maxval(u_x)
         print '(A,2(F15.8,1X))', "u_y min/max:      ", minval(u_y), maxval(u_y)
 
-        print '(A)', "--- [ timing ] ----------------------------------------------------"
-        print '(A,F10.3)', "elapsed seconds:  ", elapsed_seconds
-        print '(A,F10.3)', "ms per step:      ", seconds_per_step * 1000.0_real64
-        print '(A,F10.3)', "MLUPS:            ", mlups
+        print '(A)', "--- [ perf metrics ] ------------------------------------------------------"
+        print '(A,I0,A,I0,A,I0,A)', "sim size [X/Y/N]:      [ ", N_X, " / ", N_Y, " / ", N_STEPS, " ]"
+        print '(A,F12.3,A)',        "total time:     ", elapsed_seconds, " sec"
+        print '(A,F12.3,A)',        "step time:      ", seconds_per_step * 1000.0_real64, " ms"
+        print '(A,F12.3)',          "MLUPS:          ", mlups
     end if
 
 end program main
