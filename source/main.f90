@@ -1,6 +1,6 @@
 program main
     ! imports
-    use iso_fortran_env, only: int32, int64, real32
+    use iso_fortran_env, only: int32, int64, real32, real64
     use initialization, only: apply_condition_shear_wave_decay
     use simulation, only: fuzed_pull_streaming_collision_shear_wave_decay, swap_distribution_function_buffers
     implicit none
@@ -12,7 +12,7 @@ program main
     ! simulation size and duration
     integer(int32), parameter :: N_X = 100
     integer(int32), parameter :: N_Y = 100
-    integer(int32), parameter :: N_STEPS = 1000
+    integer(int32), parameter :: N_STEPS = 10000
     integer(int64), parameter :: N_CELLS = int(N_X, int64) * int(N_Y, int64)
 
     ! D2Q9 lattice velocities and weights
@@ -46,19 +46,26 @@ program main
         1.0_real32/36.0_real32, &
         1.0_real32/36.0_real32]
 
-    ! settings
-    logical, parameter :: write_rho = .true.
-    logical, parameter :: write_u_x = .true.
-    logical, parameter :: write_u_y = .true.
-
     ! general params
     real(real32), parameter :: rho_0 = 1.0_real32 ! rest density
     real(real32), parameter :: omega = 1.5_real32 ! relaxation factor
 
     ! specific params for shear wave decay
     real(real32), parameter :: u_max = 0.1_real32 ! initial velocity
-    real(real32), parameter :: n = 2.0_real32 ! num waves
-    real(real32), parameter :: k = (2.0_real32 * pi * n) / real(N_Y, real32)
+    real(real32), parameter :: n = 2.0_real32 ! num sin periods
+    real(real32), parameter :: k = (2.0_real32 * pi * n) / real(N_Y, real32) ! wave number
+
+    ! settings
+    logical, parameter :: write_rho = .true.
+    logical, parameter :: write_u_x = .true.
+    logical, parameter :: write_u_y = .true.
+
+    ! timing
+    integer(int64) :: clock_start
+    integer(int64) :: clock_end
+    integer(int64) :: clock_rate
+    real(real64) :: elapsed_seconds
+    real(real64) :: seconds_per_step
 
     ! allocate sim data structures (double-buffered distribution functions)
     real(real32), allocatable :: f(:, :, :) ! read-version of distribution functions f(dir, x, y)
@@ -75,6 +82,8 @@ program main
     ! inital condition
     call apply_condition_shear_wave_decay(N_X, N_Y, N_DIRS, c_x_fp, c_y_fp, w, rho_0, u_max, k, f, rho, u_x, u_y)
 
+    call system_clock(clock_start, clock_rate)
+
     ! simulation loop
     do step = 1, N_STEPS
 
@@ -84,6 +93,23 @@ program main
 
         call swap_distribution_function_buffers(f, f_next)
         
+        if (mod(step, 1000) == 0) then
+            print *, "completed step", step, "max |u_x|:", maxval(abs(u_x))
+        end if
+
     end do
+    
+    ! finalize timing and print metrics
+    call system_clock(clock_end)
+    elapsed_seconds = real(clock_end - clock_start, real64) / real(clock_rate, real64)
+    seconds_per_step = elapsed_seconds / real(N_STEPS, real64)
+
+    print *, "--- [ final state ] -----------------------------------------------"
+    print *, "rho min/max: ", minval(rho), maxval(rho)
+    print *, "u_x min/max: ", minval(u_x), maxval(u_x)
+    print *, "u_y min/max: ", minval(u_y), maxval(u_y)
+    print *, "--- [ timing ] ----------------------------------------------------"
+    print *, "elapsed seconds:  ", elapsed_seconds
+    print *, "seconds per step: ", seconds_per_step
 
 end program main
