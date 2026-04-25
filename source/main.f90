@@ -14,7 +14,7 @@ program main
     ! simulation size and duration
     integer(int32), parameter :: N_X = 600
     integer(int32), parameter :: N_Y = 400
-    integer(int32), parameter :: N_STEPS = 50000
+    integer(int32), parameter :: N_STEPS = 20000
     integer(int64), parameter :: N_CELLS = int(N_X, int64) * int(N_Y, int64)
 
     ! D2Q9 lattice velocities and weights
@@ -64,7 +64,7 @@ program main
 
     ! export settings
     integer(int32), parameter :: export_mode = EXPORT_VELOCITY_X
-    integer(int32), parameter :: export_interval = 10000
+    integer(int32), parameter :: export_interval = 5000
     logical, parameter :: export_initial_state = .true.
     logical, parameter :: export_final_state = .true.
     character(len=*), parameter :: output_dir_name = "output"

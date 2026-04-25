@@ -1,0 +1,3 @@
+# dependencies for visualization scripts in visual/
+numpy>=1.26,<3
+matplotlib>=3.8,<4
