@@ -123,7 +123,7 @@ contains
             action="write", iostat=io_stat)
 
         if (io_stat /= 0) then
-            error stop "could not open metadata output file"
+            error stop "error: could not open metadata output file"
         end if
 
         write(unit, '(A)') "{"
@@ -243,7 +243,7 @@ contains
         call execute_command_line(command, exitstat=exitstat, cmdstat=cmdstat)
 
         if (cmdstat /= 0 .or. exitstat /= 0) then
-            error stop "failed to create output directory"
+            error stop "error: failed to create output directory"
         end if
     end subroutine ensure_output_directory
 
@@ -264,7 +264,7 @@ contains
             status="replace", action="write", iostat=io_stat)
 
         if (io_stat /= 0) then
-            error stop "could not open binary output file"
+            error stop "error: could not open binary output file"
         end if
 
         ! write raw real32 field data to file
@@ -272,7 +272,7 @@ contains
 
         if (io_stat /= 0) then
             close(unit)
-            error stop "could not write binary output file"
+            error stop "error: could not write binary output file"
         end if
 
         close(unit)

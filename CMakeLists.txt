@@ -24,6 +24,7 @@ add_executable(FFB
     source/export.f90
     source/initialization.f90
     source/main.f90
+    source/settings.f90
     source/simulation.f90
 )
 

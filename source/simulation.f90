@@ -71,7 +71,7 @@ contains
 
                 ! safety check
                 if (rho_val <= 0.0_real32) then
-                    error stop "density is zero in collision/streaming step (rho_val <= 0)"
+                    error stop "error: density is zero in collision/streaming step (rho_val <= 0)"
                 end if
 
                 ! finalize velocity

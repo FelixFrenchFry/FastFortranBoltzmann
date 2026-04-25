@@ -1,9 +1,50 @@
 module initialization
     ! imports
     use iso_fortran_env, only: int32, real32
+    use settings, only: SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID
     implicit none
 
 contains
+
+    subroutine initialize_sim_condition( &
+        sim_mode, N_X, N_Y, N_DIRS, c_x_fp, c_y_fp, w, rho_0, u_max, k, f, rho, u_x, u_y &
+        )
+        ! read-only inputs
+        integer(int32), intent(in) :: sim_mode
+        integer(int32), intent(in) :: N_X
+        integer(int32), intent(in) :: N_Y
+        integer(int32), intent(in) :: N_DIRS
+        real(real32), intent(in) :: c_x_fp(:)
+        real(real32), intent(in) :: c_y_fp(:)
+        real(real32), intent(in) :: w(:)
+        real(real32), intent(in) :: rho_0
+        real(real32), intent(in) :: u_max
+        real(real32), intent(in) :: k
+
+        ! write destinations
+        real(real32), intent(out) :: f(:, :, :)
+        real(real32), intent(out) :: rho(:,:)
+        real(real32), intent(out) :: u_x(:,:)
+        real(real32), intent(out) :: u_y(:,:)
+
+        ! apply initial condition based on selected sim mode
+        select case (sim_mode)
+        case (SIM_SHEAR_WAVE)
+            call apply_condition_shear_wave(N_X, N_Y, N_DIRS, c_x_fp, c_y_fp, w, rho_0, u_max, k, f, rho, u_x, u_y)
+        case (SIM_COUETTE_FLOW)
+            error stop "error: initial condition for couette flow not implemented yet"
+            ! TODO: implement
+        case (SIM_POISEUILLE_FLOW)
+            error stop "error: initial condition for poiseuille flow not implemented yet"
+            ! TODO: implement
+        case (SIM_SLIDING_LID)
+            error stop "error: initial condition for sliding lid not implemented yet"
+            ! TODO: implement
+        case default
+            error stop "error: unknown sim mode in initialize_sim_condition()"
+        end select
+    end subroutine initialize_sim_condition
+
 
     subroutine apply_condition_shear_wave( &
         N_X, N_Y, N_DIRS, c_x_fp, c_y_fp, w, rho_0, u_max, k, f, rho, u_x, u_y &
