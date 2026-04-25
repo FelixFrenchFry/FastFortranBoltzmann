@@ -58,6 +58,17 @@ def load_field(path: Path, config: dict) -> np.ndarray:
     return np.fromfile(path, dtype=np.float32).reshape((N_Y, N_X))
 
 
+def is_data_exported(config: dict) -> bool:
+    export_key_by_data_name = {
+        "density": "export_rho",
+        "velocity_x": "export_u_x",
+        "velocity_y": "export_u_y",
+        "velocity_mag": "export_u_mag",
+    }
+    export_key = export_key_by_data_name[DATA_NAME]
+    return bool(config.get(export_key, False))
+
+
 def get_color_limit(steps: list[int], config: dict) -> float:
     if COLOR_LIMIT is not None:
         return float(COLOR_LIMIT)
@@ -116,8 +127,8 @@ if __name__ == "__main__":
     print(f"steps:          {steps}")
     print(f"color bounds:   [{-color_limit:.6g}, {color_limit:.6g}]")
 
-    if config.get("export_mode") != DATA_NAME:
-        print(f"warning: config export_mode is {config.get('export_mode')!r}, expected {DATA_NAME!r}")
+    if not is_data_exported(config):
+        print(f"warning: config does not mark {DATA_NAME!r} as exported")
 
     for step in steps:
         plot_step(step, config, color_limit)

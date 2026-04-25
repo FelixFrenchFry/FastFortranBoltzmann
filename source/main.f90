@@ -1,10 +1,9 @@
 program main
     ! imports
     use iso_fortran_env, only: int32, int64, real32, real64, output_unit
-    use export, only: EXPORT_NONE, EXPORT_DENSITY, EXPORT_VELOCITY_X, EXPORT_VELOCITY_Y, &
-        EXPORT_VELOCITY_MAG, export_mode_to_string, should_export_step, export_selected_data, export_metadata
-    use initialization, only: apply_condition_shear_wave_decay
-    use simulation, only: fuzed_pull_streaming_collision_shear_wave_decay, swap_distribution_function_buffers
+    use export, only: should_export_step, export_selected_data, export_metadata
+    use initialization, only: apply_condition_shear_wave
+    use simulation, only: fuzed_pull_streaming_collision_shear_wave, swap_distribution_function_buffers
     implicit none
 
     ! misc
@@ -63,7 +62,10 @@ program main
     logical, parameter :: write_u_y = .true.
 
     ! export settings
-    integer(int32), parameter :: export_mode = EXPORT_VELOCITY_X
+    logical, parameter :: export_rho = .true.
+    logical, parameter :: export_u_x = .true.
+    logical, parameter :: export_u_y = .true.
+    logical, parameter :: export_u_mag = .true.
     integer(int32), parameter :: export_interval = 5000
     logical, parameter :: export_initial_state = .true.
     logical, parameter :: export_final_state = .true.
@@ -105,10 +107,11 @@ program main
     allocate(u_y(N_X, N_Y))
 
     ! inital condition
-    call apply_condition_shear_wave_decay(N_X, N_Y, N_DIRS, c_x_fp, c_y_fp, w, rho_0, u_max, k, f, rho, u_x, u_y)
+    call apply_condition_shear_wave(N_X, N_Y, N_DIRS, c_x_fp, c_y_fp, w, rho_0, u_max, k, f, rho, u_x, u_y)
 
     ! print sim info
     if (this_image() == 1) then
+        print '(A)', ""
         print '(A)', "--- [ simulation parameters ] ---------------------------------------------"
         print '(A,I0)',    "N_X_TOTAL            = ", N_X
         print '(A,I0)',    "N_Y_TOTAL            = ", N_Y
@@ -120,7 +123,10 @@ program main
         print '(A,L1)',    "write_rho            = ", write_rho
         print '(A,L1)',    "write_u_x            = ", write_u_x
         print '(A,L1)',    "write_u_y            = ", write_u_y
-        print '(A,A)',     "export_mode          = ", trim(export_mode_to_string(export_mode))
+        print '(A,L1)',    "export_rho           = ", export_rho
+        print '(A,L1)',    "export_u_x           = ", export_u_x
+        print '(A,L1)',    "export_u_y           = ", export_u_y
+        print '(A,L1)',    "export_u_mag         = ", export_u_mag
         print '(A,I0)',    "export_interval      = ", export_interval
         print '(A,L1)',    "export_initial_state = ", export_initial_state
         print '(A,L1)',    "export_final_state   = ", export_final_state
@@ -133,14 +139,16 @@ program main
     ! export metadata
     if (this_image() == 1) then
         call export_metadata(N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, rho_0, omega, u_max, n_sin, k, &
-        export_mode, export_interval, output_dir_name, export_num, export_initial_state, export_final_state)
+            export_rho, export_u_x, export_u_y, export_u_mag, export_interval, output_dir_name, export_num, &
+            export_initial_state, export_final_state)
     end if
 
     ! export initial condition
     if (this_image() == 1) then
-        if (should_export_step(N_STEPS, 0_int32, export_mode, export_interval, &
+        if (should_export_step(N_STEPS, 0_int32, export_interval, &
             export_initial_state, export_final_state)) then
-            call export_selected_data(export_mode, output_dir_name, export_num, 0_int32, rho, u_x, u_y)
+            call export_selected_data(export_rho, export_u_x, export_u_y, export_u_mag, &
+                output_dir_name, export_num, 0_int32, rho, u_x, u_y)
         end if
     end if
 
@@ -156,7 +164,7 @@ program main
     ! simulation loop
     do step = 1, N_STEPS
 
-        call fuzed_pull_streaming_collision_shear_wave_decay( &
+        call fuzed_pull_streaming_collision_shear_wave( &
             N_X, N_Y, N_DIRS, c_x, c_y, c_x_fp, c_y_fp, w, omega, &
             f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y)
 
@@ -164,9 +172,10 @@ program main
 
         ! export selected field
         if (this_image() == 1) then
-            if (should_export_step(N_STEPS, step, export_mode, export_interval, &
+            if (should_export_step(N_STEPS, step, export_interval, &
                 export_initial_state, export_final_state)) then
-                call export_selected_data(export_mode, output_dir_name, export_num, step, rho, u_x, u_y)
+                call export_selected_data(export_rho, export_u_x, export_u_y, export_u_mag, &
+                    output_dir_name, export_num, step, rho, u_x, u_y)
             end if
         end if
         
