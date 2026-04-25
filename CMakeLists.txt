@@ -21,6 +21,7 @@ set(CMAKE_Fortran_EXTENSIONS OFF)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 add_executable(FFB
+    source/export.f90
     source/initialization.f90
     source/main.f90
     source/simulation.f90

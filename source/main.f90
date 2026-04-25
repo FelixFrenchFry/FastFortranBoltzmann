@@ -1,6 +1,8 @@
 program main
     ! imports
     use iso_fortran_env, only: int32, int64, real32, real64, output_unit
+    use export, only: EXPORT_NONE, EXPORT_DENSITY, EXPORT_VELOCITY_X, EXPORT_VELOCITY_Y, &
+        EXPORT_VELOCITY_MAG, export_mode_to_string, should_export_step, export_selected_data
     use initialization, only: apply_condition_shear_wave_decay
     use simulation, only: fuzed_pull_streaming_collision_shear_wave_decay, swap_distribution_function_buffers
     implicit none
@@ -10,8 +12,8 @@ program main
     integer(int32) :: step
 
     ! simulation size and duration
-    integer(int32), parameter :: N_X = 400
-    integer(int32), parameter :: N_Y = 200
+    integer(int32), parameter :: N_X = 600
+    integer(int32), parameter :: N_Y = 400
     integer(int32), parameter :: N_STEPS = 500
     integer(int64), parameter :: N_CELLS = int(N_X, int64) * int(N_Y, int64)
 
@@ -55,10 +57,22 @@ program main
     real(real32), parameter :: n_sin = 2.0_real32 ! num sin periods
     real(real32), parameter :: k = (2.0_real32 * pi * n_sin) / real(N_Y, real32) ! wave number
 
-    ! settings
+    ! general settings
     logical, parameter :: write_rho = .true.
     logical, parameter :: write_u_x = .true.
     logical, parameter :: write_u_y = .true.
+
+    ! export settings
+    integer(int32), parameter :: export_mode = EXPORT_VELOCITY_MAG
+    integer(int32), parameter :: export_interval = 100
+    logical, parameter :: export_initial_state = .true.
+    logical, parameter :: export_final_state = .true.
+    character(len=*), parameter :: output_dir_name = "output"
+    character(len=*), parameter :: export_num = "run_001"
+
+    ! progress display settings
+    logical, parameter :: interactive_progress = .true.
+    integer(int32), parameter :: progress_interval = 1
 
     ! metrics
     integer(int64) :: clock_start
@@ -77,10 +91,6 @@ program main
     real(real64) :: sim_percent
     real(real64) :: mlups
     character(len=10) :: current_time
-
-    ! progress settings
-    logical, parameter :: interactive_progress = .true.
-    integer(int32), parameter :: progress_interval = 10
 
     ! allocate sim data structures (double-buffered distribution functions)
     real(real32), allocatable :: f(:, :, :) ! read-version of distribution functions f(dir, x, y)
@@ -110,8 +120,22 @@ program main
         print '(A,L1)',    "write_rho            = ", write_rho
         print '(A,L1)',    "write_u_x            = ", write_u_x
         print '(A,L1)',    "write_u_y            = ", write_u_y
+        print '(A,A)',     "export_mode          = ", trim(export_mode_to_string(export_mode))
+        print '(A,I0)',    "export_interval      = ", export_interval
+        print '(A,L1)',    "export_initial_state = ", export_initial_state
+        print '(A,L1)',    "export_final_state   = ", export_final_state
+        print '(A,A)',     "output_dir_name      = ", output_dir_name
+        print '(A,A)',     "export_num           = ", export_num
         print '(A,L1)',    "shear_wave_decay     = ", .true.
         print *
+    end if
+
+    ! export initial condition
+    if (this_image() == 1) then
+        if (should_export_step(N_STEPS, 0_int32, export_mode, export_interval, &
+            export_initial_state, export_final_state)) then
+            call export_selected_data(export_mode, output_dir_name, export_num, 0_int32, rho, u_x, u_y)
+        end if
     end if
 
     ! print sim launch timestamp
@@ -131,6 +155,14 @@ program main
             f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y)
 
         call swap_distribution_function_buffers(f, f_next)
+
+        ! export selected field
+        if (this_image() == 1) then
+            if (should_export_step(N_STEPS, step, export_mode, export_interval, &
+                export_initial_state, export_final_state)) then
+                call export_selected_data(export_mode, output_dir_name, export_num, step, rho, u_x, u_y)
+            end if
+        end if
         
         ! print sim progress info
         if (this_image() == 1) then
@@ -148,7 +180,7 @@ program main
                 eta_minutes = modulo(eta_total_seconds, 3600_int64) / 60_int64
                 eta_seconds_int = modulo(eta_total_seconds, 60_int64)
 
-                if (interactive_progress) then
+                if (interactive_progress) then ! progress output with carriage return to overwrite previous line
                     write(output_unit,'(A,3A,F6.2,A,I2.2,A,I2.2,A,I2.2,A,I0,A,I0,A,F0.3,A)', advance='no') &
                         achar(13), "[", current_time(1:2)//":"//current_time(3:4)//":"//current_time(5:6), "] ", &
                         sim_percent, " %  (T-", &
@@ -156,7 +188,7 @@ program main
                         step, "/", N_STEPS, " steps  |  avg step: ", avg_millisec_per_step, " ms   "
 
                     flush(output_unit)
-                else
+                else ! fallback to non-interactive progress output
                     print '(3A,F6.2,A,I2.2,A,I2.2,A,I2.2,A,I0,A,I0,A,F0.3,A)', &
                         "[", current_time(1:2)//":"//current_time(3:4)//":"//current_time(5:6), "] ", &
                         sim_percent, " %  (T-", &
@@ -168,7 +200,7 @@ program main
 
     end do
     
-    ! print sim finsih timestamp
+    ! print sim finish timestamp
     if (this_image() == 1 .and. interactive_progress) then
         print *
     end if
@@ -191,6 +223,7 @@ program main
         print '(A,2(F15.8,1X))', "u_x min/max:      ", minval(u_x), maxval(u_x)
         print '(A,2(F15.8,1X))', "u_y min/max:      ", minval(u_y), maxval(u_y)
 
+        print '(A)', ""
         print '(A)', "--- [ perf metrics ] ------------------------------------------------------"
         print '(A,I0,A,I0,A,I0,A)', "sim size [X/Y/N]:      [ ", N_X, " / ", N_Y, " / ", N_STEPS, " ]"
         print '(A,F12.3,A)',        "total time:     ", elapsed_seconds, " sec"

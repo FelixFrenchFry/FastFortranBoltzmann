@@ -25,6 +25,9 @@ Makefile
 *.lo
 *.slo
 
+# output data
+/output/
+
 # precompiled headers
 *.gch
 *.pch
