@@ -27,6 +27,11 @@ Makefile
 
 # output data
 /output/
+/visual/plots/
+
+# python environments
+.venv/
+__pycache__/
 
 # precompiled headers
 *.gch
