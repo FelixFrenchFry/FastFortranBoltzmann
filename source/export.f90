@@ -1,6 +1,8 @@
 module export
     ! imports
     use iso_fortran_env, only: int32, int64, real32
+    use settings, only: SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, &
+        shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
     implicit none
 
     private
@@ -81,23 +83,25 @@ contains
 
 
     subroutine export_metadata( &
-        N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, rho_0, omega, u_max, n_sin, k, &
+        sim_mode, shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
+        N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, pi, &
         export_rho, export_u_x, export_u_y, export_u_mag, export_interval, output_dir_name, export_num, &
         export_initial_state, export_final_state &
         )
         ! read-only inputs
         character(len=*), intent(in) :: output_dir_name
         character(len=*), intent(in) :: export_num
+        integer(int32), intent(in) :: sim_mode
+        type(shear_wave_params_t), intent(in) :: shear_wave_params
+        type(couette_flow_params_t), intent(in) :: couette_flow_params
+        type(poiseuille_flow_params_t), intent(in) :: poiseuille_flow_params
+        type(sliding_lid_params_t), intent(in) :: sliding_lid_params
         integer(int32), intent(in) :: N_X
         integer(int32), intent(in) :: N_Y
         integer(int32), intent(in) :: N_STEPS
         integer(int64), intent(in) :: N_CELLS
         integer(int32), intent(in) :: N_DIRS
-        real(real32), intent(in) :: rho_0
-        real(real32), intent(in) :: omega
-        real(real32), intent(in) :: u_max
-        real(real32), intent(in) :: n_sin
-        real(real32), intent(in) :: k
+        real(real32), intent(in) :: pi
         logical, intent(in) :: export_rho
         logical, intent(in) :: export_u_x
         logical, intent(in) :: export_u_y
@@ -111,6 +115,7 @@ contains
         character(len=:), allocatable :: file_path
         integer :: unit
         integer :: io_stat
+        real(real32) :: k
 
         ! assemble output path and metadata filename
         output_path = trim(output_dir_name) // "/" // trim(export_num)
@@ -127,17 +132,38 @@ contains
         end if
 
         write(unit, '(A)') "{"
+        write(unit, '(A,A,A)') '  "sim_mode": "', trim(sim_mode_to_string(sim_mode)), '",'
+
+        select case (sim_mode)
+        case (SIM_SHEAR_WAVE)
+            k = (2.0_real32 * pi * shear_wave_params%n_sin) / real(N_Y, real32)
+            write(unit, '(A,A,A)') '  "rho_0": ', trim(real32_to_json(shear_wave_params%rho_0)), ','
+            write(unit, '(A,A,A)') '  "omega": ', trim(real32_to_json(shear_wave_params%omega)), ','
+            write(unit, '(A,A,A)') '  "u_max": ', trim(real32_to_json(shear_wave_params%u_max)), ','
+            write(unit, '(A,A,A)') '  "n_sin": ', trim(real32_to_json(shear_wave_params%n_sin)), ','
+            write(unit, '(A,A,A)') '  "k": ', trim(real32_to_json(k)), ','
+
+        case (SIM_COUETTE_FLOW)
+            write(unit, '(A,A,A)') '  "rho_0": ', trim(real32_to_json(couette_flow_params%rho_0)), ','
+            write(unit, '(A,A,A)') '  "omega": ', trim(real32_to_json(couette_flow_params%omega)), ','
+            write(unit, '(A,A,A)') '  "u_wall": ', trim(real32_to_json(couette_flow_params%u_wall)), ','
+
+        case (SIM_POISEUILLE_FLOW)
+            continue
+
+        case (SIM_SLIDING_LID)
+            continue
+
+        case default
+            error stop "error: unknown sim mode in export_metadata()"
+        end select
+
+        write(unit, '(A)') ""
         write(unit, '(A,I0,A)') '  "N_X": ', N_X, ','
         write(unit, '(A,I0,A)') '  "N_Y": ', N_Y, ','
         write(unit, '(A,I0,A)') '  "N_STEPS": ', N_STEPS, ','
         write(unit, '(A,I0,A)') '  "N_CELLS": ', N_CELLS, ','
         write(unit, '(A,I0,A)') '  "N_DIRS": ', N_DIRS, ','
-        write(unit, '(A)') ""
-        write(unit, '(A,A,A)') '  "rho_0": ', trim(real32_to_json(rho_0)), ','
-        write(unit, '(A,A,A)') '  "omega": ', trim(real32_to_json(omega)), ','
-        write(unit, '(A,A,A)') '  "u_max": ', trim(real32_to_json(u_max)), ','
-        write(unit, '(A,A,A)') '  "n_sin": ', trim(real32_to_json(n_sin)), ','
-        write(unit, '(A,A,A)') '  "k": ', trim(real32_to_json(k)), ','
         write(unit, '(A)') ""
         write(unit, '(A,A,A)') '  "export_rho": ', trim(logical_to_json(export_rho)), ','
         write(unit, '(A,A,A)') '  "export_u_x": ', trim(logical_to_json(export_u_x)), ','
