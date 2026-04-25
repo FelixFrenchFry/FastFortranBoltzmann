@@ -152,7 +152,9 @@ contains
             continue
 
         case (SIM_SLIDING_LID)
-            continue
+            write(unit, '(A,A,A)') '  "rho_0": ', trim(real32_to_json(sliding_lid_params%rho_0)), ','
+            write(unit, '(A,A,A)') '  "omega": ', trim(real32_to_json(sliding_lid_params%omega)), ','
+            write(unit, '(A,A,A)') '  "u_wall": ', trim(real32_to_json(sliding_lid_params%u_wall)), ','
 
         case default
             error stop "error: unknown sim mode in export_metadata()"

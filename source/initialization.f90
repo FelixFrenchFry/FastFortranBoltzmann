@@ -43,8 +43,8 @@ contains
             error stop "error: initial condition for poiseuille flow not implemented yet"
             ! TODO: implement
         case (SIM_SLIDING_LID)
-            error stop "error: initial condition for sliding lid not implemented yet"
-            ! TODO: implement
+            call apply_condition_sliding_lid(N_X, N_Y, N_DIRS, w, &
+                sliding_lid_params%rho_0, f, rho, u_x, u_y)
         case default
             error stop "error: unknown sim mode in initialize_sim_condition()"
         end select
@@ -158,5 +158,47 @@ contains
             end do
         end do
     end subroutine apply_condition_couette_flow
+
+
+    subroutine apply_condition_sliding_lid( &
+        N_X, N_Y, N_DIRS, w, rho_0, f, rho, u_x, u_y &
+        )
+        ! read-only inputs
+        integer(int32), intent(in) :: N_X
+        integer(int32), intent(in) :: N_Y
+        integer(int32), intent(in) :: N_DIRS
+        real(real32), intent(in) :: w(:)
+        real(real32), intent(in) :: rho_0
+
+        ! write destinations
+        real(real32), intent(out) :: f(:, :, :)
+        real(real32), intent(out) :: rho(:,:)
+        real(real32), intent(out) :: u_x(:,:)
+        real(real32), intent(out) :: u_y(:,:)
+
+        ! temp
+        integer(int32) :: x, y, i
+        real(real32) :: f_eq(N_DIRS)
+
+        ! pre-computed equilibrium distribution at t=0
+        do i = 1, N_DIRS
+            f_eq(i) = w(i) * rho_0
+        end do
+
+        ! loop over rows and cols
+        do y = 1, N_Y
+            do x = 1, N_X
+
+                rho(x, y) = rho_0
+                u_x(x, y) = 0.0_real32
+                u_y(x, y) = 0.0_real32
+
+                ! init distribution functions in all dirs
+                do i = 1, N_DIRS
+                    f(i, x, y) = f_eq(i)
+                end do
+            end do
+        end do
+    end subroutine apply_condition_sliding_lid
 
 end module initialization

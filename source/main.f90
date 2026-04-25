@@ -15,7 +15,7 @@ program main
     ! simulation size and duration
     integer(int32), parameter :: N_X = 500
     integer(int32), parameter :: N_Y = 500
-    integer(int32), parameter :: N_STEPS = 40000
+    integer(int32), parameter :: N_STEPS = 120000
     integer(int64), parameter :: N_CELLS = int(N_X, int64) * int(N_Y, int64)
 
     ! D2Q9 lattice velocities and weights
@@ -70,6 +70,9 @@ program main
 
     ! parameter set for sliding lid
     type(sliding_lid_params_t), parameter :: sliding_lid_params = sliding_lid_params_t( &
+        rho_0 = 1.0_real32, &
+        omega = 1.5_real32, &
+        u_wall = 0.1_real32 &
     )
 
     ! general settings
@@ -86,7 +89,7 @@ program main
     logical, parameter :: export_initial_state = .true.
     logical, parameter :: export_final_state = .true.
     character(len=*), parameter :: output_dir_name = "output"
-    character(len=*), parameter :: export_num = "run_002"
+    character(len=*), parameter :: export_num = "run_001"
 
     ! progress display settings
     logical, parameter :: interactive_progress = .true.
@@ -145,7 +148,9 @@ program main
         case (SIM_POISEUILLE_FLOW)
             print '(A)',       "poiseuille params    = not implemented yet"
         case (SIM_SLIDING_LID)
-            print '(A)',       "sliding_lid params   = not implemented yet"
+            print '(A,F8.6)', "rho_0                = ", sliding_lid_params%rho_0
+            print '(A,F8.6)', "omega                = ", sliding_lid_params%omega
+            print '(A,F8.6)', "u_wall               = ", sliding_lid_params%u_wall
         case default
             error stop "error: unknown sim mode in main print block"
         end select
