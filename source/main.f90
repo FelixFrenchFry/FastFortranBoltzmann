@@ -4,7 +4,7 @@ program main
     use export, only: should_export_step, export_selected_data, export_metadata
     use initialization, only: initialize_sim_condition
     use settings, only: SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, sim_mode, sim_mode_to_string
-    use simulation, only: fuzed_pull_streaming_collision_shear_wave, swap_distribution_function_buffers
+    use simulation, only: execute_full_sim_step, swap_distribution_function_buffers
     implicit none
 
     ! misc
@@ -133,7 +133,7 @@ program main
         print '(A,L1)',    "export_final_state   = ", export_final_state
         print '(A,A)',     "output_dir_name      = ", output_dir_name
         print '(A,A)',     "export_num           = ", export_num
-        print '(A,L1)',    "shear_wave_decay     = ", .true.
+        print '(A,A)',     "sim_mode             = ", trim(sim_mode_to_string())
         print *
     end if
 
@@ -165,8 +165,8 @@ program main
     ! simulation loop
     do step = 1, N_STEPS
 
-        call fuzed_pull_streaming_collision_shear_wave( &
-            N_X, N_Y, N_DIRS, c_x, c_y, c_x_fp, c_y_fp, w, omega, &
+        call execute_full_sim_step( &
+            sim_mode, N_X, N_Y, N_DIRS, c_x, c_y, c_x_fp, c_y_fp, w, omega, &
             f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y)
 
         call swap_distribution_function_buffers(f, f_next)

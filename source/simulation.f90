@@ -1,9 +1,58 @@
 module simulation
     ! imports
     use iso_fortran_env, only: int32, real32
+    use settings, only: SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID
     implicit none
 
 contains
+
+    subroutine execute_full_sim_step( &
+        sim_mode, N_X, N_Y, N_DIRS, c_x, c_y, c_x_fp, c_y_fp, w, omega, &
+        f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
+        )
+        ! read-only inputs
+        integer(int32), intent(in) :: sim_mode
+        integer(int32), intent(in) :: N_X
+        integer(int32), intent(in) :: N_Y
+        integer(int32), intent(in) :: N_DIRS
+        integer(int32), intent(in) :: c_x(:)
+        integer(int32), intent(in) :: c_y(:)
+        real(real32), intent(in) :: c_x_fp(:)
+        real(real32), intent(in) :: c_y_fp(:)
+        real(real32), intent(in) :: w(:)
+        real(real32), intent(in) :: omega
+        real(real32), intent(in) :: f(:, :, :)
+        logical, intent(in) :: write_rho
+        logical, intent(in) :: write_u_x
+        logical, intent(in) :: write_u_y
+
+        ! write destinations
+        real(real32), intent(out) :: f_next(:, :, :)
+
+        ! optional write destinations
+        real(real32), intent(inout) :: rho(:,:)
+        real(real32), intent(inout) :: u_x(:,:)
+        real(real32), intent(inout) :: u_y(:,:)
+
+        ! execute single sim step based on selected sim mode
+        select case (sim_mode)
+        case (SIM_SHEAR_WAVE)
+            call fuzed_pull_streaming_collision_shear_wave( &
+                N_X, N_Y, N_DIRS, c_x, c_y, c_x_fp, c_y_fp, w, omega, &
+                f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y)
+        case (SIM_COUETTE_FLOW)
+            error stop "error: sim step for couette flow not implemented yet"
+            ! TODO: implement
+        case (SIM_POISEUILLE_FLOW)
+            error stop "error: sim step for poiseuille flow not implemented yet"
+            ! TODO: implement
+        case (SIM_SLIDING_LID)
+            error stop "error: sim step for sliding lid not implemented yet"
+            ! TODO: implement
+        case default
+            error stop "error: unknown sim mode in execute_full_sim_step()"
+        end select
+    end subroutine execute_full_sim_step
 
     subroutine fuzed_pull_streaming_collision_shear_wave( &
         N_X, N_Y, N_DIRS, c_x, c_y, c_x_fp, c_y_fp, w, omega, &
