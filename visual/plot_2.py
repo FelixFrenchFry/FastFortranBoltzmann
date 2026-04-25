@@ -8,17 +8,17 @@ import numpy as np
 
 
 
-# --- [ plot x-velocity scalar field as heatmap (for shear wave) ] ---
+# --- [ plot velocity magnitude scalar field as heatmap (for couette flow) ] ---
 
 # run config
-RUN_NAME = "run_001"
-DATA_NAME = "velocity_x"
+RUN_NAME = "run_002"
+DATA_NAME = "velocity_mag"
 
 # step config
 STEP_START = 0
 STEP_END = None       # None -> uses N_STEPS from config.json
 STEP_STRIDE = None    # None -> uses export_interval from config.json
-COLOR_LIMIT = None    # None -> uses max(abs(field)) across all selected steps
+COLOR_LIMIT = None    # None -> uses max(field) across all selected steps
 
 # path config
 ROOT_DIR = Path(__file__).resolve().parents[1]
@@ -73,14 +73,14 @@ def get_color_limit(steps: list[int], config: dict) -> float:
     if COLOR_LIMIT is not None:
         return float(COLOR_LIMIT)
 
-    max_abs = 0.0
+    max_val = 0.0
     for step in steps:
         data_path = get_data_path(step)
         if data_path.exists():
             field = load_field(data_path, config)
-            max_abs = max(max_abs, float(np.max(np.abs(field))))
+            max_val = max(max_val, float(np.max(field)))
 
-    return max(max_abs, 1.0e-12)
+    return max(max_val, 1.0e-12)
 
 
 def plot_step(step: int, config: dict, color_limit: float) -> None:
@@ -95,15 +95,15 @@ def plot_step(step: int, config: dict, color_limit: float) -> None:
     image = ax.imshow(
         field,
         origin="lower",
-        cmap="seismic",
-        vmin=-color_limit,
+        cmap="turbo",
+        vmin=0.0,
         vmax=color_limit,
         extent=(0, config["N_X"], 0, config["N_Y"]),
         interpolation="nearest",
     )
 
-    fig.colorbar(image, ax=ax, label="u_x")
-    ax.set_title(f"u_x at step {step}")
+    fig.colorbar(image, ax=ax, label="|u|")
+    ax.set_title(f"|u| at step {step}")
     ax.set_xlabel("x")
     ax.set_ylabel("y")
     ax.set_aspect("equal")
@@ -125,7 +125,7 @@ if __name__ == "__main__":
     print(f"plot directory: {PLOT_DIR}")
     print(f"data field:     {DATA_NAME}")
     print(f"steps:          {steps}")
-    print(f"color bounds:   [{-color_limit:.6g}, {color_limit:.6g}]")
+    print(f"color bounds:   [0, {color_limit:.6g}]")
 
     if not is_data_exported(config):
         print(f"warning: config does not mark {DATA_NAME!r} as exported")
