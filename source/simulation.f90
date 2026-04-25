@@ -54,6 +54,7 @@ contains
         end select
     end subroutine execute_full_sim_step
 
+    
     subroutine fuzed_pull_streaming_collision_shear_wave( &
         N_X, N_Y, N_DIRS, c_x, c_y, c_x_fp, c_y_fp, w, omega, &
         f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
@@ -76,7 +77,7 @@ contains
         ! write destinations
         real(real32), intent(out) :: f_next(:, :, :)
 
-        ! optional write densitions
+        ! optional write destinations
         real(real32), intent(inout) :: rho(:,:)
         real(real32), intent(inout) :: u_x(:,:)
         real(real32), intent(inout) :: u_y(:,:)
@@ -90,7 +91,7 @@ contains
         real(real32) :: u_y_val
         real(real32) :: u_squ
         real(real32) :: c_dot_u
-        real(real32) :: f_eq
+        real(real32) :: f_eq_val
         real(real32) :: f_next_val
 
         ! loop over rows and cols
@@ -141,17 +142,16 @@ contains
 
                 ! collide and stream to destination cells in all dirs
                 do i = 1, N_DIRS
-
                     ! compute equilibrium distribution function for dir i
                     c_dot_u = c_x_fp(i) * u_x_val + c_y_fp(i) * u_y_val
-                    f_eq = w(i) * rho_val * ( &
+                    f_eq_val = w(i) * rho_val * ( &
                         1.0_real32 + &
                         3.0_real32 * c_dot_u + &
                         4.5_real32 * c_dot_u * c_dot_u - &
                         1.5_real32 * u_squ)
 
                     ! relax towards equilibrium
-                    f_next_val = f_pulled(i) - omega * (f_pulled(i) - f_eq)
+                    f_next_val = f_pulled(i) - omega * (f_pulled(i) - f_eq_val)
 
                     ! write to destination dir i of this cell in next distribution function buffer
                     f_next(i, x, y) = f_next_val

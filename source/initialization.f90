@@ -32,8 +32,7 @@ contains
         case (SIM_SHEAR_WAVE)
             call apply_condition_shear_wave(N_X, N_Y, N_DIRS, c_x_fp, c_y_fp, w, rho_0, u_max, k, f, rho, u_x, u_y)
         case (SIM_COUETTE_FLOW)
-            error stop "error: initial condition for couette flow not implemented yet"
-            ! TODO: implement
+            call apply_condition_couette_flow(N_X, N_Y, N_DIRS, w, rho_0, f, rho, u_x, u_y)
         case (SIM_POISEUILLE_FLOW)
             error stop "error: initial condition for poiseuille flow not implemented yet"
             ! TODO: implement
@@ -72,7 +71,7 @@ contains
         real(real32) :: u_y_val
         real(real32) :: u_squ
         real(real32) :: c_dot_u
-        real(real32) :: f_eq
+        real(real32) :: f_eq_val
 
         ! loop over rows
         do y = 1, N_Y
@@ -89,20 +88,60 @@ contains
 
                 ! init distribution functions in all dirs
                 do i = 1, N_DIRS
-
                     ! compute equilibrium distribution function for dir i
                     c_dot_u = c_x_fp(i) * u_x_val + c_y_fp(i) * u_y_val
-                    f_eq = w(i) * rho_0 * ( &
+                    f_eq_val = w(i) * rho_0 * ( &
                         1.0_real32 + &
                         3.0_real32 * c_dot_u + &
                         4.5_real32 * c_dot_u * c_dot_u - &
                         1.5_real32 * u_squ)
 
                     ! write to destination dir i of this cell
-                    f(i, x, y) = f_eq
+                    f(i, x, y) = f_eq_val
                 end do
             end do
         end do
     end subroutine apply_condition_shear_wave
+
+
+    subroutine apply_condition_couette_flow( &
+        N_X, N_Y, N_DIRS, w, rho_0, f, rho, u_x, u_y &
+        )
+        ! read-only inputs
+        integer(int32), intent(in) :: N_X
+        integer(int32), intent(in) :: N_Y
+        integer(int32), intent(in) :: N_DIRS
+        real(real32), intent(in) :: w(:)
+        real(real32), intent(in) :: rho_0
+
+        ! write destinations
+        real(real32), intent(out) :: f(:, :, :)
+        real(real32), intent(out) :: rho(:,:)
+        real(real32), intent(out) :: u_x(:,:)
+        real(real32), intent(out) :: u_y(:,:)
+
+        ! temp
+        integer(int32) :: x, y, i
+        real(real32) :: f_eq(N_DIRS)
+
+        ! pre-computed equilibrium distribution at t=0
+        do i = 1, N_DIRS
+            f_eq(i) = w(i) * rho_0
+        end do
+
+        ! loop over rows and cols
+        do y = 1, N_Y
+            do x = 1, N_X
+                rho(x, y) = rho_0
+                u_x(x, y) = 0.0_real32
+                u_y(x, y) = 0.0_real32
+
+                ! init distribution functions in all dirs
+                do i = 1, N_DIRS
+                    f(i, x, y) = f_eq(i)
+                end do
+            end do
+        end do
+    end subroutine apply_condition_couette_flow
 
 end module initialization

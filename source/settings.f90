@@ -1,6 +1,6 @@
 module settings
     ! imports
-    use iso_fortran_env, only: int32, real32
+    use iso_fortran_env, only: int32
     implicit none
 
     integer(int32), parameter :: SIM_SHEAR_WAVE = 1
