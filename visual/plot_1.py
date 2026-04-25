@@ -8,7 +8,7 @@ import numpy as np
 
 
 
-# --- [ plot X velocity scalar field ] ---
+# --- [ plot x-velocity scalar field as heatmap (for shear wave) ] ---
 
 # run config
 RUN_NAME = "run_001"
