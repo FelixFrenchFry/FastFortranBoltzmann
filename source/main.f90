@@ -2,7 +2,7 @@ program main
     ! imports
     use iso_fortran_env, only: int32, int64, real32, real64, output_unit
     use export, only: EXPORT_NONE, EXPORT_DENSITY, EXPORT_VELOCITY_X, EXPORT_VELOCITY_Y, &
-        EXPORT_VELOCITY_MAG, export_mode_to_string, should_export_step, export_selected_data
+        EXPORT_VELOCITY_MAG, export_mode_to_string, should_export_step, export_selected_data, export_metadata
     use initialization, only: apply_condition_shear_wave_decay
     use simulation, only: fuzed_pull_streaming_collision_shear_wave_decay, swap_distribution_function_buffers
     implicit none
@@ -14,7 +14,7 @@ program main
     ! simulation size and duration
     integer(int32), parameter :: N_X = 600
     integer(int32), parameter :: N_Y = 400
-    integer(int32), parameter :: N_STEPS = 500
+    integer(int32), parameter :: N_STEPS = 50000
     integer(int64), parameter :: N_CELLS = int(N_X, int64) * int(N_Y, int64)
 
     ! D2Q9 lattice velocities and weights
@@ -63,8 +63,8 @@ program main
     logical, parameter :: write_u_y = .true.
 
     ! export settings
-    integer(int32), parameter :: export_mode = EXPORT_VELOCITY_MAG
-    integer(int32), parameter :: export_interval = 100
+    integer(int32), parameter :: export_mode = EXPORT_VELOCITY_X
+    integer(int32), parameter :: export_interval = 10000
     logical, parameter :: export_initial_state = .true.
     logical, parameter :: export_final_state = .true.
     character(len=*), parameter :: output_dir_name = "output"
@@ -128,6 +128,12 @@ program main
         print '(A,A)',     "export_num           = ", export_num
         print '(A,L1)',    "shear_wave_decay     = ", .true.
         print *
+    end if
+
+    ! export metadata
+    if (this_image() == 1) then
+        call export_metadata(N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, rho_0, omega, u_max, n_sin, k, &
+        export_mode, export_interval, output_dir_name, export_num, export_initial_state, export_final_state)
     end if
 
     ! export initial condition

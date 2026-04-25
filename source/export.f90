@@ -1,6 +1,6 @@
 module export
     ! imports
-    use iso_fortran_env, only: int32, real32
+    use iso_fortran_env, only: int32, int64, real32
     implicit none
 
     private
@@ -15,6 +15,7 @@ module export
     public :: export_mode_to_string
     public :: should_export_step
     public :: export_selected_data
+    public :: export_metadata
 
 contains
 
@@ -109,6 +110,75 @@ contains
     end subroutine export_selected_data
 
 
+    subroutine export_metadata( &
+        N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, rho_0, omega, u_max, n_sin, k, &
+        export_mode, export_interval, output_dir_name, export_num, export_initial_state, export_final_state &
+        )
+        ! read-only inputs
+        character(len=*), intent(in) :: output_dir_name
+        character(len=*), intent(in) :: export_num
+        integer(int32), intent(in) :: N_X
+        integer(int32), intent(in) :: N_Y
+        integer(int32), intent(in) :: N_STEPS
+        integer(int64), intent(in) :: N_CELLS
+        integer(int32), intent(in) :: N_DIRS
+        real(real32), intent(in) :: rho_0
+        real(real32), intent(in) :: omega
+        real(real32), intent(in) :: u_max
+        real(real32), intent(in) :: n_sin
+        real(real32), intent(in) :: k
+        integer(int32), intent(in) :: export_mode
+        integer(int32), intent(in) :: export_interval
+        logical, intent(in) :: export_initial_state
+        logical, intent(in) :: export_final_state
+
+        ! temp
+        character(len=:), allocatable :: output_path
+        character(len=:), allocatable :: file_path
+        integer :: unit
+        integer :: io_stat
+
+        ! assemble output path and metadata filename
+        output_path = trim(output_dir_name) // "/" // trim(export_num)
+        file_path = output_path // "/config.json"
+
+        call ensure_output_directory(output_path)
+
+        ! document run configuration as .json
+        open(newunit=unit, file=trim(file_path), form="formatted", status="replace", &
+            action="write", iostat=io_stat)
+
+        if (io_stat /= 0) then
+            error stop "could not open metadata output file"
+        end if
+
+        write(unit, '(A)') "{"
+        write(unit, '(A,I0,A)') '  "N_X": ', N_X, ','
+        write(unit, '(A,I0,A)') '  "N_Y": ', N_Y, ','
+        write(unit, '(A,I0,A)') '  "N_STEPS": ', N_STEPS, ','
+        write(unit, '(A,I0,A)') '  "N_CELLS": ', N_CELLS, ','
+        write(unit, '(A,I0,A)') '  "N_DIRS": ', N_DIRS, ','
+        write(unit, '(A)') ""
+        write(unit, '(A,A,A)') '  "rho_0": ', trim(real32_to_json(rho_0)), ','
+        write(unit, '(A,A,A)') '  "omega": ', trim(real32_to_json(omega)), ','
+        write(unit, '(A,A,A)') '  "u_max": ', trim(real32_to_json(u_max)), ','
+        write(unit, '(A,A,A)') '  "n_sin": ', trim(real32_to_json(n_sin)), ','
+        write(unit, '(A,A,A)') '  "k": ', trim(real32_to_json(k)), ','
+        write(unit, '(A)') ""
+        write(unit, '(A,A,A)') '  "export_mode": "', trim(export_mode_to_string(export_mode)), '",'
+        write(unit, '(A,I0,A)') '  "export_interval": ', export_interval, ','
+        write(unit, '(A,A,A)') '  "export_initial_state": ', trim(logical_to_json(export_initial_state)), ','
+        write(unit, '(A,A,A)') '  "export_final_state": ', trim(logical_to_json(export_final_state)), ','
+        write(unit, '(A)') ""
+        write(unit, '(A,A,A)') '  "output_dir_name": "', trim(output_dir_name), '",'
+        write(unit, '(A,A,A)') '  "export_num": "', trim(export_num), '",'
+        write(unit, '(A)') '  "file_dtype": "real32"'
+        write(unit, '(A)') "}"
+
+        close(unit)
+    end subroutine export_metadata
+
+
     subroutine export_scalar_field( &
         field, field_name, output_dir_name, export_num, suffix_num &
         )
@@ -147,6 +217,37 @@ contains
         write(suffix_digits, '(I9.9)') suffix_num
         suffix = "_" // suffix_digits
     end function format_step_suffix
+
+
+    pure function logical_to_json( &
+        value &
+        ) result(text)
+        ! read-only inputs
+        logical, intent(in) :: value
+
+        ! output
+        character(len=5) :: text
+
+        if (value) then
+            text = "true"
+        else
+            text = "false"
+        end if
+    end function logical_to_json
+
+
+    function real32_to_json( &
+        value &
+        ) result(text)
+        ! read-only inputs
+        real(real32), intent(in) :: value
+
+        ! output
+        character(len=24) :: text
+
+        write(text, '(ES16.8)') value
+        text = adjustl(text)
+    end function real32_to_json
 
 
     subroutine ensure_output_directory( &
