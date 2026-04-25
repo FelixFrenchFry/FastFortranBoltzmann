@@ -5,53 +5,18 @@ module export
 
     private
 
-    ! export modes
-    integer(int32), parameter, public :: EXPORT_NONE = 0
-    integer(int32), parameter, public :: EXPORT_DENSITY = 1
-    integer(int32), parameter, public :: EXPORT_VELOCITY_X = 2
-    integer(int32), parameter, public :: EXPORT_VELOCITY_Y = 3
-    integer(int32), parameter, public :: EXPORT_VELOCITY_MAG = 4
-
-    public :: export_mode_to_string
     public :: should_export_step
     public :: export_selected_data
     public :: export_metadata
 
 contains
 
-    pure function export_mode_to_string( &
-        export_mode &
-        ) result(name)
-        ! read-only inputs
-        integer(int32), intent(in) :: export_mode
-
-        ! output
-        character(len=:), allocatable :: name
-
-        select case (export_mode)
-        case (EXPORT_NONE)
-            name = "none"
-        case (EXPORT_DENSITY)
-            name = "density"
-        case (EXPORT_VELOCITY_X)
-            name = "velocity_x"
-        case (EXPORT_VELOCITY_Y)
-            name = "velocity_y"
-        case (EXPORT_VELOCITY_MAG)
-            name = "velocity_mag"
-        case default
-            name = "unknown"
-        end select
-    end function export_mode_to_string
-
-
     pure function should_export_step( &
-        N_STEPS, step, export_mode, export_interval, export_initial_state, export_final_state &
+        N_STEPS, step, export_interval, export_initial_state, export_final_state &
         ) result(write_step)
         ! read-only inputs
         integer(int32), intent(in) :: N_STEPS
         integer(int32), intent(in) :: step
-        integer(int32), intent(in) :: export_mode
         integer(int32), intent(in) :: export_interval
         logical, intent(in) :: export_initial_state
         logical, intent(in) :: export_final_state
@@ -60,7 +25,7 @@ contains
         logical :: write_step
 
         ! no output if export is disabled
-        if (export_mode == EXPORT_NONE .or. export_interval <= 0) then
+        if (export_interval <= 0) then
             write_step = .false.
 
         ! optional output at initial state
@@ -76,10 +41,14 @@ contains
 
 
     subroutine export_selected_data( &
-        export_mode, output_dir_name, export_num, suffix_num, rho, u_x, u_y &
+        export_rho, export_u_x, export_u_y, export_u_mag, &
+        output_dir_name, export_num, suffix_num, rho, u_x, u_y &
         )
         ! read-only inputs
-        integer(int32), intent(in) :: export_mode
+        logical, intent(in) :: export_rho
+        logical, intent(in) :: export_u_x
+        logical, intent(in) :: export_u_y
+        logical, intent(in) :: export_u_mag
         character(len=*), intent(in) :: output_dir_name
         character(len=*), intent(in) :: export_num
         integer(int32), intent(in) :: suffix_num
@@ -90,29 +59,31 @@ contains
         ! temp
         real(real32), allocatable :: velocity_mag(:,:)
 
-        ! choose and export selected scalar field
-        select case (export_mode)
-        case (EXPORT_NONE)
-            return
-        case (EXPORT_DENSITY)
+        ! export selected scalar fields
+        if (export_rho) then
             call export_scalar_field(rho, "density", output_dir_name, export_num, suffix_num)
-        case (EXPORT_VELOCITY_X)
+        end if
+
+        if (export_u_x) then
             call export_scalar_field(u_x, "velocity_x", output_dir_name, export_num, suffix_num)
-        case (EXPORT_VELOCITY_Y)
+        end if
+
+        if (export_u_y) then
             call export_scalar_field(u_y, "velocity_y", output_dir_name, export_num, suffix_num)
-        case (EXPORT_VELOCITY_MAG)
+        end if
+
+        if (export_u_mag) then
             allocate(velocity_mag(size(u_x, 1), size(u_x, 2)))
             velocity_mag = sqrt(u_x * u_x + u_y * u_y) ! element-wise sqrt of velocity magnitude
             call export_scalar_field(velocity_mag, "velocity_mag", output_dir_name, export_num, suffix_num)
-        case default
-            error stop "unknown export mode in export_selected_data()"
-        end select
+        end if
     end subroutine export_selected_data
 
 
     subroutine export_metadata( &
         N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, rho_0, omega, u_max, n_sin, k, &
-        export_mode, export_interval, output_dir_name, export_num, export_initial_state, export_final_state &
+        export_rho, export_u_x, export_u_y, export_u_mag, export_interval, output_dir_name, export_num, &
+        export_initial_state, export_final_state &
         )
         ! read-only inputs
         character(len=*), intent(in) :: output_dir_name
@@ -127,7 +98,10 @@ contains
         real(real32), intent(in) :: u_max
         real(real32), intent(in) :: n_sin
         real(real32), intent(in) :: k
-        integer(int32), intent(in) :: export_mode
+        logical, intent(in) :: export_rho
+        logical, intent(in) :: export_u_x
+        logical, intent(in) :: export_u_y
+        logical, intent(in) :: export_u_mag
         integer(int32), intent(in) :: export_interval
         logical, intent(in) :: export_initial_state
         logical, intent(in) :: export_final_state
@@ -165,7 +139,10 @@ contains
         write(unit, '(A,A,A)') '  "n_sin": ', trim(real32_to_json(n_sin)), ','
         write(unit, '(A,A,A)') '  "k": ', trim(real32_to_json(k)), ','
         write(unit, '(A)') ""
-        write(unit, '(A,A,A)') '  "export_mode": "', trim(export_mode_to_string(export_mode)), '",'
+        write(unit, '(A,A,A)') '  "export_rho": ', trim(logical_to_json(export_rho)), ','
+        write(unit, '(A,A,A)') '  "export_u_x": ', trim(logical_to_json(export_u_x)), ','
+        write(unit, '(A,A,A)') '  "export_u_y": ', trim(logical_to_json(export_u_y)), ','
+        write(unit, '(A,A,A)') '  "export_u_mag": ', trim(logical_to_json(export_u_mag)), ','
         write(unit, '(A,I0,A)') '  "export_interval": ', export_interval, ','
         write(unit, '(A,A,A)') '  "export_initial_state": ', trim(logical_to_json(export_initial_state)), ','
         write(unit, '(A,A,A)') '  "export_final_state": ', trim(logical_to_json(export_final_state)), ','

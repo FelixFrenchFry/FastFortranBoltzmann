@@ -5,7 +5,7 @@ module initialization
 
 contains
 
-    subroutine apply_condition_shear_wave_decay( &
+    subroutine apply_condition_shear_wave( &
         N_X, N_Y, N_DIRS, c_x_fp, c_y_fp, w, rho_0, u_max, k, f, rho, u_x, u_y &
         )
         ! read-only inputs
@@ -62,6 +62,6 @@ contains
                 end do
             end do
         end do
-    end subroutine apply_condition_shear_wave_decay
+    end subroutine apply_condition_shear_wave
 
 end module initialization

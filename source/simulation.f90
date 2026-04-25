@@ -5,7 +5,7 @@ module simulation
 
 contains
 
-    subroutine fuzed_pull_streaming_collision_shear_wave_decay( &
+    subroutine fuzed_pull_streaming_collision_shear_wave( &
         N_X, N_Y, N_DIRS, c_x, c_y, c_x_fp, c_y_fp, w, omega, &
         f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
         )
@@ -109,7 +109,7 @@ contains
                 end do
             end do
         end do
-    end subroutine fuzed_pull_streaming_collision_shear_wave_decay
+    end subroutine fuzed_pull_streaming_collision_shear_wave
 
 
     subroutine swap_distribution_function_buffers( &
