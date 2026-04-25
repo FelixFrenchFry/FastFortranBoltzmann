@@ -2,7 +2,8 @@ program main
     ! imports
     use iso_fortran_env, only: int32, int64, real32, real64, output_unit
     use export, only: should_export_step, export_selected_data, export_metadata
-    use initialization, only: apply_condition_shear_wave
+    use initialization, only: initialize_sim_condition
+    use settings, only: SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, sim_mode, sim_mode_to_string
     use simulation, only: fuzed_pull_streaming_collision_shear_wave, swap_distribution_function_buffers
     implicit none
 
@@ -107,7 +108,7 @@ program main
     allocate(u_y(N_X, N_Y))
 
     ! inital condition
-    call apply_condition_shear_wave(N_X, N_Y, N_DIRS, c_x_fp, c_y_fp, w, rho_0, u_max, k, f, rho, u_x, u_y)
+    call initialize_sim_condition(sim_mode, N_X, N_Y, N_DIRS, c_x_fp, c_y_fp, w, rho_0, u_max, k, f, rho, u_x, u_y)
 
     ! print sim info
     if (this_image() == 1) then
