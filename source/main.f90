@@ -66,6 +66,10 @@ program main
 
     ! parameter set for poiseuille flow
     type(poiseuille_flow_params_t), parameter :: poiseuille_flow_params = poiseuille_flow_params_t( &
+        rho_0 = 1.0_real32, &
+        omega = 1.5_real32, &
+        rho_in = 1.001_real32, &
+        rho_out = 0.999_real32 &
     )
 
     ! parameter set for sliding lid
@@ -89,7 +93,7 @@ program main
     logical, parameter :: export_initial_state = .true.
     logical, parameter :: export_final_state = .true.
     character(len=*), parameter :: output_dir_name = "output"
-    character(len=*), parameter :: export_num = "run_001"
+    character(len=*), parameter :: export_num = "run_003"
 
     ! progress display settings
     logical, parameter :: interactive_progress = .true.
@@ -146,7 +150,10 @@ program main
             print '(A,F8.6)', "omega                = ", couette_flow_params%omega
             print '(A,F8.6)', "u_wall               = ", couette_flow_params%u_wall
         case (SIM_POISEUILLE_FLOW)
-            print '(A)',       "poiseuille params    = not implemented yet"
+            print '(A,F8.6)', "rho_0                = ", poiseuille_flow_params%rho_0
+            print '(A,F8.6)', "omega                = ", poiseuille_flow_params%omega
+            print '(A,F8.6)', "rho_in               = ", poiseuille_flow_params%rho_in
+            print '(A,F8.6)', "rho_out              = ", poiseuille_flow_params%rho_out
         case (SIM_SLIDING_LID)
             print '(A,F8.6)', "rho_0                = ", sliding_lid_params%rho_0
             print '(A,F8.6)', "omega                = ", sliding_lid_params%omega
