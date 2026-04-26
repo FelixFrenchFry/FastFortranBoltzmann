@@ -136,12 +136,10 @@ contains
 
         select case (sim_mode)
         case (SIM_SHEAR_WAVE)
-            k = (2.0_real32 * pi * shear_wave_params%n_sin) / real(N_Y, real32)
             write(unit, '(A,A,A)') '  "rho_0": ', trim(real32_to_json(shear_wave_params%rho_0)), ','
             write(unit, '(A,A,A)') '  "omega": ', trim(real32_to_json(shear_wave_params%omega)), ','
             write(unit, '(A,A,A)') '  "u_max": ', trim(real32_to_json(shear_wave_params%u_max)), ','
             write(unit, '(A,A,A)') '  "n_sin": ', trim(real32_to_json(shear_wave_params%n_sin)), ','
-            write(unit, '(A,A,A)') '  "k": ', trim(real32_to_json(k)), ','
 
         case (SIM_COUETTE_FLOW)
             write(unit, '(A,A,A)') '  "rho_0": ', trim(real32_to_json(couette_flow_params%rho_0)), ','
@@ -149,6 +147,10 @@ contains
             write(unit, '(A,A,A)') '  "u_wall": ', trim(real32_to_json(couette_flow_params%u_wall)), ','
 
         case (SIM_POISEUILLE_FLOW)
+            write(unit, '(A,A,A)') '  "rho_0": ', trim(real32_to_json(poiseuille_flow_params%rho_0)), ','
+            write(unit, '(A,A,A)') '  "omega": ', trim(real32_to_json(poiseuille_flow_params%omega)), ','
+            write(unit, '(A,A,A)') '  "rho_in": ', trim(real32_to_json(poiseuille_flow_params%rho_in)), ','
+            write(unit, '(A,A,A)') '  "rho_out": ', trim(real32_to_json(poiseuille_flow_params%rho_out)), ','
             continue
 
         case (SIM_SLIDING_LID)

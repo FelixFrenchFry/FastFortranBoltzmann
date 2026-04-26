@@ -8,7 +8,7 @@ module settings
     integer(int32), parameter :: SIM_COUETTE_FLOW = 2
     integer(int32), parameter :: SIM_POISEUILLE_FLOW = 3
     integer(int32), parameter :: SIM_SLIDING_LID = 4
-    integer(int32), parameter :: sim_mode = 1
+    integer(int32), parameter :: sim_mode = 3
 
     ! sim parameter sets for each sim mode
     type :: shear_wave_params_t
@@ -25,7 +25,10 @@ module settings
     end type couette_flow_params_t
 
     type :: poiseuille_flow_params_t
-        ! TODO: add more
+        real(real32) :: rho_0 ! rest density
+        real(real32) :: omega ! relaxation factor
+        real(real32) :: rho_in ! inlet density
+        real(real32) :: rho_out ! outlet density
     end type poiseuille_flow_params_t
 
     type :: sliding_lid_params_t
