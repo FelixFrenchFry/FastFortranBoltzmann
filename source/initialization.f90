@@ -1,18 +1,17 @@
 module initialization
     ! imports
     use iso_fortran_env, only: int32, real32
-    use settings, only: N_X, N_Y, N_DIRS, SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, PI, &
-        shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t
+    use settings, only: N_X, N_Y, N_DIRS, SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, &
+        PI, shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t
     implicit none
 
 contains
 
     subroutine initialize_sim_condition( &
-        sim_mode, shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
+        shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
         c_x_fp, c_y_fp, w, f, rho, u_x, u_y &
         )
         ! read-only inputs
-        integer(int32), intent(in) :: sim_mode
         type(shear_wave_params_t), intent(in) :: shear_wave_params
         type(couette_flow_params_t), intent(in) :: couette_flow_params
         type(poiseuille_flow_params_t), intent(in) :: poiseuille_flow_params
@@ -28,7 +27,7 @@ contains
         real(real32), intent(out) :: u_y(N_X, N_Y)
 
         ! apply initial condition based on selected sim mode
-        select case (sim_mode)
+        select case (SIM_MODE)
         case (SIM_SHEAR_WAVE)
             call apply_condition_shear_wave(c_x_fp, c_y_fp, w, shear_wave_params%rho_0, &
                 shear_wave_params%u_max, shear_wave_params%n_sin, f, rho, u_x, u_y)

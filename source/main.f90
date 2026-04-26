@@ -3,8 +3,8 @@ program main
     use iso_fortran_env, only: int32, int64, real32, real64, output_unit
     use export, only: should_export_step, export_selected_data, export_metadata
     use initialization, only: initialize_sim_condition
-    use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, &
-        sim_mode, shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
+    use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, &
+        shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
     use simulation, only: execute_full_sim_step, swap_distribution_function_buffers
     implicit none
 
@@ -85,7 +85,7 @@ program main
     logical, parameter :: export_initial_state = .true.
     logical, parameter :: export_final_state = .true.
     character(len=*), parameter :: output_dir_name = "output"
-    character(len=*), parameter :: export_num = "run_002"
+    character(len=*), parameter :: export_num = "run_001"
 
     ! progress display settings
     logical, parameter :: interactive_progress = .true.
@@ -122,16 +122,16 @@ program main
     allocate(u_y(N_X, N_Y))
 
     ! inital condition
-    call initialize_sim_condition(sim_mode, shear_wave_params, couette_flow_params, poiseuille_flow_params, &
+    call initialize_sim_condition(shear_wave_params, couette_flow_params, poiseuille_flow_params, &
         sliding_lid_params, c_x_fp, c_y_fp, w, f, rho, u_x, u_y)
 
     ! print sim info
     if (this_image() == 1) then
         print '(A)', ""
         print '(A)', "--- [ simulation parameters ] ---------------------------------------------"
-        print '(A,A)',     "sim_mode             = ", trim(sim_mode_to_string(sim_mode))
+        print '(A,A)',     "SIM_MODE             = ", trim(sim_mode_to_string(SIM_MODE))
 
-        select case (sim_mode)
+        select case (SIM_MODE)
         case (SIM_SHEAR_WAVE)
             print '(A,F8.6)', "rho_0                = ", shear_wave_params%rho_0
             print '(A,F8.6)', "omega                = ", shear_wave_params%omega
@@ -176,7 +176,7 @@ program main
 
     ! export metadata
     if (this_image() == 1) then
-        call export_metadata(sim_mode, shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
+        call export_metadata(shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
             export_rho, export_u_x, export_u_y, export_u_mag, export_interval, &
             output_dir_name, export_num, export_initial_state, export_final_state)
     end if
@@ -203,7 +203,7 @@ program main
     do step = 1, N_STEPS
 
         call execute_full_sim_step( &
-            sim_mode, shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
+            shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
             c_x, c_y, c_x_fp, c_y_fp, w, f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y)
 
         call swap_distribution_function_buffers(f, f_next)
