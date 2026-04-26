@@ -85,7 +85,7 @@ program main
     logical, parameter :: export_initial_state = .true.
     logical, parameter :: export_final_state = .true.
     character(len=*), parameter :: output_dir_name = "output"
-    character(len=*), parameter :: export_num = "run_001"
+    character(len=*), parameter :: export_num = "run_002"
 
     ! progress display settings
     logical, parameter :: interactive_progress = .true.
@@ -270,12 +270,6 @@ program main
     mlups = real(N_CELLS, real64) * real(N_STEPS, real64) / elapsed_seconds / 1.0e6_real64
 
     if (this_image() == 1) then
-        print '(A)', ""
-        print '(A)', "--- [ test stats ] --------------------------------------------------------"
-        print '(A,2(F15.8,1X))', "rho min/max:      ", minval(rho), maxval(rho)
-        print '(A,2(F15.8,1X))', "u_x min/max:      ", minval(u_x), maxval(u_x)
-        print '(A,2(F15.8,1X))', "u_y min/max:      ", minval(u_y), maxval(u_y)
-
         print '(A)', ""
         print '(A)', "--- [ perf metrics ] ------------------------------------------------------"
         print '(A,I0,A,I0,A,I0,A)', "sim size [X/Y/N]:      [ ", N_X, " / ", N_Y, " / ", N_STEPS, " ]"

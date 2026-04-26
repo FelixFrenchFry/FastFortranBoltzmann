@@ -17,23 +17,23 @@ contains
         type(couette_flow_params_t), intent(in) :: couette_flow_params
         type(poiseuille_flow_params_t), intent(in) :: poiseuille_flow_params
         type(sliding_lid_params_t), intent(in) :: sliding_lid_params
-        integer(int32), intent(in) :: c_x(:)
-        integer(int32), intent(in) :: c_y(:)
-        real(real32), intent(in) :: c_x_fp(:)
-        real(real32), intent(in) :: c_y_fp(:)
-        real(real32), intent(in) :: w(:)
-        real(real32), intent(in) :: f(:, :, :)
+        integer(int32), intent(in) :: c_x(N_DIRS)
+        integer(int32), intent(in) :: c_y(N_DIRS)
+        real(real32), intent(in) :: c_x_fp(N_DIRS)
+        real(real32), intent(in) :: c_y_fp(N_DIRS)
+        real(real32), intent(in) :: w(N_DIRS)
+        real(real32), intent(in) :: f(N_DIRS, N_X, N_Y)
         logical, intent(in) :: write_rho
         logical, intent(in) :: write_u_x
         logical, intent(in) :: write_u_y
 
         ! write destinations
-        real(real32), intent(out) :: f_next(:, :, :)
+        real(real32), intent(out) :: f_next(N_DIRS, N_X, N_Y)
 
         ! optional write destinations
-        real(real32), intent(inout) :: rho(:,:)
-        real(real32), intent(inout) :: u_x(:,:)
-        real(real32), intent(inout) :: u_y(:,:)
+        real(real32), intent(inout) :: rho(N_X, N_Y)
+        real(real32), intent(inout) :: u_x(N_X, N_Y)
+        real(real32), intent(inout) :: u_y(N_X, N_Y)
 
         ! execute single sim step based on selected sim mode
         select case (sim_mode)
@@ -67,24 +67,24 @@ contains
         f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
         )
         ! read-only inputs
-        integer(int32), intent(in) :: c_x(:)
-        integer(int32), intent(in) :: c_y(:)
-        real(real32), intent(in) :: c_x_fp(:)
-        real(real32), intent(in) :: c_y_fp(:)
-        real(real32), intent(in) :: w(:)
+        integer(int32), intent(in) :: c_x(N_DIRS)
+        integer(int32), intent(in) :: c_y(N_DIRS)
+        real(real32), intent(in) :: c_x_fp(N_DIRS)
+        real(real32), intent(in) :: c_y_fp(N_DIRS)
+        real(real32), intent(in) :: w(N_DIRS)
         real(real32), intent(in) :: omega
-        real(real32), intent(in) :: f(:, :, :)
+        real(real32), intent(in) :: f(N_DIRS, N_X, N_Y)
         logical, intent(in) :: write_rho
         logical, intent(in) :: write_u_x
         logical, intent(in) :: write_u_y
 
         ! write destinations
-        real(real32), intent(out) :: f_next(:, :, :)
+        real(real32), intent(out) :: f_next(N_DIRS, N_X, N_Y)
 
         ! optional write destinations
-        real(real32), intent(inout) :: rho(:,:)
-        real(real32), intent(inout) :: u_x(:,:)
-        real(real32), intent(inout) :: u_y(:,:)
+        real(real32), intent(inout) :: rho(N_X, N_Y)
+        real(real32), intent(inout) :: u_x(N_X, N_Y)
+        real(real32), intent(inout) :: u_y(N_X, N_Y)
 
         ! temp
         integer(int32) :: x, y, i
@@ -197,26 +197,26 @@ contains
         f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
         )
         ! read-only inputs
-        integer(int32), intent(in) :: c_x(:)
-        integer(int32), intent(in) :: c_y(:)
-        real(real32), intent(in) :: c_x_fp(:)
-        real(real32), intent(in) :: c_y_fp(:)
-        real(real32), intent(in) :: w(:)
+        integer(int32), intent(in) :: c_x(N_DIRS)
+        integer(int32), intent(in) :: c_y(N_DIRS)
+        real(real32), intent(in) :: c_x_fp(N_DIRS)
+        real(real32), intent(in) :: c_y_fp(N_DIRS)
+        real(real32), intent(in) :: w(N_DIRS)
         real(real32), intent(in) :: rho_0
         real(real32), intent(in) :: omega
         real(real32), intent(in) :: u_wall
-        real(real32), intent(in) :: f(:, :, :)
+        real(real32), intent(in) :: f(N_DIRS, N_X, N_Y)
         logical, intent(in) :: write_rho
         logical, intent(in) :: write_u_x
         logical, intent(in) :: write_u_y
 
         ! write destinations
-        real(real32), intent(out) :: f_next(:, :, :)
+        real(real32), intent(out) :: f_next(N_DIRS, N_X, N_Y)
 
         ! optional write destinations
-        real(real32), intent(inout) :: rho(:,:)
-        real(real32), intent(inout) :: u_x(:,:)
-        real(real32), intent(inout) :: u_y(:,:)
+        real(real32), intent(inout) :: rho(N_X, N_Y)
+        real(real32), intent(inout) :: u_x(N_X, N_Y)
+        real(real32), intent(inout) :: u_y(N_X, N_Y)
 
         ! temp
         integer(int32) :: x, y, i
@@ -347,26 +347,26 @@ contains
         f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
         )
         ! read-only inputs
-        integer(int32), intent(in) :: c_x(:)
-        integer(int32), intent(in) :: c_y(:)
-        real(real32), intent(in) :: c_x_fp(:)
-        real(real32), intent(in) :: c_y_fp(:)
-        real(real32), intent(in) :: w(:)
+        integer(int32), intent(in) :: c_x(N_DIRS)
+        integer(int32), intent(in) :: c_y(N_DIRS)
+        real(real32), intent(in) :: c_x_fp(N_DIRS)
+        real(real32), intent(in) :: c_y_fp(N_DIRS)
+        real(real32), intent(in) :: w(N_DIRS)
         real(real32), intent(in) :: omega
         real(real32), intent(in) :: rho_in
         real(real32), intent(in) :: rho_out
-        real(real32), intent(in) :: f(:, :, :)
+        real(real32), intent(in) :: f(N_DIRS, N_X, N_Y)
         logical, intent(in) :: write_rho
         logical, intent(in) :: write_u_x
         logical, intent(in) :: write_u_y
 
         ! write destinations
-        real(real32), intent(out) :: f_next(:, :, :)
+        real(real32), intent(out) :: f_next(N_DIRS, N_X, N_Y)
 
         ! optional write destinations
-        real(real32), intent(inout) :: rho(:,:)
-        real(real32), intent(inout) :: u_x(:,:)
-        real(real32), intent(inout) :: u_y(:,:)
+        real(real32), intent(inout) :: rho(N_X, N_Y)
+        real(real32), intent(inout) :: u_x(N_X, N_Y)
+        real(real32), intent(inout) :: u_y(N_X, N_Y)
 
         ! temp
         integer(int32) :: x, y, i
@@ -546,26 +546,26 @@ contains
         f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
         )
         ! read-only inputs
-        integer(int32), intent(in) :: c_x(:)
-        integer(int32), intent(in) :: c_y(:)
-        real(real32), intent(in) :: c_x_fp(:)
-        real(real32), intent(in) :: c_y_fp(:)
-        real(real32), intent(in) :: w(:)
+        integer(int32), intent(in) :: c_x(N_DIRS)
+        integer(int32), intent(in) :: c_y(N_DIRS)
+        real(real32), intent(in) :: c_x_fp(N_DIRS)
+        real(real32), intent(in) :: c_y_fp(N_DIRS)
+        real(real32), intent(in) :: w(N_DIRS)
         real(real32), intent(in) :: rho_0
         real(real32), intent(in) :: omega
         real(real32), intent(in) :: u_wall
-        real(real32), intent(in) :: f(:, :, :)
+        real(real32), intent(in) :: f(N_DIRS, N_X, N_Y)
         logical, intent(in) :: write_rho
         logical, intent(in) :: write_u_x
         logical, intent(in) :: write_u_y
 
         ! write destinations
-        real(real32), intent(out) :: f_next(:, :, :)
+        real(real32), intent(out) :: f_next(N_DIRS, N_X, N_Y)
 
         ! optional write destinations
-        real(real32), intent(inout) :: rho(:,:)
-        real(real32), intent(inout) :: u_x(:,:)
-        real(real32), intent(inout) :: u_y(:,:)
+        real(real32), intent(inout) :: rho(N_X, N_Y)
+        real(real32), intent(inout) :: u_x(N_X, N_Y)
+        real(real32), intent(inout) :: u_y(N_X, N_Y)
 
         ! temp
         integer(int32) :: x, y, i
