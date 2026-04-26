@@ -15,7 +15,7 @@ module settings
     integer(int32), parameter :: SIM_COUETTE_FLOW = 2
     integer(int32), parameter :: SIM_POISEUILLE_FLOW = 3
     integer(int32), parameter :: SIM_SLIDING_LID = 4
-    integer(int32), parameter :: sim_mode = 1
+    integer(int32), parameter :: sim_mode = 2
 
     ! misc
     real(real32), parameter :: PI = 3.1415927410125732421875_real32
