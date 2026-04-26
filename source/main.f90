@@ -100,6 +100,11 @@ program main
     integer(int64) :: eta_hours
     integer(int64) :: eta_minutes
     integer(int64) :: eta_seconds_int
+    integer(int64) :: bytes_real32
+    integer(int64) :: dist_function_buffers_bytes
+    integer(int64) :: macro_field_buffers_bytes
+    integer(int64) :: misc_buffers_bytes
+    integer(int64) :: total_buffer_bytes
     real(real64) :: elapsed_seconds
     real(real64) :: seconds_per_step
     real(real64) :: avg_millisec_per_step
@@ -107,6 +112,8 @@ program main
     real(real64) :: eta_seconds
     real(real64) :: sim_percent
     real(real64) :: mlups
+    real(real64) :: mb_per_byte
+    real(real64) :: total_bytes_per_cell
     character(len=10) :: current_time
 
     ! allocate sim data structures (double-buffered distribution functions)
@@ -120,6 +127,15 @@ program main
     allocate(rho(N_X, N_Y))
     allocate(u_x(N_X, N_Y))
     allocate(u_y(N_X, N_Y))
+
+    ! compute memory metrics for persistent main sim buffers
+    bytes_real32 = int(storage_size(0.0_real32), int64) / 8_int64
+    dist_function_buffers_bytes = (size(f, kind=int64) + size(f_next, kind=int64)) * bytes_real32
+    macro_field_buffers_bytes = (size(rho, kind=int64) + size(u_x, kind=int64) + size(u_y, kind=int64)) * bytes_real32
+    misc_buffers_bytes = 0_int64
+    total_buffer_bytes = dist_function_buffers_bytes + macro_field_buffers_bytes + misc_buffers_bytes
+    total_bytes_per_cell = real(total_buffer_bytes, real64) / real(N_CELLS, real64)
+    mb_per_byte = 1.0e-6_real64
 
     ! inital condition
     call initialize_sim_condition(shear_wave_params, couette_flow_params, poiseuille_flow_params, &
@@ -171,6 +187,21 @@ program main
         print '(A,L1)',    "export_final_state   = ", export_final_state
         print '(A,A)',     "output_dir_name      = ", output_dir_name
         print '(A,A)',     "export_num           = ", export_num
+        print *
+
+        print '(A,T42,A,T45,A,T59,A,T62,A)', "memory usage", "|", "per cell [B]", "|", "all cells [MB]"
+        print '(A)', "---------------------------------------------------------------------------"
+        print '(A,T42,A,T45,F12.1,T59,A,T62,F14.3)', "dist function buffers", "|", &
+            real(dist_function_buffers_bytes, real64) / real(N_CELLS, real64), "|", &
+            real(dist_function_buffers_bytes, real64) * mb_per_byte
+        print '(A,T42,A,T45,F12.1,T59,A,T62,F14.3)', "macro field buffers", "|", &
+            real(macro_field_buffers_bytes, real64) / real(N_CELLS, real64), "|", &
+            real(macro_field_buffers_bytes, real64) * mb_per_byte
+        print '(A,T42,A,T45,F12.1,T59,A,T62,F14.3)', "misc", "|", &
+            real(misc_buffers_bytes, real64) / real(N_CELLS, real64), "|", &
+            real(misc_buffers_bytes, real64) * mb_per_byte
+        print '(A,T42,A,T45,F12.1,T59,A,T62,F14.3)', "total", "|", &
+            total_bytes_per_cell, "|", real(total_buffer_bytes, real64) * mb_per_byte
         print *
     end if
 
