@@ -8,7 +8,7 @@ import numpy as np
 
 
 
-# --- [ plot velocity magnitude scalar field as heatmap (for couette flow) ] ---
+# --- [ plot velocity magnitude scalar field as heatmap ] ---
 
 # run config
 RUN_NAME = "run_002"
