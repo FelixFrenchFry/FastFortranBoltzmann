@@ -1,8 +1,8 @@
 module export
     ! imports
     use iso_fortran_env, only: int32, int64, real32
-    use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, PI, &
-        shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
+    use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, &
+        PI, shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
     implicit none
 
     private
@@ -82,14 +82,11 @@ contains
 
 
     subroutine export_metadata( &
-        sim_mode, shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
+        shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
         export_rho, export_u_x, export_u_y, export_u_mag, export_interval, output_dir_name, export_num, &
         export_initial_state, export_final_state &
         )
         ! read-only inputs
-        character(len=*), intent(in) :: output_dir_name
-        character(len=*), intent(in) :: export_num
-        integer(int32), intent(in) :: sim_mode
         type(shear_wave_params_t), intent(in) :: shear_wave_params
         type(couette_flow_params_t), intent(in) :: couette_flow_params
         type(poiseuille_flow_params_t), intent(in) :: poiseuille_flow_params
@@ -99,6 +96,8 @@ contains
         logical, intent(in) :: export_u_y
         logical, intent(in) :: export_u_mag
         integer(int32), intent(in) :: export_interval
+        character(len=*), intent(in) :: output_dir_name
+        character(len=*), intent(in) :: export_num
         logical, intent(in) :: export_initial_state
         logical, intent(in) :: export_final_state
 
@@ -107,7 +106,6 @@ contains
         character(len=:), allocatable :: file_path
         integer :: unit
         integer :: io_stat
-        real(real32) :: k
 
         ! assemble output path and metadata filename
         output_path = trim(output_dir_name) // "/" // trim(export_num)
@@ -124,9 +122,9 @@ contains
         end if
 
         write(unit, '(A)') "{"
-        write(unit, '(A,A,A)') '  "sim_mode": "', trim(sim_mode_to_string(sim_mode)), '",'
+        write(unit, '(A,A,A)') '  "SIM_MODE": "', trim(sim_mode_to_string(SIM_MODE)), '",'
 
-        select case (sim_mode)
+        select case (SIM_MODE)
         case (SIM_SHEAR_WAVE)
             write(unit, '(A,A,A)') '  "rho_0": ', trim(real32_to_json(shear_wave_params%rho_0)), ','
             write(unit, '(A,A,A)') '  "omega": ', trim(real32_to_json(shear_wave_params%omega)), ','
