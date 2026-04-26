@@ -3,23 +3,15 @@ program main
     use iso_fortran_env, only: int32, int64, real32, real64, output_unit
     use export, only: should_export_step, export_selected_data, export_metadata
     use initialization, only: initialize_sim_condition
-    use settings, only: SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, sim_mode, &
-        shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
+    use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, &
+        sim_mode, shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
     use simulation, only: execute_full_sim_step, swap_distribution_function_buffers
     implicit none
 
     ! misc
-    real(real32), parameter :: pi = 3.1415927410125732421875_real32
     integer(int32) :: step
 
-    ! simulation size and duration
-    integer(int32), parameter :: N_X = 500
-    integer(int32), parameter :: N_Y = 500
-    integer(int32), parameter :: N_STEPS = 120000
-    integer(int64), parameter :: N_CELLS = int(N_X, int64) * int(N_Y, int64)
-
     ! D2Q9 lattice velocities and weights
-    integer(int32), parameter :: N_DIRS = 9
     integer(int32), parameter :: c_x(N_DIRS) = [ 0,  1,  0, -1,  0,  1, -1, -1,  1 ]
     integer(int32), parameter :: c_y(N_DIRS) = [ 0,  0,  1,  0, -1,  1,  1, -1, -1 ]
     real(real32), parameter :: c_x_fp(N_DIRS) = real(c_x, real32) ! fp-version for compute
@@ -131,7 +123,7 @@ program main
 
     ! inital condition
     call initialize_sim_condition(sim_mode, shear_wave_params, couette_flow_params, poiseuille_flow_params, &
-        sliding_lid_params, N_X, N_Y, N_DIRS, pi, c_x_fp, c_y_fp, w, f, rho, u_x, u_y)
+        sliding_lid_params, c_x_fp, c_y_fp, w, f, rho, u_x, u_y)
 
     ! print sim info
     if (this_image() == 1) then
@@ -185,13 +177,13 @@ program main
     ! export metadata
     if (this_image() == 1) then
         call export_metadata(sim_mode, shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
-            N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, pi, export_rho, export_u_x, export_u_y, export_u_mag, export_interval, &
+            export_rho, export_u_x, export_u_y, export_u_mag, export_interval, &
             output_dir_name, export_num, export_initial_state, export_final_state)
     end if
 
     ! export initial condition
     if (this_image() == 1) then
-        if (should_export_step(N_STEPS, 0_int32, export_interval, &
+        if (should_export_step(0_int32, export_interval, &
             export_initial_state, export_final_state)) then
             call export_selected_data(export_rho, export_u_x, export_u_y, export_u_mag, &
                 output_dir_name, export_num, 0_int32, rho, u_x, u_y)
@@ -212,13 +204,13 @@ program main
 
         call execute_full_sim_step( &
             sim_mode, shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
-            N_X, N_Y, N_DIRS, c_x, c_y, c_x_fp, c_y_fp, w, f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y)
+            c_x, c_y, c_x_fp, c_y_fp, w, f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y)
 
         call swap_distribution_function_buffers(f, f_next)
 
         ! export selected field
         if (this_image() == 1) then
-            if (should_export_step(N_STEPS, step, export_interval, &
+            if (should_export_step(step, export_interval, &
                 export_initial_state, export_final_state)) then
                 call export_selected_data(export_rho, export_u_x, export_u_y, export_u_mag, &
                     output_dir_name, export_num, step, rho, u_x, u_y)

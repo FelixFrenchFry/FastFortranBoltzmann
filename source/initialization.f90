@@ -1,7 +1,7 @@
 module initialization
     ! imports
     use iso_fortran_env, only: int32, real32
-    use settings, only: SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, &
+    use settings, only: N_X, N_Y, N_DIRS, SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, PI, &
         shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t
     implicit none
 
@@ -9,7 +9,7 @@ contains
 
     subroutine initialize_sim_condition( &
         sim_mode, shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
-        N_X, N_Y, N_DIRS, pi, c_x_fp, c_y_fp, w, f, rho, u_x, u_y &
+        c_x_fp, c_y_fp, w, f, rho, u_x, u_y &
         )
         ! read-only inputs
         integer(int32), intent(in) :: sim_mode
@@ -17,10 +17,6 @@ contains
         type(couette_flow_params_t), intent(in) :: couette_flow_params
         type(poiseuille_flow_params_t), intent(in) :: poiseuille_flow_params
         type(sliding_lid_params_t), intent(in) :: sliding_lid_params
-        integer(int32), intent(in) :: N_X
-        integer(int32), intent(in) :: N_Y
-        integer(int32), intent(in) :: N_DIRS
-        real(real32), intent(in) :: pi
         real(real32), intent(in) :: c_x_fp(:)
         real(real32), intent(in) :: c_y_fp(:)
         real(real32), intent(in) :: w(:)
@@ -34,17 +30,14 @@ contains
         ! apply initial condition based on selected sim mode
         select case (sim_mode)
         case (SIM_SHEAR_WAVE)
-            call apply_condition_shear_wave(N_X, N_Y, N_DIRS, pi, c_x_fp, c_y_fp, w, &
-                shear_wave_params%rho_0, shear_wave_params%u_max, shear_wave_params%n_sin, f, rho, u_x, u_y)
+            call apply_condition_shear_wave(c_x_fp, c_y_fp, w, shear_wave_params%rho_0, &
+                shear_wave_params%u_max, shear_wave_params%n_sin, f, rho, u_x, u_y)
         case (SIM_COUETTE_FLOW)
-            call apply_condition_couette_flow(N_X, N_Y, N_DIRS, w, &
-                couette_flow_params%rho_0, f, rho, u_x, u_y)
+            call apply_condition_couette_flow(w, couette_flow_params%rho_0, f, rho, u_x, u_y)
         case (SIM_POISEUILLE_FLOW)
-            call apply_condition_poiseuille_flow(N_X, N_Y, N_DIRS, w, &
-                poiseuille_flow_params%rho_0, f, rho, u_x, u_y)
+            call apply_condition_poiseuille_flow(w, poiseuille_flow_params%rho_0, f, rho, u_x, u_y)
         case (SIM_SLIDING_LID)
-            call apply_condition_sliding_lid(N_X, N_Y, N_DIRS, w, &
-                sliding_lid_params%rho_0, f, rho, u_x, u_y)
+            call apply_condition_sliding_lid(w, sliding_lid_params%rho_0, f, rho, u_x, u_y)
         case default
             error stop "error: unknown sim mode in initialize_sim_condition()"
         end select
@@ -52,13 +45,9 @@ contains
 
 
     subroutine apply_condition_shear_wave( &
-        N_X, N_Y, N_DIRS, pi, c_x_fp, c_y_fp, w, rho_0, u_max, n_sin, f, rho, u_x, u_y &
+        c_x_fp, c_y_fp, w, rho_0, u_max, n_sin, f, rho, u_x, u_y &
         )
         ! read-only inputs
-        integer(int32), intent(in) :: N_X
-        integer(int32), intent(in) :: N_Y
-        integer(int32), intent(in) :: N_DIRS
-        real(real32), intent(in) :: pi
         real(real32), intent(in) :: c_x_fp(:)
         real(real32), intent(in) :: c_y_fp(:)
         real(real32), intent(in) :: w(:)
@@ -82,7 +71,7 @@ contains
         real(real32) :: f_eq_val
 
         ! wave number
-        k = (2.0_real32 * pi * n_sin) / real(N_Y, real32)
+        k = (2.0_real32 * PI * n_sin) / real(N_Y, real32)
 
         ! loop over rows
         do y = 1, N_Y
@@ -119,12 +108,9 @@ contains
 
 
     subroutine apply_condition_couette_flow( &
-        N_X, N_Y, N_DIRS, w, rho_0, f, rho, u_x, u_y &
+        w, rho_0, f, rho, u_x, u_y &
         )
         ! read-only inputs
-        integer(int32), intent(in) :: N_X
-        integer(int32), intent(in) :: N_Y
-        integer(int32), intent(in) :: N_DIRS
         real(real32), intent(in) :: w(:)
         real(real32), intent(in) :: rho_0
 
@@ -161,12 +147,9 @@ contains
 
 
     subroutine apply_condition_poiseuille_flow( &
-        N_X, N_Y, N_DIRS, w, rho_0, f, rho, u_x, u_y &
+        w, rho_0, f, rho, u_x, u_y &
         )
         ! read-only inputs
-        integer(int32), intent(in) :: N_X
-        integer(int32), intent(in) :: N_Y
-        integer(int32), intent(in) :: N_DIRS
         real(real32), intent(in) :: w(:)
         real(real32), intent(in) :: rho_0
 
@@ -203,12 +186,9 @@ contains
 
 
     subroutine apply_condition_sliding_lid( &
-        N_X, N_Y, N_DIRS, w, rho_0, f, rho, u_x, u_y &
+        w, rho_0, f, rho, u_x, u_y &
         )
         ! read-only inputs
-        integer(int32), intent(in) :: N_X
-        integer(int32), intent(in) :: N_Y
-        integer(int32), intent(in) :: N_DIRS
         real(real32), intent(in) :: w(:)
         real(real32), intent(in) :: rho_0
 

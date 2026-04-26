@@ -1,7 +1,14 @@
 module settings
     ! imports
-    use iso_fortran_env, only: int32, real32
+    use iso_fortran_env, only: int32, int64, real32
     implicit none
+
+    ! sim size and duration
+    integer(int32), parameter :: N_X = 500
+    integer(int32), parameter :: N_Y = 500
+    integer(int32), parameter :: N_STEPS = 120000
+    integer(int64), parameter :: N_CELLS = int(N_X, int64) * int(N_Y, int64)
+    integer(int32), parameter :: N_DIRS = 9
 
     ! constants for sim modes
     integer(int32), parameter :: SIM_SHEAR_WAVE = 1
@@ -9,6 +16,9 @@ module settings
     integer(int32), parameter :: SIM_POISEUILLE_FLOW = 3
     integer(int32), parameter :: SIM_SLIDING_LID = 4
     integer(int32), parameter :: sim_mode = 1
+
+    ! misc
+    real(real32), parameter :: PI = 3.1415927410125732421875_real32
 
     ! sim parameter sets for each sim mode
     type :: shear_wave_params_t
