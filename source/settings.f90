@@ -8,7 +8,7 @@ module settings
     integer(int32), parameter :: SIM_COUETTE_FLOW = 2
     integer(int32), parameter :: SIM_POISEUILLE_FLOW = 3
     integer(int32), parameter :: SIM_SLIDING_LID = 4
-    integer(int32), parameter :: sim_mode = 3
+    integer(int32), parameter :: sim_mode = 1
 
     ! sim parameter sets for each sim mode
     type :: shear_wave_params_t

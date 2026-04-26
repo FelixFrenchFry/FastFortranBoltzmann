@@ -93,7 +93,7 @@ program main
     logical, parameter :: export_initial_state = .true.
     logical, parameter :: export_final_state = .true.
     character(len=*), parameter :: output_dir_name = "output"
-    character(len=*), parameter :: export_num = "run_003"
+    character(len=*), parameter :: export_num = "run_001"
 
     ! progress display settings
     logical, parameter :: interactive_progress = .true.

@@ -129,8 +129,24 @@ contains
                 ! pull streamed distribution functions from source cells in all dirs
                 do i = 1, N_DIRS
 
-                    src_x = modulo((x - 1) - c_x(i), N_X) + 1 ! periodic boundary in x-dir
-                    src_y = modulo((y - 1) - c_y(i), N_Y) + 1 ! periodic boundary in y-dir
+                    src_x = x - c_x(i)
+                    src_y = y - c_y(i)
+
+                    ! periodic boundary in x-dir
+                    ! TODO: optimize by using a branchless method?
+                    if (src_x < 1) then
+                        src_x = N_X
+                    else if (src_x > N_X) then
+                        src_x = 1
+                    end if
+
+                    ! periodic boundary in y-dir
+                    ! TODO: optimize by using a branchless method?
+                    if (src_y < 1) then
+                        src_y = N_Y
+                    else if (src_y > N_Y) then
+                        src_y = 1
+                    end if
 
                     f_pulled(i) = f(i, src_x, src_y)
 
@@ -248,9 +264,17 @@ contains
                 ! pull streamed distribution functions from source cells in all dirs
                 do i = 1, N_DIRS
 
-                    src_x = modulo((x - 1) - c_x(i), N_X) + 1 ! periodic boundary in x-dir
-                    src_y = y - c_y(i) ! non-periodic boundary in y-dir
+                    src_x = x - c_x(i)
+                    src_y = y - c_y(i)
 
+                    ! periodic boundary in x-dir
+                    if (src_x < 1) then
+                        src_x = N_X
+                    else if (src_x > N_X) then
+                        src_x = 1
+                    end if
+
+                    ! non-periodic boundary in y-dir with bounce-back
                     if (src_y >= 1 .and. src_y <= N_Y) then ! inner cell -> normal streaming
                         f_pulled(i) = f(i, src_x, src_y)
                     
@@ -408,9 +432,10 @@ contains
                 ! pull streamed distribution functions from source cells in all dirs
                 do i = 1, N_DIRS
 
-                    src_x = x - c_x(i) ! non-periodic boundary in x-dir
-                    src_y = y - c_y(i) ! non-periodic boundary in y-dir
+                    src_x = x - c_x(i)
+                    src_y = y - c_y(i)
 
+                    ! non-periodic boundary in x-dir and y-dir with bounce-back
                     if (src_x >= 1 .and. src_x <= N_X .and. &
                         src_y >= 1 .and. src_y <= N_Y) then ! inner cell -> normal streaming
                         f_pulled(i) = f(i, src_x, src_y)
@@ -594,9 +619,10 @@ contains
                 ! pull streamed distribution functions from source cells in all dirs
                 do i = 1, N_DIRS
 
-                    src_x = x - c_x(i) ! non-periodic boundary in x-dir
-                    src_y = y - c_y(i) ! non-periodic boundary in y-dir
+                    src_x = x - c_x(i)
+                    src_y = y - c_y(i)
 
+                    ! non-periodic boundary in x-dir and y-dir with bounce-back
                     if (src_x >= 1 .and. src_x <= N_X .and. &
                         src_y >= 1 .and. src_y <= N_Y) then ! inner cell -> normal streaming
                         f_pulled(i) = f(i, src_x, src_y)
