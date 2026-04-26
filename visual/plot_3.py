@@ -8,17 +8,23 @@ import numpy as np
 
 
 
-# --- [ plot velocity magnitude scalar field as heatmap ] ---
+# --- [ plot velocity magnitude as streamlines ] ---
 
 # run config
-RUN_NAME = "run_002"
-DATA_NAME = "velocity_mag"
+RUN_NAME = "run_003"
+DATA_NAME_X = "velocity_x"
+DATA_NAME_Y = "velocity_y"
+PLOT_NAME = "velocity_mag_streamlines"
 
 # step config
 STEP_START = 0
 STEP_END = None       # None -> uses N_STEPS from config.json
 STEP_STRIDE = None    # None -> uses export_interval from config.json
-COLOR_LIMIT = None    # None -> uses max(field) across all selected steps
+COLOR_LIMIT = None    # None -> uses max(|u|) across all selected steps
+STREAM_STRIDE = 5
+STREAM_DENSITY = 2.5
+STREAM_LINEWIDTH = 1.5
+STREAM_ARROWSIZE = 1.5
 
 # path config
 ROOT_DIR = Path(__file__).resolve().parents[1]
@@ -48,8 +54,8 @@ def get_steps(config: dict) -> list[int]:
     return steps
 
 
-def get_data_path(step: int) -> Path:
-    return RUN_DIR / f"{DATA_NAME}{format_step_suffix(step)}.bin"
+def get_data_path(data_name: str, step: int) -> Path:
+    return RUN_DIR / f"{data_name}{format_step_suffix(step)}.bin"
 
 
 def load_field(path: Path, config: dict) -> np.ndarray:
@@ -59,14 +65,7 @@ def load_field(path: Path, config: dict) -> np.ndarray:
 
 
 def is_data_exported(config: dict) -> bool:
-    export_key_by_data_name = {
-        "density": "export_rho",
-        "velocity_x": "export_u_x",
-        "velocity_y": "export_u_y",
-        "velocity_mag": "export_u_mag",
-    }
-    export_key = export_key_by_data_name[DATA_NAME]
-    return bool(config.get(export_key, False))
+    return bool(config.get("export_u_x", False)) and bool(config.get("export_u_y", False))
 
 
 def get_color_limit(steps: list[int], config: dict) -> float:
@@ -75,40 +74,58 @@ def get_color_limit(steps: list[int], config: dict) -> float:
 
     max_val = 0.0
     for step in steps:
-        data_path = get_data_path(step)
-        if data_path.exists():
-            field = load_field(data_path, config)
-            max_val = max(max_val, float(np.max(field)))
+        u_x_path = get_data_path(DATA_NAME_X, step)
+        u_y_path = get_data_path(DATA_NAME_Y, step)
+        if u_x_path.exists() and u_y_path.exists():
+            u_x = load_field(u_x_path, config)
+            u_y = load_field(u_y_path, config)
+            velocity_mag = np.sqrt(u_x * u_x + u_y * u_y)
+            max_val = max(max_val, float(np.max(velocity_mag)))
 
     return max(max_val, 1.0e-12)
 
 
 def plot_step(step: int, config: dict, color_limit: float) -> None:
-    data_path = get_data_path(step)
-    if not data_path.exists():
-        print(f"skipped step {step:>9}: missing {data_path.name}")
+    u_x_path = get_data_path(DATA_NAME_X, step)
+    u_y_path = get_data_path(DATA_NAME_Y, step)
+    missing_paths = [path.name for path in [u_x_path, u_y_path] if not path.exists()]
+    if missing_paths:
+        print(f"skipped step {step:>9}: missing {', '.join(missing_paths)}")
         return
 
-    field = load_field(data_path, config)
+    u_x = load_field(u_x_path, config)
+    u_y = load_field(u_y_path, config)
+    velocity_mag = np.sqrt(u_x * u_x + u_y * u_y)
+
+    x_grid = np.arange(config["N_X"], dtype=np.float32)[::STREAM_STRIDE]
+    y_grid = np.arange(config["N_Y"], dtype=np.float32)[::STREAM_STRIDE]
+    u_x_plot = u_x[::STREAM_STRIDE, ::STREAM_STRIDE]
+    u_y_plot = u_y[::STREAM_STRIDE, ::STREAM_STRIDE]
+    velocity_mag_plot = velocity_mag[::STREAM_STRIDE, ::STREAM_STRIDE]
 
     fig, ax = plt.subplots(figsize=(8, 5))
-    image = ax.imshow(
-        field,
-        origin="lower",
+    stream = ax.streamplot(
+        x_grid,
+        y_grid,
+        u_x_plot,
+        u_y_plot,
+        color=velocity_mag_plot,
         cmap="turbo",
-        vmin=0.0,
-        vmax=color_limit,
-        extent=(0, config["N_X"], 0, config["N_Y"]),
-        interpolation="nearest",
+        norm=matplotlib.colors.Normalize(vmin=0.0, vmax=color_limit),
+        density=STREAM_DENSITY,
+        linewidth=STREAM_LINEWIDTH,
+        arrowsize=STREAM_ARROWSIZE,
     )
 
-    fig.colorbar(image, ax=ax, label="|u|")
-    ax.set_title(f"|u| at step {step}")
+    fig.colorbar(stream.lines, ax=ax, label="|u|")
+    ax.set_title(f"|u| streamlines at step {step}")
     ax.set_xlabel("x")
     ax.set_ylabel("y")
+    ax.set_xlim(0, config["N_X"])
+    ax.set_ylim(0, config["N_Y"])
     ax.set_aspect("equal")
 
-    output_path = PLOT_DIR / f"{DATA_NAME}{format_step_suffix(step)}.png"
+    output_path = PLOT_DIR / f"{PLOT_NAME}{format_step_suffix(step)}.png"
     fig.savefig(output_path, dpi=200, bbox_inches="tight")
     plt.close(fig)
 
@@ -123,12 +140,12 @@ if __name__ == "__main__":
 
     print(f"run directory:  {RUN_DIR}")
     print(f"plot directory: {PLOT_DIR}")
-    print(f"data field:     {DATA_NAME}")
+    print(f"data field:     {PLOT_NAME}")
     print(f"steps:          {steps}")
     print(f"color bounds:   [0, {color_limit:.6g}]")
 
     if not is_data_exported(config):
-        print(f"warning: config does not mark {DATA_NAME!r} as exported")
+        print("warning: config does not mark velocity_x and velocity_y as exported")
 
     for step in steps:
         plot_step(step, config, color_limit)
