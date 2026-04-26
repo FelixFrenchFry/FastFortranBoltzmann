@@ -1,7 +1,7 @@
 module simulation
     ! imports
     use iso_fortran_env, only: int32, real32
-    use settings, only: SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, &
+    use settings, only: N_X, N_Y, N_DIRS, SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, PI, &
         shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t
     implicit none
 
@@ -9,7 +9,7 @@ contains
 
     subroutine execute_full_sim_step( &
         sim_mode, shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
-        N_X, N_Y, N_DIRS, c_x, c_y, c_x_fp, c_y_fp, w, f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
+        c_x, c_y, c_x_fp, c_y_fp, w, f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
         )
         ! read-only inputs
         integer(int32), intent(in) :: sim_mode
@@ -17,9 +17,6 @@ contains
         type(couette_flow_params_t), intent(in) :: couette_flow_params
         type(poiseuille_flow_params_t), intent(in) :: poiseuille_flow_params
         type(sliding_lid_params_t), intent(in) :: sliding_lid_params
-        integer(int32), intent(in) :: N_X
-        integer(int32), intent(in) :: N_Y
-        integer(int32), intent(in) :: N_DIRS
         integer(int32), intent(in) :: c_x(:)
         integer(int32), intent(in) :: c_y(:)
         real(real32), intent(in) :: c_x_fp(:)
@@ -42,21 +39,21 @@ contains
         select case (sim_mode)
         case (SIM_SHEAR_WAVE)
             call fuzed_pull_streaming_collision_shear_wave( &
-                N_X, N_Y, N_DIRS, c_x, c_y, c_x_fp, c_y_fp, w, shear_wave_params%omega, &
+                c_x, c_y, c_x_fp, c_y_fp, w, shear_wave_params%omega, &
                 f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y)
         case (SIM_COUETTE_FLOW)
             call fuzed_pull_streaming_collision_couette_flow( &
-                N_X, N_Y, N_DIRS, c_x, c_y, c_x_fp, c_y_fp, w, couette_flow_params%rho_0, &
+                c_x, c_y, c_x_fp, c_y_fp, w, couette_flow_params%rho_0, &
                 couette_flow_params%omega, couette_flow_params%u_wall, &
                 f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y)
         case (SIM_POISEUILLE_FLOW)
             call fuzed_pull_streaming_collision_poiseuille_flow( &
-                N_X, N_Y, N_DIRS, c_x, c_y, c_x_fp, c_y_fp, w, poiseuille_flow_params%omega, &
+                c_x, c_y, c_x_fp, c_y_fp, w, poiseuille_flow_params%omega, &
                 poiseuille_flow_params%rho_in, poiseuille_flow_params%rho_out, &
                 f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y)
         case (SIM_SLIDING_LID)
             call fuzed_pull_streaming_collision_sliding_lid( &
-                N_X, N_Y, N_DIRS, c_x, c_y, c_x_fp, c_y_fp, w, sliding_lid_params%rho_0, &
+                c_x, c_y, c_x_fp, c_y_fp, w, sliding_lid_params%rho_0, &
                 sliding_lid_params%omega, sliding_lid_params%u_wall, &
                 f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y)
         case default
@@ -66,13 +63,10 @@ contains
 
 
     subroutine fuzed_pull_streaming_collision_shear_wave( &
-        N_X, N_Y, N_DIRS, c_x, c_y, c_x_fp, c_y_fp, w, omega, &
+        c_x, c_y, c_x_fp, c_y_fp, w, omega, &
         f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
         )
         ! read-only inputs
-        integer(int32), intent(in) :: N_X
-        integer(int32), intent(in) :: N_Y
-        integer(int32), intent(in) :: N_DIRS
         integer(int32), intent(in) :: c_x(:)
         integer(int32), intent(in) :: c_y(:)
         real(real32), intent(in) :: c_x_fp(:)
@@ -199,13 +193,10 @@ contains
 
 
     subroutine fuzed_pull_streaming_collision_couette_flow( &
-        N_X, N_Y, N_DIRS, c_x, c_y, c_x_fp, c_y_fp, w, rho_0, omega, u_wall, &
+        c_x, c_y, c_x_fp, c_y_fp, w, rho_0, omega, u_wall, &
         f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
         )
         ! read-only inputs
-        integer(int32), intent(in) :: N_X
-        integer(int32), intent(in) :: N_Y
-        integer(int32), intent(in) :: N_DIRS
         integer(int32), intent(in) :: c_x(:)
         integer(int32), intent(in) :: c_y(:)
         real(real32), intent(in) :: c_x_fp(:)
@@ -352,13 +343,10 @@ contains
 
 
     subroutine fuzed_pull_streaming_collision_poiseuille_flow( &
-        N_X, N_Y, N_DIRS, c_x, c_y, c_x_fp, c_y_fp, w, omega, rho_in, rho_out, &
+        c_x, c_y, c_x_fp, c_y_fp, w, omega, rho_in, rho_out, &
         f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
         )
         ! read-only inputs
-        integer(int32), intent(in) :: N_X
-        integer(int32), intent(in) :: N_Y
-        integer(int32), intent(in) :: N_DIRS
         integer(int32), intent(in) :: c_x(:)
         integer(int32), intent(in) :: c_y(:)
         real(real32), intent(in) :: c_x_fp(:)
@@ -554,13 +542,10 @@ contains
 
 
     subroutine fuzed_pull_streaming_collision_sliding_lid( &
-        N_X, N_Y, N_DIRS, c_x, c_y, c_x_fp, c_y_fp, w, rho_0, omega, u_wall, &
+        c_x, c_y, c_x_fp, c_y_fp, w, rho_0, omega, u_wall, &
         f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
         )
         ! read-only inputs
-        integer(int32), intent(in) :: N_X
-        integer(int32), intent(in) :: N_Y
-        integer(int32), intent(in) :: N_DIRS
         integer(int32), intent(in) :: c_x(:)
         integer(int32), intent(in) :: c_y(:)
         real(real32), intent(in) :: c_x_fp(:)
