@@ -1,26 +1,22 @@
 module simulation
     ! imports
     use iso_fortran_env, only: int32
-    use settings, only: N_X, N_Y, N_DIRS, SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, &
-        FP, shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t
+    use settings, only: N_X, N_Y, N_DIRS, C_X, C_Y, C_X_FP, C_Y_FP, W, &
+        SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
+        shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t
     implicit none
 
 contains
 
     subroutine execute_full_sim_step( &
         shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
-        c_x, c_y, c_x_fp, c_y_fp, w, f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
+        f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
         )
         ! read-only inputs
         type(shear_wave_params_t), intent(in) :: shear_wave_params
         type(couette_flow_params_t), intent(in) :: couette_flow_params
         type(poiseuille_flow_params_t), intent(in) :: poiseuille_flow_params
         type(sliding_lid_params_t), intent(in) :: sliding_lid_params
-        integer(int32), intent(in) :: c_x(N_DIRS)
-        integer(int32), intent(in) :: c_y(N_DIRS)
-        real(FP), intent(in) :: c_x_fp(N_DIRS)
-        real(FP), intent(in) :: c_y_fp(N_DIRS)
-        real(FP), intent(in) :: w(N_DIRS)
         real(FP), intent(in) :: f(N_DIRS, N_X, N_Y)
         logical, intent(in) :: write_rho
         logical, intent(in) :: write_u_x
@@ -38,25 +34,24 @@ contains
         select case (SIM_MODE)
         case (SIM_SHEAR_WAVE)
             call fuzed_pull_streaming_collision_inner_shear_wave( &
-                c_x, c_y, c_x_fp, c_y_fp, w, shear_wave_params%omega, &
+                shear_wave_params%omega, &
                 f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y)
-
             call fuzed_pull_streaming_collision_outer_shear_wave( &
-                c_x, c_y, c_x_fp, c_y_fp, w, shear_wave_params%omega, &
+                shear_wave_params%omega, &
                 f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y)
         case (SIM_COUETTE_FLOW)
             call fuzed_pull_streaming_collision_couette_flow( &
-                c_x, c_y, c_x_fp, c_y_fp, w, couette_flow_params%rho_0, &
+                couette_flow_params%rho_0, &
                 couette_flow_params%omega, couette_flow_params%u_wall, &
                 f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y)
         case (SIM_POISEUILLE_FLOW)
             call fuzed_pull_streaming_collision_poiseuille_flow( &
-                c_x, c_y, c_x_fp, c_y_fp, w, poiseuille_flow_params%omega, &
+                poiseuille_flow_params%omega, &
                 poiseuille_flow_params%rho_in, poiseuille_flow_params%rho_out, &
                 f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y)
         case (SIM_SLIDING_LID)
             call fuzed_pull_streaming_collision_sliding_lid( &
-                c_x, c_y, c_x_fp, c_y_fp, w, sliding_lid_params%rho_0, &
+                sliding_lid_params%rho_0, &
                 sliding_lid_params%omega, sliding_lid_params%u_wall, &
                 f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y)
         case default
@@ -66,15 +61,9 @@ contains
 
 
     subroutine fuzed_pull_streaming_collision_inner_shear_wave( &
-        c_x, c_y, c_x_fp, c_y_fp, w, omega, &
-        f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
+        omega, f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
         )
         ! read-only inputs
-        integer(int32), intent(in) :: c_x(N_DIRS)
-        integer(int32), intent(in) :: c_y(N_DIRS)
-        real(FP), intent(in) :: c_x_fp(N_DIRS)
-        real(FP), intent(in) :: c_y_fp(N_DIRS)
-        real(FP), intent(in) :: w(N_DIRS)
         real(FP), intent(in) :: omega
         real(FP), intent(in) :: f(N_DIRS, N_X, N_Y)
         logical, intent(in) :: write_rho
@@ -126,16 +115,16 @@ contains
                 ! pull streamed distribution functions from source cells in all dirs
                 do i = 1, N_DIRS
 
-                    src_x = x - c_x(i)
-                    src_y = y - c_y(i)
+                    src_x = x - C_X(i)
+                    src_y = y - C_Y(i)
 
                     ! (no boundary handling for inner cells)
 
                     f_pulled(i) = f(i, src_x, src_y)
 
                     rho_val = rho_val + f_pulled(i)
-                    u_x_val = u_x_val + f_pulled(i) * c_x_fp(i)
-                    u_y_val = u_y_val + f_pulled(i) * c_y_fp(i)
+                    u_x_val = u_x_val + f_pulled(i) * C_X_FP(i)
+                    u_y_val = u_y_val + f_pulled(i) * C_Y_FP(i)
                 end do
 
                 ! safety check to avoid division by zero in case of wrong density
@@ -165,8 +154,8 @@ contains
                 do i = 1, N_DIRS
 
                     ! compute equilibrium distribution function for dir i
-                    c_dot_u = c_x_fp(i) * u_x_val + c_y_fp(i) * u_y_val
-                    f_eq_val = w(i) * rho_val * ( &
+                    c_dot_u = C_X_FP(i) * u_x_val + C_Y_FP(i) * u_y_val
+                    f_eq_val = W(i) * rho_val * ( &
                         1.0_FP + &
                         3.0_FP * c_dot_u + &
                         4.5_FP * c_dot_u * c_dot_u - &
@@ -184,15 +173,9 @@ contains
 
 
     subroutine fuzed_pull_streaming_collision_outer_shear_wave( &
-        c_x, c_y, c_x_fp, c_y_fp, w, omega, &
-        f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
+        omega, f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
         )
         ! read-only inputs
-        integer(int32), intent(in) :: c_x(N_DIRS)
-        integer(int32), intent(in) :: c_y(N_DIRS)
-        real(FP), intent(in) :: c_x_fp(N_DIRS)
-        real(FP), intent(in) :: c_y_fp(N_DIRS)
-        real(FP), intent(in) :: w(N_DIRS)
         real(FP), intent(in) :: omega
         real(FP), intent(in) :: f(N_DIRS, N_X, N_Y)
         logical, intent(in) :: write_rho
@@ -276,8 +259,8 @@ contains
             ! pull streamed distribution functions from source cells in all dirs
             do i = 1, N_DIRS
 
-                src_x = x - c_x(i)
-                src_y = y - c_y(i)
+                src_x = x - C_X(i)
+                src_y = y - C_Y(i)
 
                 ! periodic boundary in x-dir
                 if (src_x < 1) then
@@ -296,8 +279,8 @@ contains
                 f_pulled(i) = f(i, src_x, src_y)
 
                 rho_val = rho_val + f_pulled(i)
-                u_x_val = u_x_val + f_pulled(i) * c_x_fp(i)
-                u_y_val = u_y_val + f_pulled(i) * c_y_fp(i)
+                u_x_val = u_x_val + f_pulled(i) * C_X_FP(i)
+                u_y_val = u_y_val + f_pulled(i) * C_Y_FP(i)
             end do
 
             ! safety check to avoid division by zero in case of wrong density
@@ -327,8 +310,8 @@ contains
             do i = 1, N_DIRS
 
                 ! compute equilibrium distribution function for dir i
-                c_dot_u = c_x_fp(i) * u_x_val + c_y_fp(i) * u_y_val
-                f_eq_val = w(i) * rho_val * ( &
+                c_dot_u = C_X_FP(i) * u_x_val + C_Y_FP(i) * u_y_val
+                f_eq_val = W(i) * rho_val * ( &
                     1.0_FP + &
                     3.0_FP * c_dot_u + &
                     4.5_FP * c_dot_u * c_dot_u - &
@@ -345,15 +328,9 @@ contains
 
 
     subroutine fuzed_pull_streaming_collision_couette_flow( &
-        c_x, c_y, c_x_fp, c_y_fp, w, rho_0, omega, u_wall, &
-        f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
+        rho_0, omega, u_wall, f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
         )
         ! read-only inputs
-        integer(int32), intent(in) :: c_x(N_DIRS)
-        integer(int32), intent(in) :: c_y(N_DIRS)
-        real(FP), intent(in) :: c_x_fp(N_DIRS)
-        real(FP), intent(in) :: c_y_fp(N_DIRS)
-        real(FP), intent(in) :: w(N_DIRS)
         real(FP), intent(in) :: rho_0
         real(FP), intent(in) :: omega
         real(FP), intent(in) :: u_wall
@@ -407,8 +384,8 @@ contains
                 ! pull streamed distribution functions from source cells in all dirs
                 do i = 1, N_DIRS
 
-                    src_x = x - c_x(i)
-                    src_y = y - c_y(i)
+                    src_x = x - C_X(i)
+                    src_y = y - C_Y(i)
 
                     ! periodic boundary in x-dir
                     if (src_x < 1) then
@@ -447,8 +424,8 @@ contains
                     end if
 
                     rho_val = rho_val + f_pulled(i)
-                    u_x_val = u_x_val + f_pulled(i) * c_x_fp(i)
-                    u_y_val = u_y_val + f_pulled(i) * c_y_fp(i)
+                    u_x_val = u_x_val + f_pulled(i) * C_X_FP(i)
+                    u_y_val = u_y_val + f_pulled(i) * C_Y_FP(i)
                 end do
 
                 ! safety check to avoid division by zero in case of wrong density
@@ -478,8 +455,8 @@ contains
                 do i = 1, N_DIRS
 
                     ! compute equilibrium distribution function for dir i
-                    c_dot_u = c_x_fp(i) * u_x_val + c_y_fp(i) * u_y_val
-                    f_eq_val = w(i) * rho_val * ( &
+                    c_dot_u = C_X_FP(i) * u_x_val + C_Y_FP(i) * u_y_val
+                    f_eq_val = W(i) * rho_val * ( &
                         1.0_FP + &
                         3.0_FP * c_dot_u + &
                         4.5_FP * c_dot_u * c_dot_u - &
@@ -497,15 +474,9 @@ contains
 
 
     subroutine fuzed_pull_streaming_collision_poiseuille_flow( &
-        c_x, c_y, c_x_fp, c_y_fp, w, omega, rho_in, rho_out, &
-        f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
+        omega, rho_in, rho_out, f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
         )
         ! read-only inputs
-        integer(int32), intent(in) :: c_x(N_DIRS)
-        integer(int32), intent(in) :: c_y(N_DIRS)
-        real(FP), intent(in) :: c_x_fp(N_DIRS)
-        real(FP), intent(in) :: c_y_fp(N_DIRS)
-        real(FP), intent(in) :: w(N_DIRS)
         real(FP), intent(in) :: omega
         real(FP), intent(in) :: rho_in
         real(FP), intent(in) :: rho_out
@@ -574,8 +545,8 @@ contains
                 ! pull streamed distribution functions from source cells in all dirs
                 do i = 1, N_DIRS
 
-                    src_x = x - c_x(i)
-                    src_y = y - c_y(i)
+                    src_x = x - C_X(i)
+                    src_y = y - C_Y(i)
 
                     ! non-periodic boundary in x-dir and y-dir with bounce-back
                     if (src_x >= 1 .and. src_x <= N_X .and. &
@@ -607,18 +578,19 @@ contains
                         end select
                     
                     else if (src_x > N_X) then ! right boundary -> pressure-periodic outlet
+
                         u_squ_src = u_x_left(y) * u_x_left(y) + u_y_left(y) * u_y_left(y)
-                        c_dot_u_src = c_x_fp(i) * u_x_left(y) + c_y_fp(i) * u_y_left(y)
+                        c_dot_u_src = C_X_FP(i) * u_x_left(y) + C_Y_FP(i) * u_y_left(y)
 
                         ! equilibrium distribution function for the source cell at the opposite (left) boundary
-                        f_eq_src = w(i) * rho_left(y) * ( &
+                        f_eq_src = W(i) * rho_left(y) * ( &
                             1.0_FP + &
                             3.0_FP * c_dot_u_src + &
                             4.5_FP * c_dot_u_src * c_dot_u_src - &
                             1.5_FP * u_squ_src)
 
                         ! equilibrium distribution function at this cell
-                        f_eq_boundary = w(i) * rho_out * ( &
+                        f_eq_boundary = W(i) * rho_out * ( &
                             1.0_FP + &
                             3.0_FP * c_dot_u_src + &
                             4.5_FP * c_dot_u_src * c_dot_u_src - &
@@ -628,17 +600,17 @@ contains
                     
                     else if (src_x < 1) then ! left boundary -> pressure-periodic inlet
                         u_squ_src = u_x_right(y) * u_x_right(y) + u_y_right(y) * u_y_right(y)
-                        c_dot_u_src = c_x_fp(i) * u_x_right(y) + c_y_fp(i) * u_y_right(y)
+                        c_dot_u_src = C_X_FP(i) * u_x_right(y) + C_Y_FP(i) * u_y_right(y)
 
                         ! equilibrium distribution function for the source cell at the opposite (right) boundary
-                        f_eq_src = w(i) * rho_right(y) * ( &
+                        f_eq_src = W(i) * rho_right(y) * ( &
                             1.0_FP + &
                             3.0_FP * c_dot_u_src + &
                             4.5_FP * c_dot_u_src * c_dot_u_src - &
                             1.5_FP * u_squ_src)
 
                         ! equilibrium distribution function at this cell
-                        f_eq_boundary = w(i) * rho_in * ( &
+                        f_eq_boundary = W(i) * rho_in * ( &
                             1.0_FP + &
                             3.0_FP * c_dot_u_src + &
                             4.5_FP * c_dot_u_src * c_dot_u_src - &
@@ -648,8 +620,8 @@ contains
                     end if
 
                     rho_val = rho_val + f_pulled(i)
-                    u_x_val = u_x_val + f_pulled(i) * c_x_fp(i)
-                    u_y_val = u_y_val + f_pulled(i) * c_y_fp(i)
+                    u_x_val = u_x_val + f_pulled(i) * C_X_FP(i)
+                    u_y_val = u_y_val + f_pulled(i) * C_Y_FP(i)
                 end do
 
                 ! safety check to avoid division by zero in case of wrong density
@@ -679,8 +651,8 @@ contains
                 do i = 1, N_DIRS
 
                     ! compute equilibrium distribution function for dir i
-                    c_dot_u = c_x_fp(i) * u_x_val + c_y_fp(i) * u_y_val
-                    f_eq_val = w(i) * rho_val * ( &
+                    c_dot_u = C_X_FP(i) * u_x_val + C_Y_FP(i) * u_y_val
+                    f_eq_val = W(i) * rho_val * ( &
                         1.0_FP + &
                         3.0_FP * c_dot_u + &
                         4.5_FP * c_dot_u * c_dot_u - &
@@ -698,15 +670,9 @@ contains
 
 
     subroutine fuzed_pull_streaming_collision_sliding_lid( &
-        c_x, c_y, c_x_fp, c_y_fp, w, rho_0, omega, u_wall, &
-        f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
+        rho_0, omega, u_wall, f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
         )
         ! read-only inputs
-        integer(int32), intent(in) :: c_x(N_DIRS)
-        integer(int32), intent(in) :: c_y(N_DIRS)
-        real(FP), intent(in) :: c_x_fp(N_DIRS)
-        real(FP), intent(in) :: c_y_fp(N_DIRS)
-        real(FP), intent(in) :: w(N_DIRS)
         real(FP), intent(in) :: rho_0
         real(FP), intent(in) :: omega
         real(FP), intent(in) :: u_wall
@@ -760,8 +726,8 @@ contains
                 ! pull streamed distribution functions from source cells in all dirs
                 do i = 1, N_DIRS
 
-                    src_x = x - c_x(i)
-                    src_y = y - c_y(i)
+                    src_x = x - C_X(i)
+                    src_y = y - C_Y(i)
 
                     ! non-periodic boundary in x-dir and y-dir with bounce-back
                     if (src_x >= 1 .and. src_x <= N_X .and. &
@@ -773,9 +739,9 @@ contains
                         case (5)
                             f_pulled(i) = f(3, x, y)
                         case (8)
-                            f_pulled(i) = f(6, x, y) - 6.0_FP * w(6) * rho_0 * u_wall
+                            f_pulled(i) = f(6, x, y) - 6.0_FP * W(6) * rho_0 * u_wall
                         case (9)
-                            f_pulled(i) = f(7, x, y) + 6.0_FP * w(7) * rho_0 * u_wall
+                            f_pulled(i) = f(7, x, y) + 6.0_FP * W(7) * rho_0 * u_wall
                         case default
                             error stop "error: invalid top wall dir in sliding lid"
                         end select
@@ -818,8 +784,8 @@ contains
                     end if
 
                     rho_val = rho_val + f_pulled(i)
-                    u_x_val = u_x_val + f_pulled(i) * c_x_fp(i)
-                    u_y_val = u_y_val + f_pulled(i) * c_y_fp(i)
+                    u_x_val = u_x_val + f_pulled(i) * C_X_FP(i)
+                    u_y_val = u_y_val + f_pulled(i) * C_Y_FP(i)
                 end do
 
                 ! safety check to avoid division by zero in case of wrong density
@@ -849,8 +815,8 @@ contains
                 do i = 1, N_DIRS
 
                     ! compute equilibrium distribution function for dir i
-                    c_dot_u = c_x_fp(i) * u_x_val + c_y_fp(i) * u_y_val
-                    f_eq_val = w(i) * rho_val * ( &
+                    c_dot_u = C_X_FP(i) * u_x_val + C_Y_FP(i) * u_y_val
+                    f_eq_val = W(i) * rho_val * ( &
                         1.0_FP + &
                         3.0_FP * c_dot_u + &
                         4.5_FP * c_dot_u * c_dot_u - &

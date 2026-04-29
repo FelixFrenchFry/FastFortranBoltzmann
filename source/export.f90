@@ -1,8 +1,9 @@
 module export
     ! imports
     use iso_fortran_env, only: int32
-    use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, &
-        FP, FP_DTYPE, shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
+    use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, C_X, C_Y, C_X_FP, C_Y_FP, W, &
+        SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, FP_DTYPE, &
+        shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
     implicit none
 
     private
