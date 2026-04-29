@@ -37,7 +37,11 @@ contains
         ! execute single sim step based on selected sim mode
         select case (SIM_MODE)
         case (SIM_SHEAR_WAVE)
-            call fuzed_pull_streaming_collision_shear_wave( &
+            call fuzed_pull_streaming_collision_inner_shear_wave( &
+                c_x, c_y, c_x_fp, c_y_fp, w, shear_wave_params%omega, &
+                f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y)
+
+            call fuzed_pull_streaming_collision_outer_shear_wave( &
                 c_x, c_y, c_x_fp, c_y_fp, w, shear_wave_params%omega, &
                 f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y)
         case (SIM_COUETTE_FLOW)
@@ -61,7 +65,7 @@ contains
     end subroutine execute_full_sim_step
 
 
-    subroutine fuzed_pull_streaming_collision_shear_wave( &
+    subroutine fuzed_pull_streaming_collision_inner_shear_wave( &
         c_x, c_y, c_x_fp, c_y_fp, w, omega, &
         f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
         )
@@ -97,9 +101,9 @@ contains
         real(FP) :: f_eq_val
         real(FP) :: f_next_val
 
-        ! loop over rows and cols
-        do y = 1, N_Y
-            do x = 1, N_X
+        ! loop over rows and cols of inner cells only
+        do y = 2, N_Y - 1
+            do x = 2, N_X - 1
 
                 rho_val = 0.0_FP
                 u_x_val = 0.0_FP
@@ -125,21 +129,7 @@ contains
                     src_x = x - c_x(i)
                     src_y = y - c_y(i)
 
-                    ! periodic boundary in x-dir
-                    ! TODO: optimize by using a branchless method?
-                    if (src_x < 1) then
-                        src_x = N_X
-                    else if (src_x > N_X) then
-                        src_x = 1
-                    end if
-
-                    ! periodic boundary in y-dir
-                    ! TODO: optimize by using a branchless method?
-                    if (src_y < 1) then
-                        src_y = N_Y
-                    else if (src_y > N_Y) then
-                        src_y = 1
-                    end if
+                    ! (no boundary handling for inner cells)
 
                     f_pulled(i) = f(i, src_x, src_y)
 
@@ -190,7 +180,168 @@ contains
                 end do
             end do
         end do
-    end subroutine fuzed_pull_streaming_collision_shear_wave
+    end subroutine fuzed_pull_streaming_collision_inner_shear_wave
+
+
+    subroutine fuzed_pull_streaming_collision_outer_shear_wave( &
+        c_x, c_y, c_x_fp, c_y_fp, w, omega, &
+        f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y &
+        )
+        ! read-only inputs
+        integer(int32), intent(in) :: c_x(N_DIRS)
+        integer(int32), intent(in) :: c_y(N_DIRS)
+        real(FP), intent(in) :: c_x_fp(N_DIRS)
+        real(FP), intent(in) :: c_y_fp(N_DIRS)
+        real(FP), intent(in) :: w(N_DIRS)
+        real(FP), intent(in) :: omega
+        real(FP), intent(in) :: f(N_DIRS, N_X, N_Y)
+        logical, intent(in) :: write_rho
+        logical, intent(in) :: write_u_x
+        logical, intent(in) :: write_u_y
+
+        ! write destinations
+        real(FP), intent(inout) :: f_next(N_DIRS, N_X, N_Y)
+
+        ! optional write destinations
+        real(FP), intent(inout) :: rho(N_X, N_Y)
+        real(FP), intent(inout) :: u_x(N_X, N_Y)
+        real(FP), intent(inout) :: u_y(N_X, N_Y)
+
+        ! temp
+        integer(int32) :: x, y
+
+        ! bottom row
+        y = 1
+        do x = 1, N_X
+            call collide_stream_outer_cell(x, y)
+        end do
+
+        ! top row
+        y = N_Y
+        do x = 1, N_X
+            call collide_stream_outer_cell(x, y)
+        end do
+
+        ! left col (no corners)
+        x = 1
+        do y = 2, N_Y - 1
+            call collide_stream_outer_cell(x, y)
+        end do
+
+        ! right col (no corners)
+        x = N_X
+        do y = 2, N_Y - 1
+            call collide_stream_outer_cell(x, y)
+        end do
+
+    contains ! helper subroutine
+
+        subroutine collide_stream_outer_cell( &
+            x, y &
+            )
+            ! read-only inputs
+            integer(int32), intent(in) :: x
+            integer(int32), intent(in) :: y
+
+            ! temp
+            integer(int32) :: i
+            integer(int32) :: src_x, src_y
+            real(FP) :: f_pulled(N_DIRS)
+            real(FP) :: rho_val
+            real(FP) :: u_x_val
+            real(FP) :: u_y_val
+            real(FP) :: u_squ
+            real(FP) :: c_dot_u
+            real(FP) :: f_eq_val
+            real(FP) :: f_next_val
+
+            rho_val = 0.0_FP
+            u_x_val = 0.0_FP
+            u_y_val = 0.0_FP
+
+            ! 1: ( 0,  0) = rest
+            ! 2: ( 1,  0) = east
+            ! 3: ( 0,  1) = north
+            ! 4: (-1,  0) = west
+            ! 5: ( 0, -1) = south
+            ! 6: ( 1,  1) = north-east
+            ! 7: (-1,  1) = north-west
+            ! 8: (-1, -1) = south-west
+            ! 9: ( 1, -1) = south-east
+            ! ---------
+            ! | 7 3 6 |
+            ! | 4 1 2 |
+            ! | 8 5 9 |
+            ! ---------
+            ! pull streamed distribution functions from source cells in all dirs
+            do i = 1, N_DIRS
+
+                src_x = x - c_x(i)
+                src_y = y - c_y(i)
+
+                ! periodic boundary in x-dir
+                if (src_x < 1) then
+                    src_x = N_X
+                else if (src_x > N_X) then
+                    src_x = 1
+                end if
+
+                ! periodic boundary in y-dir
+                if (src_y < 1) then
+                    src_y = N_Y
+                else if (src_y > N_Y) then
+                    src_y = 1
+                end if
+
+                f_pulled(i) = f(i, src_x, src_y)
+
+                rho_val = rho_val + f_pulled(i)
+                u_x_val = u_x_val + f_pulled(i) * c_x_fp(i)
+                u_y_val = u_y_val + f_pulled(i) * c_y_fp(i)
+            end do
+
+            ! safety check to avoid division by zero in case of wrong density
+        #ifdef FFB_DENSITY_CHECKS
+            if (rho_val <= 0.0_FP) then
+                error stop "error: density is zero in collision/streaming step (rho_val <= 0)"
+            end if
+        #endif
+
+            ! finalize velocity
+            u_x_val = u_x_val / rho_val
+            u_y_val = u_y_val / rho_val
+            u_squ = u_x_val * u_x_val + u_y_val * u_y_val
+
+            ! store density and velocity values only if required
+            if (write_rho) then
+                rho(x, y) = rho_val
+            end if
+            if (write_u_x) then
+                u_x(x, y) = u_x_val
+            end if
+            if (write_u_y) then
+                u_y(x, y) = u_y_val
+            end if
+
+            ! collide and stream to destination cells in all dirs
+            do i = 1, N_DIRS
+
+                ! compute equilibrium distribution function for dir i
+                c_dot_u = c_x_fp(i) * u_x_val + c_y_fp(i) * u_y_val
+                f_eq_val = w(i) * rho_val * ( &
+                    1.0_FP + &
+                    3.0_FP * c_dot_u + &
+                    4.5_FP * c_dot_u * c_dot_u - &
+                    1.5_FP * u_squ)
+
+                ! relax towards equilibrium
+                f_next_val = f_pulled(i) - omega * (f_pulled(i) - f_eq_val)
+
+                ! write to destination dir i of this cell in next distribution function buffer
+                f_next(i, x, y) = f_next_val
+            end do
+        end subroutine collide_stream_outer_cell
+    end subroutine fuzed_pull_streaming_collision_outer_shear_wave
 
 
     subroutine fuzed_pull_streaming_collision_couette_flow( &
