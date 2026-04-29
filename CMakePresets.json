@@ -13,7 +13,20 @@
       "binaryDir": "${sourceDir}/build/debug",
       "cacheVariables": {
         "CMAKE_Fortran_COMPILER": "ifx",
-        "CMAKE_BUILD_TYPE": "Debug"
+        "CMAKE_BUILD_TYPE": "Debug",
+        "FFB_DENSITY_CHECKS": "ON"
+      }
+    },
+    {
+      "name": "debug-fp64",
+      "displayName": "FFB debug-build with ifx and real64",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/debug-fp64",
+      "cacheVariables": {
+        "CMAKE_Fortran_COMPILER": "ifx",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "FFB_FP64": "ON",
+        "FFB_DENSITY_CHECKS": "ON"
       }
     },
     {
@@ -23,7 +36,20 @@
       "binaryDir": "${sourceDir}/build/release",
       "cacheVariables": {
         "CMAKE_Fortran_COMPILER": "ifx",
-        "CMAKE_BUILD_TYPE": "Release"
+        "CMAKE_BUILD_TYPE": "Release",
+        "FFB_DENSITY_CHECKS": "OFF"
+      }
+    },
+    {
+      "name": "release-fp64",
+      "displayName": "FFB release-build with ifx and real64",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/release-fp64",
+      "cacheVariables": {
+        "CMAKE_Fortran_COMPILER": "ifx",
+        "CMAKE_BUILD_TYPE": "Release",
+        "FFB_FP64": "ON",
+        "FFB_DENSITY_CHECKS": "OFF"
       }
     }
   ],
@@ -33,8 +59,16 @@
       "configurePreset": "debug"
     },
     {
+      "name": "debug-fp64",
+      "configurePreset": "debug-fp64"
+    },
+    {
       "name": "release",
       "configurePreset": "release"
+    },
+    {
+      "name": "release-fp64",
+      "configurePreset": "release-fp64"
     }
   ]
 }

@@ -148,10 +148,12 @@ contains
                     u_y_val = u_y_val + f_pulled(i) * c_y_fp(i)
                 end do
 
-                ! safety check
+                ! safety check to avoid division by zero in case of wrong density
+            #ifdef FFB_DENSITY_CHECKS
                 if (rho_val <= 0.0_FP) then
                     error stop "error: density is zero in collision/streaming step (rho_val <= 0)"
                 end if
+            #endif
 
                 ! finalize velocity
                 u_x_val = u_x_val / rho_val
@@ -298,10 +300,12 @@ contains
                     u_y_val = u_y_val + f_pulled(i) * c_y_fp(i)
                 end do
 
-                ! safety check
+                ! safety check to avoid division by zero in case of wrong density
+            #ifdef FFB_DENSITY_CHECKS
                 if (rho_val <= 0.0_FP) then
                     error stop "error: density is zero in collision/streaming step (rho_val <= 0)"
                 end if
+            #endif
 
                 ! finalize velocity
                 u_x_val = u_x_val / rho_val
@@ -497,10 +501,12 @@ contains
                     u_y_val = u_y_val + f_pulled(i) * c_y_fp(i)
                 end do
 
-                ! safety check
+                ! safety check to avoid division by zero in case of wrong density
+            #ifdef FFB_DENSITY_CHECKS
                 if (rho_val <= 0.0_FP) then
                     error stop "error: density is zero in collision/streaming step (rho_val <= 0)"
                 end if
+            #endif
 
                 ! finalize velocity
                 u_x_val = u_x_val / rho_val
@@ -665,10 +671,12 @@ contains
                     u_y_val = u_y_val + f_pulled(i) * c_y_fp(i)
                 end do
 
-                ! safety check
+                ! safety check to avoid division by zero in case of wrong density
+            #ifdef FFB_DENSITY_CHECKS
                 if (rho_val <= 0.0_FP) then
                     error stop "error: density is zero in collision/streaming step (rho_val <= 0)"
                 end if
+            #endif
 
                 ! finalize velocity
                 u_x_val = u_x_val / rho_val
