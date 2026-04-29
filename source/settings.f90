@@ -1,6 +1,6 @@
 module settings
     ! imports
-    use iso_fortran_env, only: int32, int64, real32
+    use iso_fortran_env, only: int32, int64, real32, real64
     implicit none
 
     ! sim size and duration
@@ -17,34 +17,43 @@ module settings
     integer(int32), parameter :: SIM_SLIDING_LID = 4
     integer(int32), parameter :: SIM_MODE = 1 ! selected sim mode
 
+    ! floating point precision
+#ifdef FFB_FP64
+    integer(int32), parameter :: FP = real64
+    character(len=*), parameter :: FP_DTYPE = "real64"
+#else
+    integer(int32), parameter :: FP = real32
+    character(len=*), parameter :: FP_DTYPE = "real32"
+#endif
+
     ! misc
-    real(real32), parameter :: PI = 3.1415927410125732421875_real32
+    real(FP), parameter :: PI = 3.141592653589793238462643383279502884197_FP
 
     ! sim parameter sets for each sim mode
     type :: shear_wave_params_t
-        real(real32) :: rho_0 ! rest density
-        real(real32) :: omega ! relaxation factor
-        real(real32) :: u_max ! initial velocity
-        real(real32) :: n_sin ! num sin periods
+        real(FP) :: rho_0 ! rest density
+        real(FP) :: omega ! relaxation factor
+        real(FP) :: u_max ! initial velocity
+        real(FP) :: n_sin ! num sin periods
     end type shear_wave_params_t
 
     type :: couette_flow_params_t
-        real(real32) :: rho_0 ! rest density
-        real(real32) :: omega ! relaxation factor
-        real(real32) :: u_wall ! top wall velocity
+        real(FP) :: rho_0 ! rest density
+        real(FP) :: omega ! relaxation factor
+        real(FP) :: u_wall ! top wall velocity
     end type couette_flow_params_t
 
     type :: poiseuille_flow_params_t
-        real(real32) :: rho_0 ! rest density
-        real(real32) :: omega ! relaxation factor
-        real(real32) :: rho_in ! inlet density
-        real(real32) :: rho_out ! outlet density
+        real(FP) :: rho_0 ! rest density
+        real(FP) :: omega ! relaxation factor
+        real(FP) :: rho_in ! inlet density
+        real(FP) :: rho_out ! outlet density
     end type poiseuille_flow_params_t
 
     type :: sliding_lid_params_t
-        real(real32) :: rho_0 ! rest density
-        real(real32) :: omega ! relaxation factor
-        real(real32) :: u_wall ! top wall velocity
+        real(FP) :: rho_0 ! rest density
+        real(FP) :: omega ! relaxation factor
+        real(FP) :: u_wall ! top wall velocity
     end type sliding_lid_params_t
 
 contains

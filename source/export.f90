@@ -1,8 +1,8 @@
 module export
     ! imports
-    use iso_fortran_env, only: int32, int64, real32
+    use iso_fortran_env, only: int32
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, &
-        PI, shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
+        FP, FP_DTYPE, shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
     implicit none
 
     private
@@ -53,12 +53,12 @@ contains
         character(len=*), intent(in) :: output_dir_name
         character(len=*), intent(in) :: export_num
         integer(int32), intent(in) :: suffix_num
-        real(real32), intent(in) :: rho(:,:)
-        real(real32), intent(in) :: u_x(:,:)
-        real(real32), intent(in) :: u_y(:,:)
+        real(FP), intent(in) :: rho(:,:)
+        real(FP), intent(in) :: u_x(:,:)
+        real(FP), intent(in) :: u_y(:,:)
 
         ! temp
-        real(real32), allocatable :: velocity_mag(:,:)
+        real(FP), allocatable :: velocity_mag(:,:)
 
         ! export selected scalar fields
         if (export_rho) then
@@ -126,27 +126,27 @@ contains
 
         select case (SIM_MODE)
         case (SIM_SHEAR_WAVE)
-            write(unit, '(A,A,A)') '  "rho_0": ', trim(real32_to_json(shear_wave_params%rho_0)), ','
-            write(unit, '(A,A,A)') '  "omega": ', trim(real32_to_json(shear_wave_params%omega)), ','
-            write(unit, '(A,A,A)') '  "u_max": ', trim(real32_to_json(shear_wave_params%u_max)), ','
-            write(unit, '(A,A,A)') '  "n_sin": ', trim(real32_to_json(shear_wave_params%n_sin)), ','
+            write(unit, '(A,A,A)') '  "rho_0": ', trim(real_to_json(shear_wave_params%rho_0)), ','
+            write(unit, '(A,A,A)') '  "omega": ', trim(real_to_json(shear_wave_params%omega)), ','
+            write(unit, '(A,A,A)') '  "u_max": ', trim(real_to_json(shear_wave_params%u_max)), ','
+            write(unit, '(A,A,A)') '  "n_sin": ', trim(real_to_json(shear_wave_params%n_sin)), ','
 
         case (SIM_COUETTE_FLOW)
-            write(unit, '(A,A,A)') '  "rho_0": ', trim(real32_to_json(couette_flow_params%rho_0)), ','
-            write(unit, '(A,A,A)') '  "omega": ', trim(real32_to_json(couette_flow_params%omega)), ','
-            write(unit, '(A,A,A)') '  "u_wall": ', trim(real32_to_json(couette_flow_params%u_wall)), ','
+            write(unit, '(A,A,A)') '  "rho_0": ', trim(real_to_json(couette_flow_params%rho_0)), ','
+            write(unit, '(A,A,A)') '  "omega": ', trim(real_to_json(couette_flow_params%omega)), ','
+            write(unit, '(A,A,A)') '  "u_wall": ', trim(real_to_json(couette_flow_params%u_wall)), ','
 
         case (SIM_POISEUILLE_FLOW)
-            write(unit, '(A,A,A)') '  "rho_0": ', trim(real32_to_json(poiseuille_flow_params%rho_0)), ','
-            write(unit, '(A,A,A)') '  "omega": ', trim(real32_to_json(poiseuille_flow_params%omega)), ','
-            write(unit, '(A,A,A)') '  "rho_in": ', trim(real32_to_json(poiseuille_flow_params%rho_in)), ','
-            write(unit, '(A,A,A)') '  "rho_out": ', trim(real32_to_json(poiseuille_flow_params%rho_out)), ','
+            write(unit, '(A,A,A)') '  "rho_0": ', trim(real_to_json(poiseuille_flow_params%rho_0)), ','
+            write(unit, '(A,A,A)') '  "omega": ', trim(real_to_json(poiseuille_flow_params%omega)), ','
+            write(unit, '(A,A,A)') '  "rho_in": ', trim(real_to_json(poiseuille_flow_params%rho_in)), ','
+            write(unit, '(A,A,A)') '  "rho_out": ', trim(real_to_json(poiseuille_flow_params%rho_out)), ','
             continue
 
         case (SIM_SLIDING_LID)
-            write(unit, '(A,A,A)') '  "rho_0": ', trim(real32_to_json(sliding_lid_params%rho_0)), ','
-            write(unit, '(A,A,A)') '  "omega": ', trim(real32_to_json(sliding_lid_params%omega)), ','
-            write(unit, '(A,A,A)') '  "u_wall": ', trim(real32_to_json(sliding_lid_params%u_wall)), ','
+            write(unit, '(A,A,A)') '  "rho_0": ', trim(real_to_json(sliding_lid_params%rho_0)), ','
+            write(unit, '(A,A,A)') '  "omega": ', trim(real_to_json(sliding_lid_params%omega)), ','
+            write(unit, '(A,A,A)') '  "u_wall": ', trim(real_to_json(sliding_lid_params%u_wall)), ','
 
         case default
             error stop "error: unknown sim mode in export_metadata()"
@@ -169,7 +169,7 @@ contains
         write(unit, '(A)') ""
         write(unit, '(A,A,A)') '  "output_dir_name": "', trim(output_dir_name), '",'
         write(unit, '(A,A,A)') '  "export_num": "', trim(export_num), '",'
-        write(unit, '(A)') '  "file_dtype": "real32"'
+        write(unit, '(A,A,A)') '  "file_dtype": "', FP_DTYPE, '"'
         write(unit, '(A)') "}"
 
         close(unit)
@@ -180,7 +180,7 @@ contains
         field, field_name, output_dir_name, export_num, suffix_num &
         )
         ! read-only inputs
-        real(real32), intent(in) :: field(:,:)
+        real(FP), intent(in) :: field(:,:)
         character(len=*), intent(in) :: field_name
         character(len=*), intent(in) :: output_dir_name
         character(len=*), intent(in) :: export_num
@@ -233,18 +233,22 @@ contains
     end function logical_to_json
 
 
-    function real32_to_json( &
+    function real_to_json( &
         value &
         ) result(text)
         ! read-only inputs
-        real(real32), intent(in) :: value
+        real(FP), intent(in) :: value
 
         ! output
-        character(len=24) :: text
+        character(len=32) :: text
 
+#ifdef FFB_FP64
+        write(text, '(ES24.16)') value
+#else
         write(text, '(ES16.8)') value
+#endif
         text = adjustl(text)
-    end function real32_to_json
+    end function real_to_json
 
 
     subroutine ensure_output_directory( &
@@ -272,7 +276,7 @@ contains
         field, file_path &
         )
         ! read-only inputs
-        real(real32), intent(in) :: field(:,:)
+        real(FP), intent(in) :: field(:,:)
         character(len=*), intent(in) :: file_path
 
         ! temp
@@ -287,7 +291,7 @@ contains
             error stop "error: could not open binary output file"
         end if
 
-        ! write raw real32 field data to file
+        ! write raw floating point field data to file
         write(unit, iostat=io_stat) field
 
         if (io_stat /= 0) then
