@@ -3,43 +3,14 @@ program main
     use iso_fortran_env, only: int32, int64, real64, output_unit
     use export, only: should_export_step, export_selected_data, export_metadata
     use initialization, only: initialize_sim_condition
-    use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, &
-        FP, shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
+    use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, C_X, C_Y, C_X_FP, C_Y_FP, W, &
+        SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
+        shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
     use simulation, only: execute_full_sim_step, swap_distribution_function_buffers
     implicit none
 
     ! misc
     integer(int32) :: step
-
-    ! D2Q9 lattice velocities and weights
-    integer(int32), parameter :: c_x(N_DIRS) = [ 0,  1,  0, -1,  0,  1, -1, -1,  1 ]
-    integer(int32), parameter :: c_y(N_DIRS) = [ 0,  0,  1,  0, -1,  1,  1, -1, -1 ]
-    real(FP), parameter :: c_x_fp(N_DIRS) = real(c_x, FP) ! fp-version for compute
-    real(FP), parameter :: c_y_fp(N_DIRS) = real(c_y, FP) ! fp-version for compute
-    ! ---------
-    ! | 7 3 6 |
-    ! | 4 1 2 |
-    ! | 8 5 9 |
-    ! ---------
-    ! 1: ( 0,  0) = rest
-    ! 2: ( 1,  0) = east
-    ! 3: ( 0,  1) = north
-    ! 4: (-1,  0) = west
-    ! 5: ( 0, -1) = south
-    ! 6: ( 1,  1) = north-east
-    ! 7: (-1,  1) = north-west
-    ! 8: (-1, -1) = south-west
-    ! 9: ( 1, -1) = south-east
-    real(FP), parameter :: w(N_DIRS) = [ &
-        4.0_FP/9.0_FP, &
-        1.0_FP/9.0_FP, &
-        1.0_FP/9.0_FP, &
-        1.0_FP/9.0_FP, &
-        1.0_FP/9.0_FP, &
-        1.0_FP/36.0_FP, &
-        1.0_FP/36.0_FP, &
-        1.0_FP/36.0_FP, &
-        1.0_FP/36.0_FP]
 
     ! parameter set for shear wave
     type(shear_wave_params_t), parameter :: shear_wave_params = shear_wave_params_t( &
@@ -139,7 +110,7 @@ program main
 
     ! inital condition
     call initialize_sim_condition(shear_wave_params, couette_flow_params, poiseuille_flow_params, &
-        sliding_lid_params, c_x_fp, c_y_fp, w, f, rho, u_x, u_y)
+        sliding_lid_params, f, rho, u_x, u_y)
 
     ! print sim info
     if (this_image() == 1) then
@@ -237,7 +208,7 @@ program main
 
         call execute_full_sim_step( &
             shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
-            c_x, c_y, c_x_fp, c_y_fp, w, f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y)
+            f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y)
 
         call swap_distribution_function_buffers(f, f_next)
 

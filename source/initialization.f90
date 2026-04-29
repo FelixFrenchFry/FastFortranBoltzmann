@@ -1,24 +1,22 @@
 module initialization
     ! imports
     use iso_fortran_env, only: int32
-    use settings, only: N_X, N_Y, N_DIRS, SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, &
-        FP, PI, shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t
+    use settings, only: N_X, N_Y, N_DIRS, C_X_FP, C_Y_FP, W, &
+        SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, PI, &
+        shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t
     implicit none
 
 contains
 
     subroutine initialize_sim_condition( &
         shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
-        c_x_fp, c_y_fp, w, f, rho, u_x, u_y &
+        f, rho, u_x, u_y &
         )
         ! read-only inputs
         type(shear_wave_params_t), intent(in) :: shear_wave_params
         type(couette_flow_params_t), intent(in) :: couette_flow_params
         type(poiseuille_flow_params_t), intent(in) :: poiseuille_flow_params
         type(sliding_lid_params_t), intent(in) :: sliding_lid_params
-        real(FP), intent(in) :: c_x_fp(N_DIRS)
-        real(FP), intent(in) :: c_y_fp(N_DIRS)
-        real(FP), intent(in) :: w(N_DIRS)
 
         ! write destinations
         real(FP), intent(out) :: f(N_DIRS, N_X, N_Y)
@@ -29,14 +27,14 @@ contains
         ! apply initial condition based on selected sim mode
         select case (SIM_MODE)
         case (SIM_SHEAR_WAVE)
-            call apply_condition_shear_wave(c_x_fp, c_y_fp, w, shear_wave_params%rho_0, &
+            call apply_condition_shear_wave(shear_wave_params%rho_0, &
                 shear_wave_params%u_max, shear_wave_params%n_sin, f, rho, u_x, u_y)
         case (SIM_COUETTE_FLOW)
-            call apply_condition_couette_flow(w, couette_flow_params%rho_0, f, rho, u_x, u_y)
+            call apply_condition_couette_flow(couette_flow_params%rho_0, f, rho, u_x, u_y)
         case (SIM_POISEUILLE_FLOW)
-            call apply_condition_poiseuille_flow(w, poiseuille_flow_params%rho_0, f, rho, u_x, u_y)
+            call apply_condition_poiseuille_flow(poiseuille_flow_params%rho_0, f, rho, u_x, u_y)
         case (SIM_SLIDING_LID)
-            call apply_condition_sliding_lid(w, sliding_lid_params%rho_0, f, rho, u_x, u_y)
+            call apply_condition_sliding_lid(sliding_lid_params%rho_0, f, rho, u_x, u_y)
         case default
             error stop "error: unknown sim mode in initialize_sim_condition()"
         end select
@@ -44,12 +42,9 @@ contains
 
 
     subroutine apply_condition_shear_wave( &
-        c_x_fp, c_y_fp, w, rho_0, u_max, n_sin, f, rho, u_x, u_y &
+        rho_0, u_max, n_sin, f, rho, u_x, u_y &
         )
         ! read-only inputs
-        real(FP), intent(in) :: c_x_fp(N_DIRS)
-        real(FP), intent(in) :: c_y_fp(N_DIRS)
-        real(FP), intent(in) :: w(N_DIRS)
         real(FP), intent(in) :: rho_0
         real(FP), intent(in) :: u_max
         real(FP), intent(in) :: n_sin
@@ -91,8 +86,8 @@ contains
                 do i = 1, N_DIRS
 
                     ! compute equilibrium distribution function for dir i
-                    c_dot_u = c_x_fp(i) * u_x_val + c_y_fp(i) * u_y_val
-                    f_eq_val = w(i) * rho_0 * ( &
+                    c_dot_u = C_X_FP(i) * u_x_val + C_Y_FP(i) * u_y_val
+                    f_eq_val = W(i) * rho_0 * ( &
                         1.0_FP + &
                         3.0_FP * c_dot_u + &
                         4.5_FP * c_dot_u * c_dot_u - &
@@ -107,10 +102,9 @@ contains
 
 
     subroutine apply_condition_couette_flow( &
-        w, rho_0, f, rho, u_x, u_y &
+        rho_0, f, rho, u_x, u_y &
         )
         ! read-only inputs
-        real(FP), intent(in) :: w(N_DIRS)
         real(FP), intent(in) :: rho_0
 
         ! write destinations
@@ -125,7 +119,7 @@ contains
 
         ! pre-computed equilibrium distribution at t=0
         do i = 1, N_DIRS
-            f_eq(i) = w(i) * rho_0
+            f_eq(i) = W(i) * rho_0
         end do
 
         ! loop over rows and cols
@@ -146,10 +140,9 @@ contains
 
 
     subroutine apply_condition_poiseuille_flow( &
-        w, rho_0, f, rho, u_x, u_y &
+        rho_0, f, rho, u_x, u_y &
         )
         ! read-only inputs
-        real(FP), intent(in) :: w(N_DIRS)
         real(FP), intent(in) :: rho_0
 
         ! write destinations
@@ -164,7 +157,7 @@ contains
 
         ! pre-computed equilibrium distribution at t=0
         do i = 1, N_DIRS
-            f_eq(i) = w(i) * rho_0
+            f_eq(i) = W(i) * rho_0
         end do
 
         ! loop over rows and cols
@@ -185,10 +178,9 @@ contains
 
 
     subroutine apply_condition_sliding_lid( &
-        w, rho_0, f, rho, u_x, u_y &
+        rho_0, f, rho, u_x, u_y &
         )
         ! read-only inputs
-        real(FP), intent(in) :: w(N_DIRS)
         real(FP), intent(in) :: rho_0
 
         ! write destinations
@@ -203,7 +195,7 @@ contains
 
         ! pre-computed equilibrium distribution at t=0
         do i = 1, N_DIRS
-            f_eq(i) = w(i) * rho_0
+            f_eq(i) = W(i) * rho_0
         end do
 
         ! loop over rows and cols
