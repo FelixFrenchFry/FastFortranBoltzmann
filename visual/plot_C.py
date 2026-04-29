@@ -58,10 +58,20 @@ def get_data_path(data_name: str, step: int) -> Path:
     return RUN_DIR / f"{data_name}{format_step_suffix(step)}.bin"
 
 
+def get_file_dtype(config: dict) -> np.dtype:
+    file_dtype = config.get("file_dtype", "real32")
+    if file_dtype == "real32":
+        return np.float32
+    if file_dtype == "real64":
+        return np.float64
+
+    raise ValueError(f"unsupported file_dtype: {file_dtype}")
+
+
 def load_field(path: Path, config: dict) -> np.ndarray:
     N_X = config["N_X"]
     N_Y = config["N_Y"]
-    return np.fromfile(path, dtype=np.float32).reshape((N_Y, N_X))
+    return np.fromfile(path, dtype=get_file_dtype(config)).reshape((N_Y, N_X))
 
 
 def is_data_exported(config: dict) -> bool:
@@ -97,8 +107,8 @@ def plot_step(step: int, config: dict, color_limit: float) -> None:
     u_y = load_field(u_y_path, config)
     velocity_mag = np.sqrt(u_x * u_x + u_y * u_y)
 
-    x_grid = np.arange(config["N_X"], dtype=np.float32)[::STREAM_STRIDE]
-    y_grid = np.arange(config["N_Y"], dtype=np.float32)[::STREAM_STRIDE]
+    x_grid = np.arange(config["N_X"], dtype=get_file_dtype(config))[::STREAM_STRIDE]
+    y_grid = np.arange(config["N_Y"], dtype=get_file_dtype(config))[::STREAM_STRIDE]
     u_x_plot = u_x[::STREAM_STRIDE, ::STREAM_STRIDE]
     u_y_plot = u_y[::STREAM_STRIDE, ::STREAM_STRIDE]
     velocity_mag_plot = velocity_mag[::STREAM_STRIDE, ::STREAM_STRIDE]
