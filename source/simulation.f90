@@ -1,8 +1,8 @@
 module simulation
     ! imports
-    use iso_fortran_env, only: int32, real32
+    use iso_fortran_env, only: int32
     use settings, only: N_X, N_Y, N_DIRS, SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, &
-        PI, shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t
+        FP, shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t
     implicit none
 
 contains
@@ -18,21 +18,21 @@ contains
         type(sliding_lid_params_t), intent(in) :: sliding_lid_params
         integer(int32), intent(in) :: c_x(N_DIRS)
         integer(int32), intent(in) :: c_y(N_DIRS)
-        real(real32), intent(in) :: c_x_fp(N_DIRS)
-        real(real32), intent(in) :: c_y_fp(N_DIRS)
-        real(real32), intent(in) :: w(N_DIRS)
-        real(real32), intent(in) :: f(N_DIRS, N_X, N_Y)
+        real(FP), intent(in) :: c_x_fp(N_DIRS)
+        real(FP), intent(in) :: c_y_fp(N_DIRS)
+        real(FP), intent(in) :: w(N_DIRS)
+        real(FP), intent(in) :: f(N_DIRS, N_X, N_Y)
         logical, intent(in) :: write_rho
         logical, intent(in) :: write_u_x
         logical, intent(in) :: write_u_y
 
         ! write destinations
-        real(real32), intent(out) :: f_next(N_DIRS, N_X, N_Y)
+        real(FP), intent(out) :: f_next(N_DIRS, N_X, N_Y)
 
         ! optional write destinations
-        real(real32), intent(inout) :: rho(N_X, N_Y)
-        real(real32), intent(inout) :: u_x(N_X, N_Y)
-        real(real32), intent(inout) :: u_y(N_X, N_Y)
+        real(FP), intent(inout) :: rho(N_X, N_Y)
+        real(FP), intent(inout) :: u_x(N_X, N_Y)
+        real(FP), intent(inout) :: u_y(N_X, N_Y)
 
         ! execute single sim step based on selected sim mode
         select case (SIM_MODE)
@@ -68,42 +68,42 @@ contains
         ! read-only inputs
         integer(int32), intent(in) :: c_x(N_DIRS)
         integer(int32), intent(in) :: c_y(N_DIRS)
-        real(real32), intent(in) :: c_x_fp(N_DIRS)
-        real(real32), intent(in) :: c_y_fp(N_DIRS)
-        real(real32), intent(in) :: w(N_DIRS)
-        real(real32), intent(in) :: omega
-        real(real32), intent(in) :: f(N_DIRS, N_X, N_Y)
+        real(FP), intent(in) :: c_x_fp(N_DIRS)
+        real(FP), intent(in) :: c_y_fp(N_DIRS)
+        real(FP), intent(in) :: w(N_DIRS)
+        real(FP), intent(in) :: omega
+        real(FP), intent(in) :: f(N_DIRS, N_X, N_Y)
         logical, intent(in) :: write_rho
         logical, intent(in) :: write_u_x
         logical, intent(in) :: write_u_y
 
         ! write destinations
-        real(real32), intent(out) :: f_next(N_DIRS, N_X, N_Y)
+        real(FP), intent(out) :: f_next(N_DIRS, N_X, N_Y)
 
         ! optional write destinations
-        real(real32), intent(inout) :: rho(N_X, N_Y)
-        real(real32), intent(inout) :: u_x(N_X, N_Y)
-        real(real32), intent(inout) :: u_y(N_X, N_Y)
+        real(FP), intent(inout) :: rho(N_X, N_Y)
+        real(FP), intent(inout) :: u_x(N_X, N_Y)
+        real(FP), intent(inout) :: u_y(N_X, N_Y)
 
         ! temp
         integer(int32) :: x, y, i
         integer(int32) :: src_x, src_y
-        real(real32) :: f_pulled(N_DIRS)
-        real(real32) :: rho_val
-        real(real32) :: u_x_val
-        real(real32) :: u_y_val
-        real(real32) :: u_squ
-        real(real32) :: c_dot_u
-        real(real32) :: f_eq_val
-        real(real32) :: f_next_val
+        real(FP) :: f_pulled(N_DIRS)
+        real(FP) :: rho_val
+        real(FP) :: u_x_val
+        real(FP) :: u_y_val
+        real(FP) :: u_squ
+        real(FP) :: c_dot_u
+        real(FP) :: f_eq_val
+        real(FP) :: f_next_val
 
         ! loop over rows and cols
         do y = 1, N_Y
             do x = 1, N_X
 
-                rho_val = 0.0_real32
-                u_x_val = 0.0_real32
-                u_y_val = 0.0_real32
+                rho_val = 0.0_FP
+                u_x_val = 0.0_FP
+                u_y_val = 0.0_FP
 
                 ! 1: ( 0,  0) = rest
                 ! 2: ( 1,  0) = east
@@ -149,7 +149,7 @@ contains
                 end do
 
                 ! safety check
-                if (rho_val <= 0.0_real32) then
+                if (rho_val <= 0.0_FP) then
                     error stop "error: density is zero in collision/streaming step (rho_val <= 0)"
                 end if
 
@@ -175,10 +175,10 @@ contains
                     ! compute equilibrium distribution function for dir i
                     c_dot_u = c_x_fp(i) * u_x_val + c_y_fp(i) * u_y_val
                     f_eq_val = w(i) * rho_val * ( &
-                        1.0_real32 + &
-                        3.0_real32 * c_dot_u + &
-                        4.5_real32 * c_dot_u * c_dot_u - &
-                        1.5_real32 * u_squ)
+                        1.0_FP + &
+                        3.0_FP * c_dot_u + &
+                        4.5_FP * c_dot_u * c_dot_u - &
+                        1.5_FP * u_squ)
 
                     ! relax towards equilibrium
                     f_next_val = f_pulled(i) - omega * (f_pulled(i) - f_eq_val)
@@ -198,44 +198,44 @@ contains
         ! read-only inputs
         integer(int32), intent(in) :: c_x(N_DIRS)
         integer(int32), intent(in) :: c_y(N_DIRS)
-        real(real32), intent(in) :: c_x_fp(N_DIRS)
-        real(real32), intent(in) :: c_y_fp(N_DIRS)
-        real(real32), intent(in) :: w(N_DIRS)
-        real(real32), intent(in) :: rho_0
-        real(real32), intent(in) :: omega
-        real(real32), intent(in) :: u_wall
-        real(real32), intent(in) :: f(N_DIRS, N_X, N_Y)
+        real(FP), intent(in) :: c_x_fp(N_DIRS)
+        real(FP), intent(in) :: c_y_fp(N_DIRS)
+        real(FP), intent(in) :: w(N_DIRS)
+        real(FP), intent(in) :: rho_0
+        real(FP), intent(in) :: omega
+        real(FP), intent(in) :: u_wall
+        real(FP), intent(in) :: f(N_DIRS, N_X, N_Y)
         logical, intent(in) :: write_rho
         logical, intent(in) :: write_u_x
         logical, intent(in) :: write_u_y
 
         ! write destinations
-        real(real32), intent(out) :: f_next(N_DIRS, N_X, N_Y)
+        real(FP), intent(out) :: f_next(N_DIRS, N_X, N_Y)
 
         ! optional write destinations
-        real(real32), intent(inout) :: rho(N_X, N_Y)
-        real(real32), intent(inout) :: u_x(N_X, N_Y)
-        real(real32), intent(inout) :: u_y(N_X, N_Y)
+        real(FP), intent(inout) :: rho(N_X, N_Y)
+        real(FP), intent(inout) :: u_x(N_X, N_Y)
+        real(FP), intent(inout) :: u_y(N_X, N_Y)
 
         ! temp
         integer(int32) :: x, y, i
         integer(int32) :: src_x, src_y
-        real(real32) :: f_pulled(N_DIRS)
-        real(real32) :: rho_val
-        real(real32) :: u_x_val
-        real(real32) :: u_y_val
-        real(real32) :: u_squ
-        real(real32) :: c_dot_u
-        real(real32) :: f_eq_val
-        real(real32) :: f_next_val
+        real(FP) :: f_pulled(N_DIRS)
+        real(FP) :: rho_val
+        real(FP) :: u_x_val
+        real(FP) :: u_y_val
+        real(FP) :: u_squ
+        real(FP) :: c_dot_u
+        real(FP) :: f_eq_val
+        real(FP) :: f_next_val
 
         ! loop over rows and cols
         do y = 1, N_Y
             do x = 1, N_X
 
-                rho_val = 0.0_real32
-                u_x_val = 0.0_real32
-                u_y_val = 0.0_real32
+                rho_val = 0.0_FP
+                u_x_val = 0.0_FP
+                u_y_val = 0.0_FP
 
                 ! 1: ( 0,  0) = rest
                 ! 2: ( 1,  0) = east
@@ -285,9 +285,9 @@ contains
                         case (5)
                             f_pulled(i) = f(3, x, y)
                         case (8)
-                            f_pulled(i) = f(6, x, y) - 6.0_real32 * w(6) * rho_0 * u_wall
+                            f_pulled(i) = f(6, x, y) - 6.0_FP * w(6) * rho_0 * u_wall
                         case (9)
-                            f_pulled(i) = f(7, x, y) + 6.0_real32 * w(7) * rho_0 * u_wall
+                            f_pulled(i) = f(7, x, y) + 6.0_FP * w(7) * rho_0 * u_wall
                         case default
                             error stop "error: invalid top wall dir in couette flow"
                         end select
@@ -299,7 +299,7 @@ contains
                 end do
 
                 ! safety check
-                if (rho_val <= 0.0_real32) then
+                if (rho_val <= 0.0_FP) then
                     error stop "error: density is zero in collision/streaming step (rho_val <= 0)"
                 end if
 
@@ -325,10 +325,10 @@ contains
                     ! compute equilibrium distribution function for dir i
                     c_dot_u = c_x_fp(i) * u_x_val + c_y_fp(i) * u_y_val
                     f_eq_val = w(i) * rho_val * ( &
-                        1.0_real32 + &
-                        3.0_real32 * c_dot_u + &
-                        4.5_real32 * c_dot_u * c_dot_u - &
-                        1.5_real32 * u_squ)
+                        1.0_FP + &
+                        3.0_FP * c_dot_u + &
+                        4.5_FP * c_dot_u * c_dot_u - &
+                        1.5_FP * u_squ)
 
                     ! relax towards equilibrium
                     f_next_val = f_pulled(i) - omega * (f_pulled(i) - f_eq_val)
@@ -348,45 +348,45 @@ contains
         ! read-only inputs
         integer(int32), intent(in) :: c_x(N_DIRS)
         integer(int32), intent(in) :: c_y(N_DIRS)
-        real(real32), intent(in) :: c_x_fp(N_DIRS)
-        real(real32), intent(in) :: c_y_fp(N_DIRS)
-        real(real32), intent(in) :: w(N_DIRS)
-        real(real32), intent(in) :: omega
-        real(real32), intent(in) :: rho_in
-        real(real32), intent(in) :: rho_out
-        real(real32), intent(in) :: f(N_DIRS, N_X, N_Y)
+        real(FP), intent(in) :: c_x_fp(N_DIRS)
+        real(FP), intent(in) :: c_y_fp(N_DIRS)
+        real(FP), intent(in) :: w(N_DIRS)
+        real(FP), intent(in) :: omega
+        real(FP), intent(in) :: rho_in
+        real(FP), intent(in) :: rho_out
+        real(FP), intent(in) :: f(N_DIRS, N_X, N_Y)
         logical, intent(in) :: write_rho
         logical, intent(in) :: write_u_x
         logical, intent(in) :: write_u_y
 
         ! write destinations
-        real(real32), intent(out) :: f_next(N_DIRS, N_X, N_Y)
+        real(FP), intent(out) :: f_next(N_DIRS, N_X, N_Y)
 
         ! optional write destinations
-        real(real32), intent(inout) :: rho(N_X, N_Y)
-        real(real32), intent(inout) :: u_x(N_X, N_Y)
-        real(real32), intent(inout) :: u_y(N_X, N_Y)
+        real(FP), intent(inout) :: rho(N_X, N_Y)
+        real(FP), intent(inout) :: u_x(N_X, N_Y)
+        real(FP), intent(inout) :: u_y(N_X, N_Y)
 
         ! temp
         integer(int32) :: x, y, i
         integer(int32) :: src_x, src_y
-        real(real32) :: f_pulled(N_DIRS)
-        real(real32) :: rho_val
-        real(real32) :: u_x_val
-        real(real32) :: u_y_val
-        real(real32) :: u_squ
-        real(real32) :: c_dot_u
-        real(real32) :: f_eq_val
-        real(real32) :: f_next_val
-        real(real32) :: u_squ_src
-        real(real32) :: c_dot_u_src
-        real(real32) :: f_eq_src
-        real(real32) :: f_eq_boundary
+        real(FP) :: f_pulled(N_DIRS)
+        real(FP) :: rho_val
+        real(FP) :: u_x_val
+        real(FP) :: u_y_val
+        real(FP) :: u_squ
+        real(FP) :: c_dot_u
+        real(FP) :: f_eq_val
+        real(FP) :: f_next_val
+        real(FP) :: u_squ_src
+        real(FP) :: c_dot_u_src
+        real(FP) :: f_eq_src
+        real(FP) :: f_eq_boundary
 
         ! copied boundary densities and velocities for streaming step
-        real(real32) :: rho_left(N_Y), rho_right(N_Y)
-        real(real32) :: u_x_left(N_Y), u_x_right(N_Y)
-        real(real32) :: u_y_left(N_Y), u_y_right(N_Y)
+        real(FP) :: rho_left(N_Y), rho_right(N_Y)
+        real(FP) :: u_x_left(N_Y), u_x_right(N_Y)
+        real(FP) :: u_y_left(N_Y), u_y_right(N_Y)
         rho_left(:) = rho(1, :)
         rho_right(:) = rho(N_X, :)
         u_x_left(:) = u_x(1, :)
@@ -398,9 +398,9 @@ contains
         do y = 1, N_Y
             do x = 1, N_X
 
-                rho_val = 0.0_real32
-                u_x_val = 0.0_real32
-                u_y_val = 0.0_real32
+                rho_val = 0.0_FP
+                u_x_val = 0.0_FP
+                u_y_val = 0.0_FP
 
                 ! 1: ( 0,  0) = rest
                 ! 2: ( 1,  0) = east
@@ -457,17 +457,17 @@ contains
 
                         ! equilibrium distribution function for the source cell at the opposite (left) boundary
                         f_eq_src = w(i) * rho_left(y) * ( &
-                            1.0_real32 + &
-                            3.0_real32 * c_dot_u_src + &
-                            4.5_real32 * c_dot_u_src * c_dot_u_src - &
-                            1.5_real32 * u_squ_src)
+                            1.0_FP + &
+                            3.0_FP * c_dot_u_src + &
+                            4.5_FP * c_dot_u_src * c_dot_u_src - &
+                            1.5_FP * u_squ_src)
 
                         ! equilibrium distribution function at this cell
                         f_eq_boundary = w(i) * rho_out * ( &
-                            1.0_real32 + &
-                            3.0_real32 * c_dot_u_src + &
-                            4.5_real32 * c_dot_u_src * c_dot_u_src - &
-                            1.5_real32 * u_squ_src)
+                            1.0_FP + &
+                            3.0_FP * c_dot_u_src + &
+                            4.5_FP * c_dot_u_src * c_dot_u_src - &
+                            1.5_FP * u_squ_src)
 
                         f_pulled(i) = f(i, 1, y) - f_eq_src + f_eq_boundary
                     
@@ -477,17 +477,17 @@ contains
 
                         ! equilibrium distribution function for the source cell at the opposite (right) boundary
                         f_eq_src = w(i) * rho_right(y) * ( &
-                            1.0_real32 + &
-                            3.0_real32 * c_dot_u_src + &
-                            4.5_real32 * c_dot_u_src * c_dot_u_src - &
-                            1.5_real32 * u_squ_src)
+                            1.0_FP + &
+                            3.0_FP * c_dot_u_src + &
+                            4.5_FP * c_dot_u_src * c_dot_u_src - &
+                            1.5_FP * u_squ_src)
 
                         ! equilibrium distribution function at this cell
                         f_eq_boundary = w(i) * rho_in * ( &
-                            1.0_real32 + &
-                            3.0_real32 * c_dot_u_src + &
-                            4.5_real32 * c_dot_u_src * c_dot_u_src - &
-                            1.5_real32 * u_squ_src)
+                            1.0_FP + &
+                            3.0_FP * c_dot_u_src + &
+                            4.5_FP * c_dot_u_src * c_dot_u_src - &
+                            1.5_FP * u_squ_src)
 
                         f_pulled(i) = f(i, N_X, y) - f_eq_src + f_eq_boundary
                     end if
@@ -498,7 +498,7 @@ contains
                 end do
 
                 ! safety check
-                if (rho_val <= 0.0_real32) then
+                if (rho_val <= 0.0_FP) then
                     error stop "error: density is zero in collision/streaming step (rho_val <= 0)"
                 end if
 
@@ -524,10 +524,10 @@ contains
                     ! compute equilibrium distribution function for dir i
                     c_dot_u = c_x_fp(i) * u_x_val + c_y_fp(i) * u_y_val
                     f_eq_val = w(i) * rho_val * ( &
-                        1.0_real32 + &
-                        3.0_real32 * c_dot_u + &
-                        4.5_real32 * c_dot_u * c_dot_u - &
-                        1.5_real32 * u_squ)
+                        1.0_FP + &
+                        3.0_FP * c_dot_u + &
+                        4.5_FP * c_dot_u * c_dot_u - &
+                        1.5_FP * u_squ)
 
                     ! relax towards equilibrium
                     f_next_val = f_pulled(i) - omega * (f_pulled(i) - f_eq_val)
@@ -547,44 +547,44 @@ contains
         ! read-only inputs
         integer(int32), intent(in) :: c_x(N_DIRS)
         integer(int32), intent(in) :: c_y(N_DIRS)
-        real(real32), intent(in) :: c_x_fp(N_DIRS)
-        real(real32), intent(in) :: c_y_fp(N_DIRS)
-        real(real32), intent(in) :: w(N_DIRS)
-        real(real32), intent(in) :: rho_0
-        real(real32), intent(in) :: omega
-        real(real32), intent(in) :: u_wall
-        real(real32), intent(in) :: f(N_DIRS, N_X, N_Y)
+        real(FP), intent(in) :: c_x_fp(N_DIRS)
+        real(FP), intent(in) :: c_y_fp(N_DIRS)
+        real(FP), intent(in) :: w(N_DIRS)
+        real(FP), intent(in) :: rho_0
+        real(FP), intent(in) :: omega
+        real(FP), intent(in) :: u_wall
+        real(FP), intent(in) :: f(N_DIRS, N_X, N_Y)
         logical, intent(in) :: write_rho
         logical, intent(in) :: write_u_x
         logical, intent(in) :: write_u_y
 
         ! write destinations
-        real(real32), intent(out) :: f_next(N_DIRS, N_X, N_Y)
+        real(FP), intent(out) :: f_next(N_DIRS, N_X, N_Y)
 
         ! optional write destinations
-        real(real32), intent(inout) :: rho(N_X, N_Y)
-        real(real32), intent(inout) :: u_x(N_X, N_Y)
-        real(real32), intent(inout) :: u_y(N_X, N_Y)
+        real(FP), intent(inout) :: rho(N_X, N_Y)
+        real(FP), intent(inout) :: u_x(N_X, N_Y)
+        real(FP), intent(inout) :: u_y(N_X, N_Y)
 
         ! temp
         integer(int32) :: x, y, i
         integer(int32) :: src_x, src_y
-        real(real32) :: f_pulled(N_DIRS)
-        real(real32) :: rho_val
-        real(real32) :: u_x_val
-        real(real32) :: u_y_val
-        real(real32) :: u_squ
-        real(real32) :: c_dot_u
-        real(real32) :: f_eq_val
-        real(real32) :: f_next_val
+        real(FP) :: f_pulled(N_DIRS)
+        real(FP) :: rho_val
+        real(FP) :: u_x_val
+        real(FP) :: u_y_val
+        real(FP) :: u_squ
+        real(FP) :: c_dot_u
+        real(FP) :: f_eq_val
+        real(FP) :: f_next_val
 
         ! loop over rows and cols
         do y = 1, N_Y
             do x = 1, N_X
 
-                rho_val = 0.0_real32
-                u_x_val = 0.0_real32
-                u_y_val = 0.0_real32
+                rho_val = 0.0_FP
+                u_x_val = 0.0_FP
+                u_y_val = 0.0_FP
 
                 ! 1: ( 0,  0) = rest
                 ! 2: ( 1,  0) = east
@@ -616,9 +616,9 @@ contains
                         case (5)
                             f_pulled(i) = f(3, x, y)
                         case (8)
-                            f_pulled(i) = f(6, x, y) - 6.0_real32 * w(6) * rho_0 * u_wall
+                            f_pulled(i) = f(6, x, y) - 6.0_FP * w(6) * rho_0 * u_wall
                         case (9)
-                            f_pulled(i) = f(7, x, y) + 6.0_real32 * w(7) * rho_0 * u_wall
+                            f_pulled(i) = f(7, x, y) + 6.0_FP * w(7) * rho_0 * u_wall
                         case default
                             error stop "error: invalid top wall dir in sliding lid"
                         end select
@@ -666,7 +666,7 @@ contains
                 end do
 
                 ! safety check
-                if (rho_val <= 0.0_real32) then
+                if (rho_val <= 0.0_FP) then
                     error stop "error: density is zero in collision/streaming step (rho_val <= 0)"
                 end if
 
@@ -692,10 +692,10 @@ contains
                     ! compute equilibrium distribution function for dir i
                     c_dot_u = c_x_fp(i) * u_x_val + c_y_fp(i) * u_y_val
                     f_eq_val = w(i) * rho_val * ( &
-                        1.0_real32 + &
-                        3.0_real32 * c_dot_u + &
-                        4.5_real32 * c_dot_u * c_dot_u - &
-                        1.5_real32 * u_squ)
+                        1.0_FP + &
+                        3.0_FP * c_dot_u + &
+                        4.5_FP * c_dot_u * c_dot_u - &
+                        1.5_FP * u_squ)
 
                     ! relax towards equilibrium
                     f_next_val = f_pulled(i) - omega * (f_pulled(i) - f_eq_val)
@@ -712,9 +712,9 @@ contains
         f, f_next &
         )
         ! read/write inputs
-        real(real32), allocatable, intent(inout) :: f(:, :, :)
-        real(real32), allocatable, intent(inout) :: f_next(:, :, :)
-        real(real32), allocatable :: temp(:, :, :)
+        real(FP), allocatable, intent(inout) :: f(:, :, :)
+        real(FP), allocatable, intent(inout) :: f_next(:, :, :)
+        real(FP), allocatable :: temp(:, :, :)
 
         ! swap ownership
         call move_alloc(f, temp)

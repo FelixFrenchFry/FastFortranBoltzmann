@@ -1,8 +1,8 @@
 module initialization
     ! imports
-    use iso_fortran_env, only: int32, real32
+    use iso_fortran_env, only: int32
     use settings, only: N_X, N_Y, N_DIRS, SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, &
-        PI, shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t
+        FP, PI, shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t
     implicit none
 
 contains
@@ -16,15 +16,15 @@ contains
         type(couette_flow_params_t), intent(in) :: couette_flow_params
         type(poiseuille_flow_params_t), intent(in) :: poiseuille_flow_params
         type(sliding_lid_params_t), intent(in) :: sliding_lid_params
-        real(real32), intent(in) :: c_x_fp(N_DIRS)
-        real(real32), intent(in) :: c_y_fp(N_DIRS)
-        real(real32), intent(in) :: w(N_DIRS)
+        real(FP), intent(in) :: c_x_fp(N_DIRS)
+        real(FP), intent(in) :: c_y_fp(N_DIRS)
+        real(FP), intent(in) :: w(N_DIRS)
 
         ! write destinations
-        real(real32), intent(out) :: f(N_DIRS, N_X, N_Y)
-        real(real32), intent(out) :: rho(N_X, N_Y)
-        real(real32), intent(out) :: u_x(N_X, N_Y)
-        real(real32), intent(out) :: u_y(N_X, N_Y)
+        real(FP), intent(out) :: f(N_DIRS, N_X, N_Y)
+        real(FP), intent(out) :: rho(N_X, N_Y)
+        real(FP), intent(out) :: u_x(N_X, N_Y)
+        real(FP), intent(out) :: u_y(N_X, N_Y)
 
         ! apply initial condition based on selected sim mode
         select case (SIM_MODE)
@@ -47,37 +47,37 @@ contains
         c_x_fp, c_y_fp, w, rho_0, u_max, n_sin, f, rho, u_x, u_y &
         )
         ! read-only inputs
-        real(real32), intent(in) :: c_x_fp(N_DIRS)
-        real(real32), intent(in) :: c_y_fp(N_DIRS)
-        real(real32), intent(in) :: w(N_DIRS)
-        real(real32), intent(in) :: rho_0
-        real(real32), intent(in) :: u_max
-        real(real32), intent(in) :: n_sin
+        real(FP), intent(in) :: c_x_fp(N_DIRS)
+        real(FP), intent(in) :: c_y_fp(N_DIRS)
+        real(FP), intent(in) :: w(N_DIRS)
+        real(FP), intent(in) :: rho_0
+        real(FP), intent(in) :: u_max
+        real(FP), intent(in) :: n_sin
 
         ! write destinations
-        real(real32), intent(out) :: f(N_DIRS, N_X, N_Y)
-        real(real32), intent(out) :: rho(N_X, N_Y)
-        real(real32), intent(out) :: u_x(N_X, N_Y)
-        real(real32), intent(out) :: u_y(N_X, N_Y)
+        real(FP), intent(out) :: f(N_DIRS, N_X, N_Y)
+        real(FP), intent(out) :: rho(N_X, N_Y)
+        real(FP), intent(out) :: u_x(N_X, N_Y)
+        real(FP), intent(out) :: u_y(N_X, N_Y)
 
         ! temp
         integer(int32) :: x, y, i
-        real(real32) :: k ! wave number
-        real(real32) :: u_x_val
-        real(real32) :: u_y_val
-        real(real32) :: u_squ
-        real(real32) :: c_dot_u
-        real(real32) :: f_eq_val
+        real(FP) :: k ! wave number
+        real(FP) :: u_x_val
+        real(FP) :: u_y_val
+        real(FP) :: u_squ
+        real(FP) :: c_dot_u
+        real(FP) :: f_eq_val
 
         ! wave number
-        k = (2.0_real32 * PI * n_sin) / real(N_Y, real32)
+        k = (2.0_FP * PI * n_sin) / real(N_Y, FP)
 
         ! loop over rows
         do y = 1, N_Y
 
             ! shear wave velocity for this row
-            u_x_val = u_max * sin(k * real(y - 1, real32))
-            u_y_val = 0.0_real32
+            u_x_val = u_max * sin(k * real(y - 1, FP))
+            u_y_val = 0.0_FP
             u_squ = u_x_val * u_x_val
 
             ! loop over cols
@@ -93,10 +93,10 @@ contains
                     ! compute equilibrium distribution function for dir i
                     c_dot_u = c_x_fp(i) * u_x_val + c_y_fp(i) * u_y_val
                     f_eq_val = w(i) * rho_0 * ( &
-                        1.0_real32 + &
-                        3.0_real32 * c_dot_u + &
-                        4.5_real32 * c_dot_u * c_dot_u - &
-                        1.5_real32 * u_squ)
+                        1.0_FP + &
+                        3.0_FP * c_dot_u + &
+                        4.5_FP * c_dot_u * c_dot_u - &
+                        1.5_FP * u_squ)
 
                     ! write to destination dir i of this cell
                     f(i, x, y) = f_eq_val
@@ -110,18 +110,18 @@ contains
         w, rho_0, f, rho, u_x, u_y &
         )
         ! read-only inputs
-        real(real32), intent(in) :: w(N_DIRS)
-        real(real32), intent(in) :: rho_0
+        real(FP), intent(in) :: w(N_DIRS)
+        real(FP), intent(in) :: rho_0
 
         ! write destinations
-        real(real32), intent(out) :: f(N_DIRS, N_X, N_Y)
-        real(real32), intent(out) :: rho(N_X, N_Y)
-        real(real32), intent(out) :: u_x(N_X, N_Y)
-        real(real32), intent(out) :: u_y(N_X, N_Y)
+        real(FP), intent(out) :: f(N_DIRS, N_X, N_Y)
+        real(FP), intent(out) :: rho(N_X, N_Y)
+        real(FP), intent(out) :: u_x(N_X, N_Y)
+        real(FP), intent(out) :: u_y(N_X, N_Y)
 
         ! temp
         integer(int32) :: x, y, i
-        real(real32) :: f_eq(N_DIRS)
+        real(FP) :: f_eq(N_DIRS)
 
         ! pre-computed equilibrium distribution at t=0
         do i = 1, N_DIRS
@@ -133,8 +133,8 @@ contains
             do x = 1, N_X
 
                 rho(x, y) = rho_0
-                u_x(x, y) = 0.0_real32
-                u_y(x, y) = 0.0_real32
+                u_x(x, y) = 0.0_FP
+                u_y(x, y) = 0.0_FP
 
                 ! init distribution functions in all dirs
                 do i = 1, N_DIRS
@@ -149,18 +149,18 @@ contains
         w, rho_0, f, rho, u_x, u_y &
         )
         ! read-only inputs
-        real(real32), intent(in) :: w(N_DIRS)
-        real(real32), intent(in) :: rho_0
+        real(FP), intent(in) :: w(N_DIRS)
+        real(FP), intent(in) :: rho_0
 
         ! write destinations
-        real(real32), intent(out) :: f(N_DIRS, N_X, N_Y)
-        real(real32), intent(out) :: rho(N_X, N_Y)
-        real(real32), intent(out) :: u_x(N_X, N_Y)
-        real(real32), intent(out) :: u_y(N_X, N_Y)
+        real(FP), intent(out) :: f(N_DIRS, N_X, N_Y)
+        real(FP), intent(out) :: rho(N_X, N_Y)
+        real(FP), intent(out) :: u_x(N_X, N_Y)
+        real(FP), intent(out) :: u_y(N_X, N_Y)
 
         ! temp
         integer(int32) :: x, y, i
-        real(real32) :: f_eq(N_DIRS)
+        real(FP) :: f_eq(N_DIRS)
 
         ! pre-computed equilibrium distribution at t=0
         do i = 1, N_DIRS
@@ -172,8 +172,8 @@ contains
             do x = 1, N_X
 
                 rho(x, y) = rho_0
-                u_x(x, y) = 0.0_real32
-                u_y(x, y) = 0.0_real32
+                u_x(x, y) = 0.0_FP
+                u_y(x, y) = 0.0_FP
 
                 ! init distribution functions in all dirs
                 do i = 1, N_DIRS
@@ -188,18 +188,18 @@ contains
         w, rho_0, f, rho, u_x, u_y &
         )
         ! read-only inputs
-        real(real32), intent(in) :: w(N_DIRS)
-        real(real32), intent(in) :: rho_0
+        real(FP), intent(in) :: w(N_DIRS)
+        real(FP), intent(in) :: rho_0
 
         ! write destinations
-        real(real32), intent(out) :: f(N_DIRS, N_X, N_Y)
-        real(real32), intent(out) :: rho(N_X, N_Y)
-        real(real32), intent(out) :: u_x(N_X, N_Y)
-        real(real32), intent(out) :: u_y(N_X, N_Y)
+        real(FP), intent(out) :: f(N_DIRS, N_X, N_Y)
+        real(FP), intent(out) :: rho(N_X, N_Y)
+        real(FP), intent(out) :: u_x(N_X, N_Y)
+        real(FP), intent(out) :: u_y(N_X, N_Y)
 
         ! temp
         integer(int32) :: x, y, i
-        real(real32) :: f_eq(N_DIRS)
+        real(FP) :: f_eq(N_DIRS)
 
         ! pre-computed equilibrium distribution at t=0
         do i = 1, N_DIRS
@@ -211,8 +211,8 @@ contains
             do x = 1, N_X
 
                 rho(x, y) = rho_0
-                u_x(x, y) = 0.0_real32
-                u_y(x, y) = 0.0_real32
+                u_x(x, y) = 0.0_FP
+                u_y(x, y) = 0.0_FP
 
                 ! init distribution functions in all dirs
                 do i = 1, N_DIRS

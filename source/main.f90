@@ -1,10 +1,10 @@
 program main
     ! imports
-    use iso_fortran_env, only: int32, int64, real32, real64, output_unit
+    use iso_fortran_env, only: int32, int64, real64, output_unit
     use export, only: should_export_step, export_selected_data, export_metadata
     use initialization, only: initialize_sim_condition
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, &
-        shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
+        FP, shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
     use simulation, only: execute_full_sim_step, swap_distribution_function_buffers
     implicit none
 
@@ -14,8 +14,8 @@ program main
     ! D2Q9 lattice velocities and weights
     integer(int32), parameter :: c_x(N_DIRS) = [ 0,  1,  0, -1,  0,  1, -1, -1,  1 ]
     integer(int32), parameter :: c_y(N_DIRS) = [ 0,  0,  1,  0, -1,  1,  1, -1, -1 ]
-    real(real32), parameter :: c_x_fp(N_DIRS) = real(c_x, real32) ! fp-version for compute
-    real(real32), parameter :: c_y_fp(N_DIRS) = real(c_y, real32) ! fp-version for compute
+    real(FP), parameter :: c_x_fp(N_DIRS) = real(c_x, FP) ! fp-version for compute
+    real(FP), parameter :: c_y_fp(N_DIRS) = real(c_y, FP) ! fp-version for compute
     ! ---------
     ! | 7 3 6 |
     ! | 4 1 2 |
@@ -30,45 +30,45 @@ program main
     ! 7: (-1,  1) = north-west
     ! 8: (-1, -1) = south-west
     ! 9: ( 1, -1) = south-east
-    real(real32), parameter :: w(N_DIRS) = [ &
-        4.0_real32/9.0_real32, &
-        1.0_real32/9.0_real32, &
-        1.0_real32/9.0_real32, &
-        1.0_real32/9.0_real32, &
-        1.0_real32/9.0_real32, &
-        1.0_real32/36.0_real32, &
-        1.0_real32/36.0_real32, &
-        1.0_real32/36.0_real32, &
-        1.0_real32/36.0_real32]
+    real(FP), parameter :: w(N_DIRS) = [ &
+        4.0_FP/9.0_FP, &
+        1.0_FP/9.0_FP, &
+        1.0_FP/9.0_FP, &
+        1.0_FP/9.0_FP, &
+        1.0_FP/9.0_FP, &
+        1.0_FP/36.0_FP, &
+        1.0_FP/36.0_FP, &
+        1.0_FP/36.0_FP, &
+        1.0_FP/36.0_FP]
 
     ! parameter set for shear wave
     type(shear_wave_params_t), parameter :: shear_wave_params = shear_wave_params_t( &
-        rho_0 = 1.0_real32, &
-        omega = 1.5_real32, &
-        u_max = 0.1_real32, &
-        n_sin = 2.0_real32 &
+        rho_0 = 1.0_FP, &
+        omega = 1.5_FP, &
+        u_max = 0.1_FP, &
+        n_sin = 2.0_FP &
     )
 
     ! parameter set for couette flow
     type(couette_flow_params_t), parameter :: couette_flow_params = couette_flow_params_t( &
-        rho_0 = 1.0_real32, &
-        omega = 1.5_real32, &
-        u_wall = 0.1_real32 &
+        rho_0 = 1.0_FP, &
+        omega = 1.5_FP, &
+        u_wall = 0.1_FP &
     )
 
     ! parameter set for poiseuille flow
     type(poiseuille_flow_params_t), parameter :: poiseuille_flow_params = poiseuille_flow_params_t( &
-        rho_0 = 1.0_real32, &
-        omega = 1.5_real32, &
-        rho_in = 1.001_real32, &
-        rho_out = 0.999_real32 &
+        rho_0 = 1.0_FP, &
+        omega = 1.5_FP, &
+        rho_in = 1.001_FP, &
+        rho_out = 0.999_FP &
     )
 
     ! parameter set for sliding lid
     type(sliding_lid_params_t), parameter :: sliding_lid_params = sliding_lid_params_t( &
-        rho_0 = 1.0_real32, &
-        omega = 1.5_real32, &
-        u_wall = 0.1_real32 &
+        rho_0 = 1.0_FP, &
+        omega = 1.5_FP, &
+        u_wall = 0.1_FP &
     )
 
     ! general settings
@@ -85,7 +85,7 @@ program main
     logical, parameter :: export_initial_state = .true.
     logical, parameter :: export_final_state = .true.
     character(len=*), parameter :: output_dir_name = "output"
-    character(len=*), parameter :: export_num = "run_001"
+    character(len=*), parameter :: export_num = "run_000"
 
     ! progress display settings
     logical, parameter :: interactive_progress = .true.
@@ -100,7 +100,7 @@ program main
     integer(int64) :: eta_hours
     integer(int64) :: eta_minutes
     integer(int64) :: eta_seconds_int
-    integer(int64) :: bytes_real32
+    integer(int64) :: bytes_fp
     integer(int64) :: dist_function_buffers_bytes
     integer(int64) :: macro_field_buffers_bytes
     integer(int64) :: misc_buffers_bytes
@@ -112,16 +112,16 @@ program main
     real(real64) :: eta_seconds
     real(real64) :: sim_percent
     real(real64) :: mlups
-    real(real64) :: mb_per_byte
+    real(real64) :: gb_per_byte
     real(real64) :: total_bytes_per_cell
     character(len=10) :: current_time
 
     ! allocate sim data structures (double-buffered distribution functions)
-    real(real32), allocatable :: f(:, :, :) ! read-version of distribution functions f(dir, x, y)
-    real(real32), allocatable :: f_next(:, :, :) ! write-version version of f(dir, x, y)
-    real(real32), allocatable :: rho(:,:)
-    real(real32), allocatable :: u_x(:,:)
-    real(real32), allocatable :: u_y(:,:)
+    real(FP), allocatable :: f(:, :, :) ! read-version of distribution functions f(dir, x, y)
+    real(FP), allocatable :: f_next(:, :, :) ! write-version version of f(dir, x, y)
+    real(FP), allocatable :: rho(:,:)
+    real(FP), allocatable :: u_x(:,:)
+    real(FP), allocatable :: u_y(:,:)
     allocate(f(N_DIRS, N_X, N_Y))
     allocate(f_next(N_DIRS, N_X, N_Y))
     allocate(rho(N_X, N_Y))
@@ -129,13 +129,13 @@ program main
     allocate(u_y(N_X, N_Y))
 
     ! compute memory metrics for persistent main sim buffers
-    bytes_real32 = int(storage_size(0.0_real32), int64) / 8_int64
-    dist_function_buffers_bytes = (size(f, kind=int64) + size(f_next, kind=int64)) * bytes_real32
-    macro_field_buffers_bytes = (size(rho, kind=int64) + size(u_x, kind=int64) + size(u_y, kind=int64)) * bytes_real32
+    bytes_fp = int(storage_size(0.0_FP), int64) / 8_int64
+    dist_function_buffers_bytes = (size(f, kind=int64) + size(f_next, kind=int64)) * bytes_fp
+    macro_field_buffers_bytes = (size(rho, kind=int64) + size(u_x, kind=int64) + size(u_y, kind=int64)) * bytes_fp
     misc_buffers_bytes = 0_int64
     total_buffer_bytes = dist_function_buffers_bytes + macro_field_buffers_bytes + misc_buffers_bytes
     total_bytes_per_cell = real(total_buffer_bytes, real64) / real(N_CELLS, real64)
-    mb_per_byte = 1.0e-6_real64
+    gb_per_byte = 1.0e-9_real64
 
     ! inital condition
     call initialize_sim_condition(shear_wave_params, couette_flow_params, poiseuille_flow_params, &
@@ -170,6 +170,7 @@ program main
             error stop "error: unknown sim mode in main print block"
         end select
 
+        ! parameter info
         print '(A)', ""
         print '(A)', "--- [ other parameters ] --------------------------------------------------"
         print '(A,I0)',    "N_X_TOTAL            = ", N_X
@@ -189,19 +190,20 @@ program main
         print '(A,A)',     "export_num           = ", export_num
         print *
 
-        print '(A,T42,A,T45,A,T59,A,T62,A)', "memory usage", "|", "per cell [B]", "|", "all cells [MB]"
+        ! memory info
+        print '(A,T42,A,T45,A,T59,A,T62,A)', "memory usage", "|", "per cell [B]", "|", "all cells [GB]"
         print '(A)', "---------------------------------------------------------------------------"
-        print '(A,T42,A,T45,F12.1,T59,A,T62,F14.3)', "dist function buffers", "|", &
-            real(dist_function_buffers_bytes, real64) / real(N_CELLS, real64), "|", &
-            real(dist_function_buffers_bytes, real64) * mb_per_byte
-        print '(A,T42,A,T45,F12.1,T59,A,T62,F14.3)', "macro field buffers", "|", &
-            real(macro_field_buffers_bytes, real64) / real(N_CELLS, real64), "|", &
-            real(macro_field_buffers_bytes, real64) * mb_per_byte
-        print '(A,T42,A,T45,F12.1,T59,A,T62,F14.3)', "misc", "|", &
-            real(misc_buffers_bytes, real64) / real(N_CELLS, real64), "|", &
-            real(misc_buffers_bytes, real64) * mb_per_byte
-        print '(A,T42,A,T45,F12.1,T59,A,T62,F14.3)', "total", "|", &
-            total_bytes_per_cell, "|", real(total_buffer_bytes, real64) * mb_per_byte
+        print '(A,T42,A,T45,I12,T59,A,T62,F14.3)', "dist function buffers", "|", &
+            nint(real(dist_function_buffers_bytes, real64) / real(N_CELLS, real64), int64), "|", &
+            real(dist_function_buffers_bytes, real64) * gb_per_byte
+        print '(A,T42,A,T45,I12,T59,A,T62,F14.3)', "macro field buffers", "|", &
+            nint(real(macro_field_buffers_bytes, real64) / real(N_CELLS, real64), int64), "|", &
+            real(macro_field_buffers_bytes, real64) * gb_per_byte
+        print '(A,T42,A,T45,I12,T59,A,T62,F14.3)', "misc", "|", &
+            nint(real(misc_buffers_bytes, real64) / real(N_CELLS, real64), int64), "|", &
+            real(misc_buffers_bytes, real64) * gb_per_byte
+        print '(A,T42,A,T45,I12,T59,A,T62,F14.3)', "total", "|", &
+            nint(total_bytes_per_cell, int64), "|", real(total_buffer_bytes, real64) * gb_per_byte
         print *
     end if
 
