@@ -3,7 +3,7 @@ program main
     use iso_fortran_env, only: int32, int64, real64, output_unit
     use export, only: should_export_step, export_selected_data, export_metadata
     use initialization, only: initialize_sim_condition
-    use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, C_X, C_Y, C_X_FP, C_Y_FP, W, &
+    use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
         shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
     use simulation, only: execute_full_sim_step, swap_distribution_function_buffers
@@ -87,13 +87,13 @@ program main
     character(len=10) :: current_time
 
     ! allocate sim data structures (double-buffered distribution functions)
-    real(FP), allocatable :: f(:, :, :) ! read-version of distribution functions f(dir, x, y)
-    real(FP), allocatable :: f_next(:, :, :) ! write-version version of f(dir, x, y)
+    real(FP), allocatable :: f(:, :, :) ! read-version of distribution functions f(x, y, dir)
+    real(FP), allocatable :: f_next(:, :, :) ! write-version version of f(x, y, dir)
     real(FP), allocatable :: rho(:,:)
     real(FP), allocatable :: u_x(:,:)
     real(FP), allocatable :: u_y(:,:)
-    allocate(f(N_DIRS, N_X, N_Y))
-    allocate(f_next(N_DIRS, N_X, N_Y))
+    allocate(f(N_X, N_Y, N_DIRS))
+    allocate(f_next(N_X, N_Y, N_DIRS))
     allocate(rho(N_X, N_Y))
     allocate(u_x(N_X, N_Y))
     allocate(u_y(N_X, N_Y))
