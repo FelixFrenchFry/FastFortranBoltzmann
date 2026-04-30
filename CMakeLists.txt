@@ -33,7 +33,7 @@ add_executable(FFB
     source/simulation.f90
 )
 
-# compiler flags for ifx
+# debug flags for ifx
 target_compile_options(FFB PRIVATE
     -coarray
     -fpp
@@ -43,7 +43,6 @@ target_compile_options(FFB PRIVATE
     $<$<CONFIG:Debug>:-g>
     $<$<CONFIG:Debug>:-traceback>
     $<$<CONFIG:Debug>:-check all>
-    $<$<CONFIG:Release>:-O3>
 )
 
 if(FFB_FP64)
