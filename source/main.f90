@@ -42,11 +42,6 @@ program main
         u_wall = 0.1_FP &
     )
 
-    ! general settings
-    logical, parameter :: write_rho = .true.
-    logical, parameter :: write_u_x = .true.
-    logical, parameter :: write_u_y = .true.
-
     ! export settings
     logical, parameter :: export_rho = .true.
     logical, parameter :: export_u_x = .true.
@@ -145,9 +140,6 @@ program main
         print '(A,I0)',    "N_X_TOTAL            = ", N_X
         print '(A,I0)',    "N_Y_TOTAL            = ", N_Y
         print '(A,I0)',    "N_STEPS              = ", N_STEPS
-        print '(A,L1)',    "write_rho            = ", write_rho
-        print '(A,L1)',    "write_u_x            = ", write_u_x
-        print '(A,L1)',    "write_u_y            = ", write_u_y
         print '(A,L1)',    "export_rho           = ", export_rho
         print '(A,L1)',    "export_u_x           = ", export_u_x
         print '(A,L1)',    "export_u_y           = ", export_u_y
@@ -203,7 +195,7 @@ program main
 
         call execute_full_sim_step( &
             shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
-            f, write_rho, write_u_x, write_u_y, f_next, rho, u_x, u_y)
+            f, f_next, rho, u_x, u_y)
 
         call swap_distribution_function_buffers(f, f_next)
 
