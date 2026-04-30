@@ -17,7 +17,7 @@ program main
         rho_0 = 1.0_FP, &
         omega = 1.5_FP, &
         u_max = 0.1_FP, &
-        n_sin = 2.0_FP &
+        n_sin = 3.0_FP &
     )
 
     ! parameter set for couette flow
@@ -74,7 +74,6 @@ program main
     integer(int64) :: bytes_fp
     integer(int64) :: dist_function_buffers_bytes
     integer(int64) :: macro_field_buffers_bytes
-    integer(int64) :: misc_buffers_bytes
     integer(int64) :: total_buffer_bytes
     real(real64) :: elapsed_seconds
     real(real64) :: seconds_per_step
@@ -103,8 +102,7 @@ program main
     bytes_fp = int(storage_size(0.0_FP), int64) / 8_int64
     dist_function_buffers_bytes = (size(f, kind=int64) + size(f_next, kind=int64)) * bytes_fp
     macro_field_buffers_bytes = (size(rho, kind=int64) + size(u_x, kind=int64) + size(u_y, kind=int64)) * bytes_fp
-    misc_buffers_bytes = 0_int64
-    total_buffer_bytes = dist_function_buffers_bytes + macro_field_buffers_bytes + misc_buffers_bytes
+    total_buffer_bytes = dist_function_buffers_bytes + macro_field_buffers_bytes
     total_bytes_per_cell = real(total_buffer_bytes, real64) / real(N_CELLS, real64)
     gb_per_byte = 1.0e-9_real64
 
@@ -170,9 +168,6 @@ program main
         print '(A,T42,A,T45,I12,T59,A,T62,F14.3)', "macro field buffers", "|", &
             nint(real(macro_field_buffers_bytes, real64) / real(N_CELLS, real64), int64), "|", &
             real(macro_field_buffers_bytes, real64) * gb_per_byte
-        print '(A,T42,A,T45,I12,T59,A,T62,F14.3)', "misc", "|", &
-            nint(real(misc_buffers_bytes, real64) / real(N_CELLS, real64), int64), "|", &
-            real(misc_buffers_bytes, real64) * gb_per_byte
         print '(A,T42,A,T45,I12,T59,A,T62,F14.3)', "total", "|", &
             nint(total_bytes_per_cell, int64), "|", real(total_buffer_bytes, real64) * gb_per_byte
         print *
