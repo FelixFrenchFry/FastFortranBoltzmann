@@ -17,11 +17,10 @@ set(CMAKE_Fortran_STANDARD 2018)
 set(CMAKE_Fortran_STANDARD_REQUIRED ON)
 set(CMAKE_Fortran_EXTENSIONS OFF)
 
-# precision switch
-option(FFB_FP64 "Usage of real64 for floating point values" OFF)
-
-# run-time checks of the density
-option(FFB_DENSITY_CHECKS "Enable expensive runtime density checks" OFF)
+# compiler flags for different features
+option(FFB_FP64 "Usage of real64 for floating point values enabled" OFF)
+option(FFB_DENSITY_CHECKS "Run-time density checks enabled" OFF)
+option(FFB_BOUNDARY_CHECKS "Run-time boundary condition checks enabled" OFF)
 
 # executables in build/bin
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
@@ -34,27 +33,29 @@ add_executable(FFB
     source/simulation.f90
 )
 
-# coarrays enabled and debug-friendly flags for ifx
+# compiler flags for ifx
 target_compile_options(FFB PRIVATE
-  -coarray
-  -fpp
-  -warn all
-  -standard-semantics
-  $<$<CONFIG:Debug>:-O0>
-  $<$<CONFIG:Debug>:-g>
-  $<$<CONFIG:Debug>:-traceback>
-  $<$<CONFIG:Debug>:-check all>
-  $<$<CONFIG:Release>:-O3>
+    -coarray
+    -fpp
+    -warn all
+    -standard-semantics
+    $<$<CONFIG:Debug>:-O0>
+    $<$<CONFIG:Debug>:-g>
+    $<$<CONFIG:Debug>:-traceback>
+    $<$<CONFIG:Debug>:-check all>
+    $<$<CONFIG:Release>:-O3>
 )
 
 if(FFB_FP64)
-  target_compile_definitions(FFB PRIVATE FFB_FP64)
+    target_compile_definitions(FFB PRIVATE FFB_FP64)
 endif()
-
 if(FFB_DENSITY_CHECKS)
-  target_compile_definitions(FFB PRIVATE FFB_DENSITY_CHECKS)
+    target_compile_definitions(FFB PRIVATE FFB_DENSITY_CHECKS)
+endif()
+if(FFB_BOUNDARY_CHECKS)
+    target_compile_definitions(FFB PRIVATE FFB_BOUNDARY_CHECKS)
 endif()
 
 target_link_options(FFB PRIVATE
-  -coarray
+    -coarray
 )
