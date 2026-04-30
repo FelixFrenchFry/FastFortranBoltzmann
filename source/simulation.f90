@@ -452,8 +452,10 @@ contains
                         f_pulled(i) = f(x, y, 8)
                     case (7)
                         f_pulled(i) = f(x, y, 9)
+                #ifdef FFB_BOUNDARY_CHECKS
                     case default
                         error stop "error: invalid bottom boundary channel in couette flow"
+                #endif
                     end select
                 
                 ! bounce-back for top boundary (moving)
@@ -465,8 +467,10 @@ contains
                         f_pulled(i) = f(x, y, 6) - 6.0_FP * W(6) * rho_0 * u_wall
                     case (9)
                         f_pulled(i) = f(x, y, 7) + 6.0_FP * W(7) * rho_0 * u_wall
+                #ifdef FFB_BOUNDARY_CHECKS
                     case default
                         error stop "error: invalid top boundary channel in couette flow"
+                #endif
                     end select
                 end if
 
@@ -640,8 +644,10 @@ contains
                         f_pulled(i) = f(x, y, 8)
                     case (7)
                         f_pulled(i) = f(x, y, 9)
+                #ifdef FFB_BOUNDARY_CHECKS
                     case default
                         error stop "error: invalid bottom boundary channel in poiseuille flow"
+                #endif
                     end select
 
                 ! bounce-back for top boundary (static)
@@ -653,8 +659,10 @@ contains
                         f_pulled(i) = f(x, y, 6)
                     case (9)
                         f_pulled(i) = f(x, y, 7)
+                #ifdef FFB_BOUNDARY_CHECKS
                     case default
                         error stop "error: invalid top boundary channel in poiseuille flow"
+                #endif
                     end select
                 
                 ! pressure-periodic inlet for left boundary
@@ -857,8 +865,10 @@ contains
                         f_pulled(i) = f(x, y, 8)
                     case (7)
                         f_pulled(i) = f(x, y, 9)
+                #ifdef FFB_BOUNDARY_CHECKS
                     case default
                         error stop "error: invalid bottom boundary channel in sliding lid"
+                #endif
                     end select
 
                 ! bounce-back for top boundary (moving)
@@ -870,8 +880,10 @@ contains
                         f_pulled(i) = f(x, y, 6) - 6.0_FP * W(6) * rho_0 * u_wall
                     case (9)
                         f_pulled(i) = f(x, y, 7) + 6.0_FP * W(7) * rho_0 * u_wall
+                #ifdef FFB_BOUNDARY_CHECKS
                     case default
                         error stop "error: invalid top boundary channel in sliding lid"
+                #endif
                     end select
 
                 ! bounce-back for left boundary (static)
@@ -883,8 +895,10 @@ contains
                         f_pulled(i) = f(x, y, 8)
                     case (9)
                         f_pulled(i) = f(x, y, 7)
+                #ifdef FFB_BOUNDARY_CHECKS
                     case default
                         error stop "error: invalid left boundary channel in sliding lid"
+                #endif
                     end select
                 
                 ! bounce-back for right boundary (static)
@@ -896,8 +910,10 @@ contains
                         f_pulled(i) = f(x, y, 9)
                     case (8)
                         f_pulled(i) = f(x, y, 6)
+                #ifdef FFB_BOUNDARY_CHECKS
                     case default
                         error stop "error: invalid right boundary channel in sliding lid"
+                #endif
                     end select
                 end if
 
@@ -947,7 +963,7 @@ contains
             end do
          end subroutine collide_stream_outer_cell_sliding_lid
     end subroutine fuzed_pull_streaming_collision_outer_sliding_lid
-    
+
 
     subroutine swap_distribution_function_buffers( &
         f, f_next &

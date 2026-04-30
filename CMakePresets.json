@@ -14,7 +14,8 @@
       "cacheVariables": {
         "CMAKE_Fortran_COMPILER": "ifx",
         "CMAKE_BUILD_TYPE": "Debug",
-        "FFB_DENSITY_CHECKS": "ON"
+        "FFB_DENSITY_CHECKS": "ON",
+        "FFB_FFB_BOUNDARY_CHECKS": "ON"
       }
     },
     {
@@ -26,7 +27,8 @@
         "CMAKE_Fortran_COMPILER": "ifx",
         "CMAKE_BUILD_TYPE": "Debug",
         "FFB_FP64": "ON",
-        "FFB_DENSITY_CHECKS": "ON"
+        "FFB_DENSITY_CHECKS": "ON",
+        "FFB_FFB_BOUNDARY_CHECKS": "ON"
       }
     },
     {
@@ -36,8 +38,7 @@
       "binaryDir": "${sourceDir}/build/release",
       "cacheVariables": {
         "CMAKE_Fortran_COMPILER": "ifx",
-        "CMAKE_BUILD_TYPE": "Release",
-        "FFB_DENSITY_CHECKS": "OFF"
+        "CMAKE_BUILD_TYPE": "Release"
       }
     },
     {
@@ -48,8 +49,7 @@
       "cacheVariables": {
         "CMAKE_Fortran_COMPILER": "ifx",
         "CMAKE_BUILD_TYPE": "Release",
-        "FFB_FP64": "ON",
-        "FFB_DENSITY_CHECKS": "OFF"
+        "FFB_FP64": "ON"
       }
     }
   ],
