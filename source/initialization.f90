@@ -57,21 +57,17 @@ contains
 
         ! temp
         integer(int32) :: x, y, i
-        real(FP) :: k ! wave number
         real(FP) :: u_x_val
         real(FP) :: u_y_val
         real(FP) :: u_squ
         real(FP) :: c_dot_u
         real(FP) :: f_eq_val
 
-        ! wave number
-        k = (2.0_FP * PI * n_sin) / real(N_Y, FP)
-
         ! loop over rows
         do y = 1, N_Y
 
             ! shear wave velocity for this row
-            u_x_val = u_max * sin(k * real(y - 1, FP))
+            u_x_val = u_max * sin((2.0_FP * PI * real(n_sin, FP) * real(y - 1, FP)) / real(N_Y, FP))
             u_y_val = 0.0_FP
             u_squ = u_x_val * u_x_val
 
