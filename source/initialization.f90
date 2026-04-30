@@ -19,7 +19,7 @@ contains
         type(sliding_lid_params_t), intent(in) :: sliding_lid_params
 
         ! write destinations
-        real(FP), intent(out) :: f(N_DIRS, N_X, N_Y)
+        real(FP), intent(out) :: f(N_X, N_Y, N_DIRS)
         real(FP), intent(out) :: rho(N_X, N_Y)
         real(FP), intent(out) :: u_x(N_X, N_Y)
         real(FP), intent(out) :: u_y(N_X, N_Y)
@@ -50,7 +50,7 @@ contains
         real(FP), intent(in) :: n_sin
 
         ! write destinations
-        real(FP), intent(out) :: f(N_DIRS, N_X, N_Y)
+        real(FP), intent(out) :: f(N_X, N_Y, N_DIRS)
         real(FP), intent(out) :: rho(N_X, N_Y)
         real(FP), intent(out) :: u_x(N_X, N_Y)
         real(FP), intent(out) :: u_y(N_X, N_Y)
@@ -90,7 +90,7 @@ contains
                         1.5_FP * u_squ)
 
                     ! write to destination dir i of this cell
-                    f(i, x, y) = f_eq_val
+                    f(x, y, i) = f_eq_val
                 end do
             end do
         end do
@@ -104,7 +104,7 @@ contains
         real(FP), intent(in) :: rho_0
 
         ! write destinations
-        real(FP), intent(out) :: f(N_DIRS, N_X, N_Y)
+        real(FP), intent(out) :: f(N_X, N_Y, N_DIRS)
         real(FP), intent(out) :: rho(N_X, N_Y)
         real(FP), intent(out) :: u_x(N_X, N_Y)
         real(FP), intent(out) :: u_y(N_X, N_Y)
@@ -128,7 +128,7 @@ contains
 
                 ! init distribution functions in all dirs
                 do i = 1, N_DIRS
-                    f(i, x, y) = f_eq(i)
+                    f(x, y, i) = f_eq(i)
                 end do
             end do
         end do
@@ -142,7 +142,7 @@ contains
         real(FP), intent(in) :: rho_0
 
         ! write destinations
-        real(FP), intent(out) :: f(N_DIRS, N_X, N_Y)
+        real(FP), intent(out) :: f(N_X, N_Y, N_DIRS)
         real(FP), intent(out) :: rho(N_X, N_Y)
         real(FP), intent(out) :: u_x(N_X, N_Y)
         real(FP), intent(out) :: u_y(N_X, N_Y)
@@ -166,7 +166,7 @@ contains
 
                 ! init distribution functions in all dirs
                 do i = 1, N_DIRS
-                    f(i, x, y) = f_eq(i)
+                    f(x, y, i) = f_eq(i)
                 end do
             end do
         end do
@@ -180,7 +180,7 @@ contains
         real(FP), intent(in) :: rho_0
 
         ! write destinations
-        real(FP), intent(out) :: f(N_DIRS, N_X, N_Y)
+        real(FP), intent(out) :: f(N_X, N_Y, N_DIRS)
         real(FP), intent(out) :: rho(N_X, N_Y)
         real(FP), intent(out) :: u_x(N_X, N_Y)
         real(FP), intent(out) :: u_y(N_X, N_Y)
@@ -204,7 +204,7 @@ contains
 
                 ! init distribution functions in all dirs
                 do i = 1, N_DIRS
-                    f(i, x, y) = f_eq(i)
+                    f(x, y, i) = f_eq(i)
                 end do
             end do
         end do
