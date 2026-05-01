@@ -16,12 +16,12 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_Fortran_FLAGS": "",
         "FFB_DENSITY_CHECKS": "ON",
-        "FFB_FFB_BOUNDARY_CHECKS": "ON"
+        "FFB_BOUNDARY_CHECKS": "ON"
       }
     },
     {
       "name": "debug-fp64",
-      "displayName": "FFB debug-build with ifx and real64",
+      "displayName": "FFB debug-build with ifx and fp64",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/debug-fp64",
       "cacheVariables": {
@@ -30,7 +30,7 @@
         "CMAKE_Fortran_FLAGS": "",
         "FFB_FP64": "ON",
         "FFB_DENSITY_CHECKS": "ON",
-        "FFB_FFB_BOUNDARY_CHECKS": "ON"
+        "FFB_BOUNDARY_CHECKS": "ON"
       }
     },
     {
@@ -47,7 +47,7 @@
     },
     {
       "name": "release-fp64",
-      "displayName": "FFB release-build with ifx and real64",
+      "displayName": "FFB release-build with ifx and fp64",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/release-fp64",
       "cacheVariables": {
@@ -55,6 +55,56 @@
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_Fortran_FLAGS": "",
         "CMAKE_Fortran_FLAGS_RELEASE": "-O3",
+        "FFB_FP64": "ON"
+      }
+    },
+    {
+      "name": "release-intel",
+      "displayName": "FFB release-build with ifx, Intel native",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/release-intel",
+      "cacheVariables": {
+        "CMAKE_Fortran_COMPILER": "ifx",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_Fortran_FLAGS": "",
+        "CMAKE_Fortran_FLAGS_RELEASE": "-O3 -xHost"
+      }
+    },
+    {
+      "name": "release-amd",
+      "displayName": "FFB release-build with ifx, AMD native",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/release-amd",
+      "cacheVariables": {
+        "CMAKE_Fortran_COMPILER": "ifx",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_Fortran_FLAGS": "",
+        "CMAKE_Fortran_FLAGS_RELEASE": "-O3 -march=native"
+      }
+    },
+    {
+      "name": "release-fp64-intel",
+      "displayName": "FFB release-build with ifx and fp64, Intel native",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/release-fp64-intel",
+      "cacheVariables": {
+        "CMAKE_Fortran_COMPILER": "ifx",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_Fortran_FLAGS": "",
+        "CMAKE_Fortran_FLAGS_RELEASE": "-O3 -xHost",
+        "FFB_FP64": "ON"
+      }
+    },
+    {
+      "name": "release-fp64-amd",
+      "displayName": "FFB release-build with ifx and fp64, AMD native",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/release-fp64-amd",
+      "cacheVariables": {
+        "CMAKE_Fortran_COMPILER": "ifx",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_Fortran_FLAGS": "",
+        "CMAKE_Fortran_FLAGS_RELEASE": "-O3 -march=native",
         "FFB_FP64": "ON"
       }
     }
@@ -75,6 +125,22 @@
     {
       "name": "release-fp64",
       "configurePreset": "release-fp64"
+    },
+    {
+      "name": "release-intel",
+      "configurePreset": "release-intel"
+    },
+    {
+      "name": "release-amd",
+      "configurePreset": "release-amd"
+    },
+    {
+      "name": "release-fp64-intel",
+      "configurePreset": "release-fp64-intel"
+    },
+    {
+      "name": "release-fp64-amd",
+      "configurePreset": "release-fp64-amd"
     }
   ]
 }
