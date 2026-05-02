@@ -11,13 +11,14 @@ contains
 
     subroutine execute_full_sim_step( &
         shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
-        f, f_next, rho, u_x, u_y &
+        write_macro_fields, f, f_next, rho, u_x, u_y &
         )
         ! inputs
         type(shear_wave_params_t), intent(in) :: shear_wave_params
         type(couette_flow_params_t), intent(in) :: couette_flow_params
         type(poiseuille_flow_params_t), intent(in) :: poiseuille_flow_params
         type(sliding_lid_params_t), intent(in) :: sliding_lid_params
+        logical, intent(in) :: write_macro_fields
         real(FP), intent(in) :: f(N_X, N_Y, N_DIRS)
 
         ! write destinations
@@ -29,27 +30,28 @@ contains
         ! execute single sim step based on selected sim mode
         select case (SIM_MODE)
         case (SIM_SHEAR_WAVE)
-            call fuzed_push_streaming_collision_inner_universal( &
-                shear_wave_params%omega, f, f_next, rho, u_x, u_y)
-            call fuzed_push_streaming_collision_outer_SW( &
-                shear_wave_params%omega, f, f_next, rho, u_x, u_y)
+            call fuzed_pull_streaming_collision_inner_universal( &
+                write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
+            call fuzed_pull_streaming_collision_outer_SW( &
+                write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
         case (SIM_COUETTE_FLOW)
             call fuzed_pull_streaming_collision_inner_universal( &
-                couette_flow_params%omega, f, f_next, rho, u_x, u_y)
+                write_macro_fields, couette_flow_params%omega, f, f_next, rho, u_x, u_y)
             call fuzed_pull_streaming_collision_outer_couette_flow( &
-                couette_flow_params%rho_0, couette_flow_params%omega, couette_flow_params%u_wall, &
+                write_macro_fields, couette_flow_params%rho_0, couette_flow_params%omega, couette_flow_params%u_wall, &
                 f, f_next, rho, u_x, u_y)
         case (SIM_POISEUILLE_FLOW)
             call fuzed_pull_streaming_collision_inner_universal( &
-                poiseuille_flow_params%omega, f, f_next, rho, u_x, u_y)
+                write_macro_fields, poiseuille_flow_params%omega, f, f_next, rho, u_x, u_y)
             call fuzed_pull_streaming_collision_outer_poiseuille_flow( &
-                poiseuille_flow_params%omega, poiseuille_flow_params%rho_in, poiseuille_flow_params%rho_out, &
+                write_macro_fields, poiseuille_flow_params%omega, &
+                poiseuille_flow_params%rho_in, poiseuille_flow_params%rho_out, &
                 f, f_next, rho, u_x, u_y)
         case (SIM_SLIDING_LID)
             call fuzed_pull_streaming_collision_inner_universal( &
-                sliding_lid_params%omega, f, f_next, rho, u_x, u_y)
+                write_macro_fields, sliding_lid_params%omega, f, f_next, rho, u_x, u_y)
             call fuzed_pull_streaming_collision_outer_sliding_lid( &
-                sliding_lid_params%rho_0, sliding_lid_params%omega, sliding_lid_params%u_wall, &
+                write_macro_fields, sliding_lid_params%rho_0, sliding_lid_params%omega, sliding_lid_params%u_wall, &
                 f, f_next, rho, u_x, u_y)
         case default
             error stop "error: unknown sim mode in execute_full_sim_step()"
@@ -58,9 +60,10 @@ contains
 
 
     subroutine fuzed_pull_streaming_collision_inner_universal( &
-        omega, f, f_next, rho, u_x, u_y &
+        write_macro_fields, omega, f, f_next, rho, u_x, u_y &
         )
         ! inputs
+        logical, intent(in) :: write_macro_fields
         real(FP), intent(in) :: omega
         real(FP), intent(in) :: f(N_X, N_Y, N_DIRS)
 
@@ -133,13 +136,16 @@ contains
                 end if
             #endif
 
-                ! finalize and store density and velocity
+                ! finalize density and velocity
                 u_x_val = u_x_val / rho_val
                 u_y_val = u_y_val / rho_val
                 u_squ = u_x_val * u_x_val + u_y_val * u_y_val
-                rho(x, y) = rho_val
-                u_x(x, y) = u_x_val
-                u_y(x, y) = u_y_val
+
+                if (write_macro_fields) then
+                    rho(x, y) = rho_val
+                    u_x(x, y) = u_x_val
+                    u_y(x, y) = u_y_val
+                end if
 
                 ! collide and stream to destination cells in all channels
                 !DIR$ UNROLL(9)
@@ -163,7 +169,7 @@ contains
 
 
     subroutine fuzed_push_streaming_collision_inner_universal( &
-        omega, f, f_next, rho, u_x, u_y &
+        omega, f, f_next &
         )
         ! inputs
         real(FP), intent(in) :: omega
@@ -171,9 +177,6 @@ contains
 
         ! write destinations
         real(FP), intent(out) :: f_next(N_X, N_Y, N_DIRS)
-        real(FP), intent(inout) :: rho(N_X, N_Y)
-        real(FP), intent(inout) :: u_x(N_X, N_Y)
-        real(FP), intent(inout) :: u_y(N_X, N_Y)
 
         ! temp
         integer(int32) :: x, y, i
@@ -238,13 +241,10 @@ contains
                 end if
             #endif
 
-                ! finalize and store density and velocity
+                ! finalize velocity for equilibrium computation
                 u_x_val = u_x_val / rho_val
                 u_y_val = u_y_val / rho_val
                 u_squ = u_x_val * u_x_val + u_y_val * u_y_val
-                rho(x, y) = rho_val
-                u_x(x, y) = u_x_val
-                u_y(x, y) = u_y_val
 
                 ! collide locally and push-stream to destination cells in all channels
                 !DIR$ UNROLL(9)
@@ -267,10 +267,72 @@ contains
     end subroutine fuzed_push_streaming_collision_inner_universal
 
 
-    subroutine fuzed_pull_streaming_collision_outer_couette_flow( &
-        rho_0, omega, u_wall, f, f_next, rho, u_x, u_y &
+    subroutine compute_macroscopic_fields( &
+        f, rho, u_x, u_y &
         )
         ! inputs
+        real(FP), intent(in) :: f(N_X, N_Y, N_DIRS)
+
+        ! write destinations
+        real(FP), intent(out) :: rho(N_X, N_Y)
+        real(FP), intent(out) :: u_x(N_X, N_Y)
+        real(FP), intent(out) :: u_y(N_X, N_Y)
+
+        ! temp
+        integer(int32) :: x, y
+        real(FP) :: f_1
+        real(FP) :: f_2
+        real(FP) :: f_3
+        real(FP) :: f_4
+        real(FP) :: f_5
+        real(FP) :: f_6
+        real(FP) :: f_7
+        real(FP) :: f_8
+        real(FP) :: f_9
+        real(FP) :: rho_val
+        real(FP) :: u_x_val
+        real(FP) :: u_y_val
+
+        ! loop over rows and cols of all cells
+        do y = 1, N_Y
+            do x = 1, N_X
+
+                ! read distribution functions from this cell in all channels
+                f_1 = f(x, y, 1)
+                f_2 = f(x, y, 2)
+                f_3 = f(x, y, 3)
+                f_4 = f(x, y, 4)
+                f_5 = f(x, y, 5)
+                f_6 = f(x, y, 6)
+                f_7 = f(x, y, 7)
+                f_8 = f(x, y, 8)
+                f_9 = f(x, y, 9)
+
+                rho_val = f_1 + f_2 + f_3 + f_4 + f_5 + f_6 + f_7 + f_8 + f_9
+                u_x_val = f_2 - f_4 + f_6 - f_7 - f_8 + f_9
+                u_y_val = f_3 - f_5 + f_6 + f_7 - f_8 - f_9
+
+                ! safety check to avoid division by zero in case of wrong density
+            #ifdef FFB_DENSITY_CHECKS
+                if (rho_val <= 0.0_FP) then
+                    error stop "error: density is zero in macroscopic field computation (rho_val <= 0)"
+                end if
+            #endif
+
+                ! finalize and store density and velocity
+                rho(x, y) = rho_val
+                u_x(x, y) = u_x_val / rho_val
+                u_y(x, y) = u_y_val / rho_val
+            end do
+        end do
+    end subroutine compute_macroscopic_fields
+
+
+    subroutine fuzed_pull_streaming_collision_outer_couette_flow( &
+        write_macro_fields, rho_0, omega, u_wall, f, f_next, rho, u_x, u_y &
+        )
+        ! inputs
+        logical, intent(in) :: write_macro_fields
         real(FP), intent(in) :: rho_0
         real(FP), intent(in) :: omega
         real(FP), intent(in) :: u_wall
@@ -409,13 +471,16 @@ contains
             end if
         #endif
 
-            ! finalize and store density and velocity
+            ! finalize density and velocity
             u_x_val = u_x_val / rho_val
             u_y_val = u_y_val / rho_val
             u_squ = u_x_val * u_x_val + u_y_val * u_y_val
-            rho(x, y) = rho_val
-            u_x(x, y) = u_x_val
-            u_y(x, y) = u_y_val
+
+            if (write_macro_fields) then
+                rho(x, y) = rho_val
+                u_x(x, y) = u_x_val
+                u_y(x, y) = u_y_val
+            end if
 
             ! collide and stream locally to destination channels
             !DIR$ UNROLL(9)
@@ -438,9 +503,10 @@ contains
 
 
     subroutine fuzed_pull_streaming_collision_outer_poiseuille_flow( &
-        omega, rho_in, rho_out, f, f_next, rho, u_x, u_y &
+        write_macro_fields, omega, rho_in, rho_out, f, f_next, rho, u_x, u_y &
         )
         ! inputs
+        logical, intent(in) :: write_macro_fields
         real(FP), intent(in) :: omega
         real(FP), intent(in) :: rho_in
         real(FP), intent(in) :: rho_out
@@ -632,13 +698,16 @@ contains
             end if
         #endif
 
-            ! finalize and store density and velocity
+            ! finalize density and velocity
             u_x_val = u_x_val / rho_val
             u_y_val = u_y_val / rho_val
             u_squ = u_x_val * u_x_val + u_y_val * u_y_val
-            rho(x, y) = rho_val
-            u_x(x, y) = u_x_val
-            u_y(x, y) = u_y_val
+
+            if (write_macro_fields) then
+                rho(x, y) = rho_val
+                u_x(x, y) = u_x_val
+                u_y(x, y) = u_y_val
+            end if
 
             ! collide and stream locally to destination channels
             !DIR$ UNROLL(9)
@@ -661,9 +730,10 @@ contains
 
 
     subroutine fuzed_pull_streaming_collision_outer_sliding_lid( &
-        rho_0, omega, u_wall, f, f_next, rho, u_x, u_y &
+        write_macro_fields, rho_0, omega, u_wall, f, f_next, rho, u_x, u_y &
         )
         ! inputs
+        logical, intent(in) :: write_macro_fields
         real(FP), intent(in) :: rho_0
         real(FP), intent(in) :: omega
         real(FP), intent(in) :: u_wall
@@ -826,13 +896,16 @@ contains
             end if
         #endif
 
-            ! finalize and store density and velocity
+            ! finalize density and velocity
             u_x_val = u_x_val / rho_val
             u_y_val = u_y_val / rho_val
             u_squ = u_x_val * u_x_val + u_y_val * u_y_val
-            rho(x, y) = rho_val
-            u_x(x, y) = u_x_val
-            u_y(x, y) = u_y_val
+
+            if (write_macro_fields) then
+                rho(x, y) = rho_val
+                u_x(x, y) = u_x_val
+                u_y(x, y) = u_y_val
+            end if
 
             ! collide and stream locally to destination channels
             !DIR$ UNROLL(9)

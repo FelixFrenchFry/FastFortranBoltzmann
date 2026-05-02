@@ -11,6 +11,7 @@ program main
 
     ! misc
     integer(int32) :: step
+    logical :: write_macro_fields
 
     ! parameter set for shear wave
     type(shear_wave_params_t), parameter :: shear_wave_params = shear_wave_params_t( &
@@ -193,9 +194,14 @@ program main
     ! simulation loop
     do step = 1, N_STEPS
 
+        ! decide if density and velocity fields need to be stored in this step
+        write_macro_fields = SIM_MODE == SIM_POISEUILLE_FLOW .or. &
+            should_export_step(step, export_interval, export_initial_state, export_final_state) .and. &
+            (export_rho .or. export_u_x .or. export_u_y .or. export_u_mag)
+
         call execute_full_sim_step( &
             shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
-            f, f_next, rho, u_x, u_y)
+            write_macro_fields, f, f_next, rho, u_x, u_y)
 
         call swap_distribution_function_buffers(f, f_next)
 
