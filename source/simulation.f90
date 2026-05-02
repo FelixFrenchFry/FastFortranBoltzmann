@@ -12,7 +12,7 @@ contains
         shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
         f, f_next, rho, u_x, u_y &
         )
-        ! read-only inputs
+        ! inputs
         type(shear_wave_params_t), intent(in) :: shear_wave_params
         type(couette_flow_params_t), intent(in) :: couette_flow_params
         type(poiseuille_flow_params_t), intent(in) :: poiseuille_flow_params
@@ -28,9 +28,7 @@ contains
         ! execute single sim step based on selected sim mode
         select case (SIM_MODE)
         case (SIM_SHEAR_WAVE)
-            call fuzed_pull_streaming_collision_inner_universal( &
-                shear_wave_params%omega, f, f_next, rho, u_x, u_y)
-            call fuzed_pull_streaming_collision_outer_shear_wave( &
+            call push_shift_streaming_collision_shear_wave( &
                 shear_wave_params%omega, f, f_next, rho, u_x, u_y)
         case (SIM_COUETTE_FLOW)
             call fuzed_pull_streaming_collision_inner_universal( &
@@ -59,7 +57,7 @@ contains
     subroutine fuzed_pull_streaming_collision_inner_universal( &
         omega, f, f_next, rho, u_x, u_y &
         )
-        ! read-only inputs
+        ! inputs
         real(FP), intent(in) :: omega
         real(FP), intent(in) :: f(N_X, N_Y, N_DIRS)
 
@@ -132,12 +130,10 @@ contains
                 end if
             #endif
 
-                ! finalize velocity
+                ! finalize and store density and velocity
                 u_x_val = u_x_val / rho_val
                 u_y_val = u_y_val / rho_val
                 u_squ = u_x_val * u_x_val + u_y_val * u_y_val
-
-                ! store density and velocity
                 rho(x, y) = rho_val
                 u_x(x, y) = u_x_val
                 u_y(x, y) = u_y_val
@@ -166,7 +162,7 @@ contains
     subroutine fuzed_pull_streaming_collision_outer_shear_wave( &
         omega, f, f_next, rho, u_x, u_y &
         )
-        ! read-only inputs
+        ! inputs
         real(FP), intent(in) :: omega
         real(FP), intent(in) :: f(N_X, N_Y, N_DIRS)
 
@@ -249,14 +245,14 @@ contains
                 src_x = x - C_X(i)
                 src_y = y - C_Y(i)
 
-                ! periodic boundary for left/right wall
+                ! periodic for left/right boundary
                 if (src_x < 1) then
                     src_x = N_X
                 else if (src_x > N_X) then
                     src_x = 1
                 end if
 
-                ! periodic boundary for bottom/top wall
+                ! periodic for bottom/top boundary
                 if (src_y < 1) then
                     src_y = N_Y
                 else if (src_y > N_Y) then
@@ -277,17 +273,15 @@ contains
             end if
         #endif
 
-            ! finalize velocity
+            ! finalize and store density and velocity
             u_x_val = u_x_val / rho_val
             u_y_val = u_y_val / rho_val
             u_squ = u_x_val * u_x_val + u_y_val * u_y_val
-
-            ! store density and velocity
             rho(x, y) = rho_val
             u_x(x, y) = u_x_val
             u_y(x, y) = u_y_val
 
-            ! collide and stream to destination cells in all channels
+            ! collide and stream locally to destination channels
             !DIR$ UNROLL(9)
             do i = 1, N_DIRS
 
@@ -305,6 +299,92 @@ contains
             end do
         end subroutine collide_stream_outer_cell_shear_wave
     end subroutine fuzed_pull_streaming_collision_outer_shear_wave
+
+
+    subroutine push_shift_streaming_collision_shear_wave( &
+        omega, f, f_next, rho, u_x, u_y &
+        )
+        ! inputs
+        real(FP), intent(in) :: omega
+        real(FP), intent(in) :: f(N_X, N_Y, N_DIRS)
+
+        ! write destinations
+        real(FP), intent(inout) :: f_next(N_X, N_Y, N_DIRS)
+        real(FP), intent(inout) :: rho(N_X, N_Y)
+        real(FP), intent(inout) :: u_x(N_X, N_Y)
+        real(FP), intent(inout) :: u_y(N_X, N_Y)
+
+        ! temp
+        integer(int32) :: i
+        real(FP) :: u_squ(N_X, N_Y)
+        real(FP) :: c_dot_u(N_X, N_Y)
+        real(FP) :: f_eq(N_X, N_Y)
+
+        ! 1: ( 0,  0) = rest
+        ! 2: ( 1,  0) = east
+        ! 3: ( 0,  1) = north
+        ! 4: (-1,  0) = west
+        ! 5: ( 0, -1) = south
+        ! 6: ( 1,  1) = north-east
+        ! 7: (-1,  1) = north-west
+        ! 8: (-1, -1) = south-west
+        ! 9: ( 1, -1) = south-east
+        ! ---------
+        ! | 7 3 6 |
+        ! | 4 1 2 |
+        ! | 8 5 9 |
+        ! ---------
+        ! periodic push-streaming of f into f_next (temporary storage)
+        f_next(:, :, 2) = cshift(f(:, :, 2), shift=-1, dim=1)
+        f_next(:, :, 3) = cshift(f(:, :, 3), shift=-1, dim=2)
+        f_next(:, :, 4) = cshift(f(:, :, 4), shift=1, dim=1)
+        f_next(:, :, 5) = cshift(f(:, :, 5), shift=1, dim=2)
+        f_next(:, :, 6) = cshift(cshift(f(:, :, 6), shift=-1, dim=1), shift=-1, dim=2)
+        f_next(:, :, 7) = cshift(cshift(f(:, :, 7), shift=1, dim=1), shift=-1, dim=2)
+        f_next(:, :, 8) = cshift(cshift(f(:, :, 8), shift=1, dim=1), shift=1, dim=2)
+        f_next(:, :, 9) = cshift(cshift(f(:, :, 9), shift=-1, dim=1), shift=1, dim=2)
+
+        ! density and velocity from streamed f
+        rho(:, :) = f(:, :, 1) + f_next(:, :, 2) + f_next(:, :, 3) + f_next(:, :, 4) + &
+                    f_next(:, :, 5) + f_next(:, :, 6) + f_next(:, :, 7) + f_next(:, :, 8) + f_next(:, :, 9)
+        u_x(:, :) = f_next(:, :, 2) - f_next(:, :, 4) + f_next(:, :, 6) - &
+                    f_next(:, :, 7) - f_next(:, :, 8) + f_next(:, :, 9)
+        u_y(:, :) = f_next(:, :, 3) - f_next(:, :, 5) + f_next(:, :, 6) + &
+                    f_next(:, :, 7) - f_next(:, :, 8) - f_next(:, :, 9)
+
+        ! safety check to avoid division by zero in case of wrong density
+    #ifdef FFB_DENSITY_CHECKS
+        if (any(rho(:, :) <= 0.0_FP)) then
+            error stop "error: density is zero in collision/streaming step (rho_val <= 0)"
+        end if
+    #endif
+
+        ! finalize and store density and velocity
+        u_x(:, :) = u_x(:, :) / rho(:, :)
+        u_y(:, :) = u_y(:, :) / rho(:, :)
+        u_squ(:, :) = u_x(:, :) * u_x(:, :) + u_y(:, :) * u_y(:, :)
+
+        ! collide and stream locally to destination channels
+        do i = 2, N_DIRS
+
+            ! compute equilibrium distribution function for channel i
+            c_dot_u(:, :) = C_X_FP(i) * u_x(:, :) + C_Y_FP(i) * u_y(:, :)
+            f_eq(:, :) = W(i) * rho(:, :) * ( &
+                1.0_FP + &
+                3.0_FP * c_dot_u(:, :) + &
+                4.5_FP * c_dot_u(:, :) * c_dot_u(:, :) - &
+                1.5_FP * u_squ(:, :))
+
+            ! relax towards equilibrium and write to destination channel in this cell
+            f_next(:, :, i) = f_next(:, :, i) - omega * (f_next(:, :, i) - f_eq(:, :))
+        end do
+
+        ! collide and stream for rest channel
+        f_eq(:, :) = W(1) * rho(:, :) * ( &
+            1.0_FP - &
+            1.5_FP * u_squ(:, :))
+        f_next(:, :, 1) = f(:, :, 1) - omega * (f(:, :, 1) - f_eq(:, :))
+    end subroutine push_shift_streaming_collision_shear_wave
 
 
     subroutine fuzed_pull_streaming_collision_outer_couette_flow( &
@@ -395,7 +475,7 @@ contains
                 src_x = x - C_X(i)
                 src_y = y - C_Y(i)
 
-                ! periodic boundary for left/right wall
+                ! periodic for left/right boundary
                 if (src_x < 1) then
                     src_x = N_X
                 else if (src_x > N_X) then
@@ -449,17 +529,15 @@ contains
             end if
         #endif
 
-            ! finalize velocity
+            ! finalize and store density and velocity
             u_x_val = u_x_val / rho_val
             u_y_val = u_y_val / rho_val
             u_squ = u_x_val * u_x_val + u_y_val * u_y_val
-
-            ! store density and velocity
             rho(x, y) = rho_val
             u_x(x, y) = u_x_val
             u_y(x, y) = u_y_val
 
-            ! collide and stream to destination cells in all channels
+            ! collide and stream locally to destination channels
             !DIR$ UNROLL(9)
             do i = 1, N_DIRS
 
@@ -674,17 +752,15 @@ contains
             end if
         #endif
 
-            ! finalize velocity
+            ! finalize and store density and velocity
             u_x_val = u_x_val / rho_val
             u_y_val = u_y_val / rho_val
             u_squ = u_x_val * u_x_val + u_y_val * u_y_val
-
-            ! store density and velocity
             rho(x, y) = rho_val
             u_x(x, y) = u_x_val
             u_y(x, y) = u_y_val
 
-            ! collide and stream to destination cells in all channels
+            ! collide and stream locally to destination channels
             !DIR$ UNROLL(9)
             do i = 1, N_DIRS
 
@@ -870,17 +946,15 @@ contains
             end if
         #endif
 
-            ! finalize velocity
+            ! finalize and store density and velocity
             u_x_val = u_x_val / rho_val
             u_y_val = u_y_val / rho_val
             u_squ = u_x_val * u_x_val + u_y_val * u_y_val
-
-            ! store density and velocity
             rho(x, y) = rho_val
             u_x(x, y) = u_x_val
             u_y(x, y) = u_y_val
 
-            ! collide and stream to destination cells in all channels
+            ! collide and stream locally to destination channels
             !DIR$ UNROLL(9)
             do i = 1, N_DIRS
 
