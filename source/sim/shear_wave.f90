@@ -7,9 +7,10 @@ module shear_wave
 contains
 
     subroutine fuzed_pull_streaming_collision_outer_SW( &
-        omega, f, f_next, rho, u_x, u_y &
+        write_macro_fields, omega, f, f_next, rho, u_x, u_y &
         )
         ! inputs
+        logical, intent(in) :: write_macro_fields
         real(FP), intent(in) :: omega
         real(FP), intent(in) :: f(N_X, N_Y, N_DIRS)
 
@@ -120,13 +121,16 @@ contains
             end if
         #endif
 
-            ! finalize and store density and velocity
+            ! finalize density and velocity
             u_x_val = u_x_val / rho_val
             u_y_val = u_y_val / rho_val
             u_squ = u_x_val * u_x_val + u_y_val * u_y_val
-            rho(x, y) = rho_val
-            u_x(x, y) = u_x_val
-            u_y(x, y) = u_y_val
+
+            if (write_macro_fields) then
+                rho(x, y) = rho_val
+                u_x(x, y) = u_x_val
+                u_y(x, y) = u_y_val
+            end if
 
             ! collide and stream locally to destination channels
             !DIR$ UNROLL(9)
@@ -149,7 +153,7 @@ contains
 
 
     subroutine fuzed_push_streaming_collision_outer_SW( &
-        omega, f, f_next, rho, u_x, u_y &
+        omega, f, f_next &
         )
         ! inputs
         real(FP), intent(in) :: omega
@@ -157,9 +161,6 @@ contains
 
         ! write destinations
         real(FP), intent(inout) :: f_next(N_X, N_Y, N_DIRS)
-        real(FP), intent(inout) :: rho(N_X, N_Y)
-        real(FP), intent(inout) :: u_x(N_X, N_Y)
-        real(FP), intent(inout) :: u_y(N_X, N_Y)
 
         ! temp
         integer(int32) :: x, y
@@ -245,13 +246,10 @@ contains
             end if
         #endif
 
-            ! finalize and store density and velocity
+            ! finalize velocity for equilibrium computation
             u_x_val = u_x_val / rho_val
             u_y_val = u_y_val / rho_val
             u_squ = u_x_val * u_x_val + u_y_val * u_y_val
-            rho(x, y) = rho_val
-            u_x(x, y) = u_x_val
-            u_y(x, y) = u_y_val
 
             ! collide locally and push-stream to destination cells in all channels
             !DIR$ UNROLL(9)
