@@ -17,7 +17,7 @@ program main
         rho_0 = 1.0_FP, &
         omega = 1.5_FP, &
         u_max = 0.1_FP, &
-        n_sin = 3.0_FP &
+        n_sin = 2.0_FP &
     )
 
     ! parameter set for couette flow

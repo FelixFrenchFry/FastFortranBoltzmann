@@ -31,6 +31,7 @@ add_executable(FFB
     source/main.f90
     source/settings.f90
     source/simulation.f90
+    source/sim/shear_wave.f90
 )
 
 # debug flags for ifx
