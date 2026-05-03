@@ -115,36 +115,6 @@ contains
                     src_y >= 1 .and. src_y <= N_Y) then
                     f_pulled(i) = f(src_x, src_y, i)
                 
-                ! bounce-back for bottom boundary (static)
-                else if (src_y < 1) then
-                    select case (i)
-                    case (3)
-                        f_pulled(i) = f(x, y, 5)
-                    case (6)
-                        f_pulled(i) = f(x, y, 8)
-                    case (7)
-                        f_pulled(i) = f(x, y, 9)
-                #ifdef FFB_BOUNDARY_CHECKS
-                    case default
-                        error stop "error: invalid bottom boundary channel in poiseuille flow"
-                #endif
-                    end select
-
-                ! bounce-back for top boundary (static)
-                else if (src_y > N_Y) then
-                    select case (i)
-                    case (5)
-                        f_pulled(i) = f(x, y, 3)
-                    case (8)
-                        f_pulled(i) = f(x, y, 6)
-                    case (9)
-                        f_pulled(i) = f(x, y, 7)
-                #ifdef FFB_BOUNDARY_CHECKS
-                    case default
-                        error stop "error: invalid top boundary channel in poiseuille flow"
-                #endif
-                    end select
-                
                 ! pressure-periodic inlet for left boundary
                 else if (src_x < 1) then
 
@@ -188,6 +158,36 @@ contains
                         1.5_FP * u_squ_src)
 
                     f_pulled(i) = f(1, y, i) - f_eq_src + f_eq_boundary
+
+                ! bounce-back for bottom boundary (static)
+                else if (src_y < 1) then
+                    select case (i)
+                    case (3)
+                        f_pulled(i) = f(x, y, 5)
+                    case (6)
+                        f_pulled(i) = f(x, y, 8)
+                    case (7)
+                        f_pulled(i) = f(x, y, 9)
+                #ifdef FFB_BOUNDARY_CHECKS
+                    case default
+                        error stop "error: invalid bottom boundary channel in poiseuille flow"
+                #endif
+                    end select
+
+                ! bounce-back for top boundary (static)
+                else if (src_y > N_Y) then
+                    select case (i)
+                    case (5)
+                        f_pulled(i) = f(x, y, 3)
+                    case (8)
+                        f_pulled(i) = f(x, y, 6)
+                    case (9)
+                        f_pulled(i) = f(x, y, 7)
+                #ifdef FFB_BOUNDARY_CHECKS
+                    case default
+                        error stop "error: invalid top boundary channel in poiseuille flow"
+                #endif
+                    end select
                 end if
 
                 rho_val = rho_val + f_pulled(i)
