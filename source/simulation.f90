@@ -5,7 +5,8 @@ module simulation
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
         USE_PUSH_STREAMING, USE_UNROLLED_KERNELS, &
         shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t
-    use shear_wave, only: fuzed_pull_streaming_collision_outer_SW, fuzed_push_streaming_collision_outer_SW
+    use shear_wave, only: fuzed_pull_streaming_collision_outer_SW, fuzed_unrolled_pull_streaming_collision_outer_SW, &
+        fuzed_push_streaming_collision_outer_SW, fuzed_unrolled_push_streaming_collision_outer_SW
     use couette_flow, only: fuzed_pull_streaming_collision_outer_CF
     use poiseuille_flow, only: fuzed_pull_streaming_collision_outer_PF
     use sliding_lid, only: fuzed_pull_streaming_collision_outer_SL
@@ -38,12 +39,14 @@ contains
                 if (USE_UNROLLED_KERNELS) then
                     call fuzed_unrolled_push_streaming_collision_inner_universal( &
                         shear_wave_params%omega, f, f_next)
+                    call fuzed_unrolled_push_streaming_collision_outer_SW( &
+                        shear_wave_params%omega, f, f_next)
                 else
                     call fuzed_push_streaming_collision_inner_universal( &
                         shear_wave_params%omega, f, f_next)
+                    call fuzed_push_streaming_collision_outer_SW( &
+                        shear_wave_params%omega, f, f_next)
                 end if
-                call fuzed_push_streaming_collision_outer_SW( &
-                    shear_wave_params%omega, f, f_next)
 
                 if (write_macro_fields) then
                     call compute_macroscopic_fields(f_next, rho, u_x, u_y)
@@ -52,12 +55,14 @@ contains
                 if (USE_UNROLLED_KERNELS) then
                     call fuzed_unrolled_pull_streaming_collision_inner_universal( &
                         write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
+                    call fuzed_unrolled_pull_streaming_collision_outer_SW( &
+                        write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
                 else
                     call fuzed_pull_streaming_collision_inner_universal( &
                         write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
+                    call fuzed_pull_streaming_collision_outer_SW( &
+                        write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
                 end if
-                call fuzed_pull_streaming_collision_outer_SW( &
-                    write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
             end if
         case (SIM_COUETTE_FLOW)
             if (USE_PUSH_STREAMING) then

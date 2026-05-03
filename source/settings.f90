@@ -57,7 +57,7 @@ module settings
     integer(int32), parameter :: SIM_MODE = 1 ! selected sim mode
 
     ! kernel selection
-    logical, parameter :: USE_PUSH_STREAMING = .true. ! if false, use pull-streaming
+    logical, parameter :: USE_PUSH_STREAMING = .false. ! if false, use pull-streaming
     logical, parameter :: USE_UNROLLED_KERNELS = .true.
 
     ! misc
