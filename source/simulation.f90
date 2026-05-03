@@ -6,7 +6,7 @@ module simulation
         USE_UNROLLED_KERNELS, USE_PUSH_SHIFT_KERNELS, &
         shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t
     use shear_wave, only: fuzed_pull_streaming_collision_outer_SW, fuzed_unrolled_pull_streaming_collision_outer_SW, &
-        fuzed_push_shift_streaming_collision_full_SW
+        fuzed_push_shift_streaming_collision_full_SW, fuzed_unrolled_push_shift_streaming_collision_full_SW
     use couette_flow, only: fuzed_pull_streaming_collision_outer_CF
     use poiseuille_flow, only: fuzed_pull_streaming_collision_outer_PF
     use sliding_lid, only: fuzed_pull_streaming_collision_outer_SL
@@ -36,8 +36,13 @@ contains
         select case (SIM_MODE)
         case (SIM_SHEAR_WAVE) ! shear wave
             if (USE_PUSH_SHIFT_KERNELS) then
-                call fuzed_push_shift_streaming_collision_full_SW( &
-                    write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
+                if (USE_UNROLLED_KERNELS) then
+                    call fuzed_unrolled_push_shift_streaming_collision_full_SW( &
+                        write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
+                else
+                    call fuzed_push_shift_streaming_collision_full_SW( &
+                        write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
+                end if
             else if (USE_UNROLLED_KERNELS) then
                 call fuzed_unrolled_pull_streaming_collision_inner_universal( &
                     write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
