@@ -31,7 +31,10 @@ add_executable(FFB
     source/main.f90
     source/settings.f90
     source/simulation.f90
+    source/sim/couette_flow.f90
+    source/sim/poiseuille_flow.f90
     source/sim/shear_wave.f90
+    source/sim/sliding_lid.f90
 )
 
 # debug flags for ifx
