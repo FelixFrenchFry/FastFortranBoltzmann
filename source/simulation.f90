@@ -201,7 +201,7 @@ contains
                         1.5_FP * u_squ)
 
                     ! relax towards equilibrium and write to destination channel in this cell
-                    f_next_val = f_pulled(i) - omega * (f_pulled(i) - f_eq_val)
+                    f_next_val = f_pulled(i) + omega * (f_eq_val - f_pulled(i))
                     f_next(x, y, i) = f_next_val
                 end do
             end do
@@ -294,52 +294,52 @@ contains
                 ! collide and stream to destination cells in all channels
                 ! (manually unrolled)
                 ! 1: (0, 0)
-                f_next(x, y, 1) = f_1 - omega * (f_1 - (4.0_FP/9.0_FP) * rho_val * ( &
-                    1.0_FP - 1.5_FP * u_squ))
+                f_next(x, y, 1) = f_1 + omega * ((4.0_FP/9.0_FP) * rho_val * ( &
+                    1.0_FP - 1.5_FP * u_squ) - f_1)
                 
                 ! 2: (1, 0)
-                f_next(x, y, 2) = f_2 - omega * (f_2 - (1.0_FP/9.0_FP) * rho_val * ( &
+                f_next(x, y, 2) = f_2 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
                     1.0_FP + 3.0_FP * u_x_val + 4.5_FP * u_x_val * u_x_val - &
-                    1.5_FP * u_squ))
+                    1.5_FP * u_squ) - f_2)
 
                 ! 3: (0, 1)
-                f_next(x, y, 3) = f_3 - omega * (f_3 - (1.0_FP/9.0_FP) * rho_val * ( &
+                f_next(x, y, 3) = f_3 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
                     1.0_FP + 3.0_FP * u_y_val + 4.5_FP * u_y_val * u_y_val - &
-                    1.5_FP * u_squ))
+                    1.5_FP * u_squ) - f_3)
 
                 ! 4: (-1, 0)
-                f_next(x, y, 4) = f_4 - omega * (f_4 - (1.0_FP/9.0_FP) * rho_val * ( &
+                f_next(x, y, 4) = f_4 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
                     1.0_FP - 3.0_FP * u_x_val + 4.5_FP * u_x_val * u_x_val - &
-                    1.5_FP * u_squ))
+                    1.5_FP * u_squ) - f_4)
 
                 ! 5: (0, -1)
-                f_next(x, y, 5) = f_5 - omega * (f_5 - (1.0_FP/9.0_FP) * rho_val * ( &
+                f_next(x, y, 5) = f_5 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
                     1.0_FP - 3.0_FP * u_y_val + 4.5_FP * u_y_val * u_y_val - &
-                    1.5_FP * u_squ))
+                    1.5_FP * u_squ) - f_5)
 
                 ! 6: (1, 1)
-                f_next(x, y, 6) = f_6 - omega * (f_6 - (1.0_FP/36.0_FP) * rho_val * ( &
+                f_next(x, y, 6) = f_6 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
                     1.0_FP + 3.0_FP * (u_x_val + u_y_val) + &
                     4.5_FP * (u_x_val + u_y_val) * (u_x_val + u_y_val) - &
-                    1.5_FP * u_squ))
+                    1.5_FP * u_squ) - f_6)
 
                 ! 7: (-1, 1)
-                f_next(x, y, 7) = f_7 - omega * (f_7 - (1.0_FP/36.0_FP) * rho_val * ( &
+                f_next(x, y, 7) = f_7 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
                     1.0_FP + 3.0_FP * (-u_x_val + u_y_val) + &
                     4.5_FP * (-u_x_val + u_y_val) * (-u_x_val + u_y_val) - &
-                    1.5_FP * u_squ))
+                    1.5_FP * u_squ) - f_7)
 
                 ! 8: (-1, -1)
-                f_next(x, y, 8) = f_8 - omega * (f_8 - (1.0_FP/36.0_FP) * rho_val * ( &
+                f_next(x, y, 8) = f_8 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
                     1.0_FP - 3.0_FP * (u_x_val + u_y_val) + &
                     4.5_FP * (u_x_val + u_y_val) * (u_x_val + u_y_val) - &
-                    1.5_FP * u_squ))
+                    1.5_FP * u_squ) - f_8)
                 
                 ! 9: (1, -1)
-                f_next(x, y, 9) = f_9 - omega * (f_9 - (1.0_FP/36.0_FP) * rho_val * ( &
+                f_next(x, y, 9) = f_9 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
                     1.0_FP + 3.0_FP * (u_x_val - u_y_val) + &
                     4.5_FP * (u_x_val - u_y_val) * (u_x_val - u_y_val) - &
-                    1.5_FP * u_squ))
+                    1.5_FP * u_squ) - f_9)
             end do
         end do
     end subroutine fuzed_unrolled_pull_streaming_collision_inner_universal

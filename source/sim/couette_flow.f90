@@ -173,7 +173,7 @@ contains
                     1.5_FP * u_squ)
 
                 ! relax towards equilibrium and write to destination channel in this cell
-                f_next_val = f_pulled(i) - omega * (f_pulled(i) - f_eq_val)
+                f_next_val = f_pulled(i) + omega * (f_eq_val - f_pulled(i))
                 f_next(x, y, i) = f_next_val
             end do
         end subroutine stream_collide_outer_cell_CF
