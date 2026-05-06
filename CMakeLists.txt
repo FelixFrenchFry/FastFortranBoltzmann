@@ -26,6 +26,7 @@ option(FFB_BOUNDARY_CHECKS "Run-time boundary condition checks enabled" OFF)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 add_executable(FFB
+    source/domain.f90
     source/export.f90
     source/initialization.f90
     source/main.f90
