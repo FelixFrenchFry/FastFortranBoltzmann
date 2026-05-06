@@ -111,27 +111,27 @@ program main
     if (this_image() == 1) then
         print '(A)', ""
         print '(A)', "--- [ simulation parameters ] ---------------------------------------------"
-        print '(A,A)',     "SIM_MODE             = ", trim(sim_mode_to_string(SIM_MODE))
+        print '(A,T27,A,A)',     "SIM_MODE", "= ", trim(sim_mode_to_string(SIM_MODE))
 
         select case (SIM_MODE)
         case (SIM_SHEAR_WAVE)
-            print '(A,F8.6)', "rho_0                = ", shear_wave_params%rho_0
-            print '(A,F8.6)', "omega                = ", shear_wave_params%omega
-            print '(A,F8.6)', "u_max                = ", shear_wave_params%u_max
-            print '(A,F8.6)', "n_sin                = ", shear_wave_params%n_sin
+            print '(A,T27,A,F8.6)', "rho_0", "= ", shear_wave_params%rho_0
+            print '(A,T27,A,F8.6)', "omega", "= ", shear_wave_params%omega
+            print '(A,T27,A,F8.6)', "u_max", "= ", shear_wave_params%u_max
+            print '(A,T27,A,F8.6)', "n_sin", "= ", shear_wave_params%n_sin
         case (SIM_COUETTE_FLOW)
-            print '(A,F8.6)', "rho_0                = ", couette_flow_params%rho_0
-            print '(A,F8.6)', "omega                = ", couette_flow_params%omega
-            print '(A,F8.6)', "u_wall               = ", couette_flow_params%u_wall
+            print '(A,T27,A,F8.6)', "rho_0", "= ", couette_flow_params%rho_0
+            print '(A,T27,A,F8.6)', "omega", "= ", couette_flow_params%omega
+            print '(A,T27,A,F8.6)', "u_wall", "= ", couette_flow_params%u_wall
         case (SIM_POISEUILLE_FLOW)
-            print '(A,F8.6)', "rho_0                = ", poiseuille_flow_params%rho_0
-            print '(A,F8.6)', "omega                = ", poiseuille_flow_params%omega
-            print '(A,F8.6)', "rho_in               = ", poiseuille_flow_params%rho_in
-            print '(A,F8.6)', "rho_out              = ", poiseuille_flow_params%rho_out
+            print '(A,T27,A,F8.6)', "rho_0", "= ", poiseuille_flow_params%rho_0
+            print '(A,T27,A,F8.6)', "omega", "= ", poiseuille_flow_params%omega
+            print '(A,T27,A,F8.6)', "rho_in", "= ", poiseuille_flow_params%rho_in
+            print '(A,T27,A,F8.6)', "rho_out", "= ", poiseuille_flow_params%rho_out
         case (SIM_SLIDING_LID)
-            print '(A,F8.6)', "rho_0                = ", sliding_lid_params%rho_0
-            print '(A,F8.6)', "omega                = ", sliding_lid_params%omega
-            print '(A,F8.6)', "u_wall               = ", sliding_lid_params%u_wall
+            print '(A,T27,A,F8.6)', "rho_0", "= ", sliding_lid_params%rho_0
+            print '(A,T27,A,F8.6)', "omega", "= ", sliding_lid_params%omega
+            print '(A,T27,A,F8.6)', "u_wall", "= ", sliding_lid_params%u_wall
         case default
             error stop "error: unknown sim mode in main print block"
         end select
@@ -139,20 +139,20 @@ program main
         ! parameter info
         print '(A)', ""
         print '(A)', "--- [ other parameters ] --------------------------------------------------"
-        print '(A,I0)',    "N_X_TOTAL            = ", N_X
-        print '(A,I0)',    "N_Y_TOTAL            = ", N_Y
-        print '(A,I0)',    "N_STEPS              = ", N_STEPS
-        print '(A,L1)',    "use_unrolled_kernels = ", USE_UNROLLED_KERNELS
-        print '(A,L1)',    "use_push_shift_kernels = ", USE_PUSH_SHIFT_KERNELS
-        print '(A,L1)',    "export_rho           = ", export_rho
-        print '(A,L1)',    "export_u_x           = ", export_u_x
-        print '(A,L1)',    "export_u_y           = ", export_u_y
-        print '(A,L1)',    "export_u_mag         = ", export_u_mag
-        print '(A,I0)',    "export_interval      = ", export_interval
-        print '(A,L1)',    "export_initial_state = ", export_initial_state
-        print '(A,L1)',    "export_final_state   = ", export_final_state
-        print '(A,A)',     "output_dir_name      = ", output_dir_name
-        print '(A,A)',     "export_num           = ", export_num
+        print '(A,T27,A,I0)',    "N_X_TOTAL", "= ", N_X
+        print '(A,T27,A,I0)',    "N_Y_TOTAL", "= ", N_Y
+        print '(A,T27,A,I0)',    "N_STEPS", "= ", N_STEPS
+        print '(A,T27,A,L1)',    "use_unrolled_kernels", "= ", USE_UNROLLED_KERNELS
+        print '(A,T27,A,L1)',    "use_push_shift_kernels", "= ", USE_PUSH_SHIFT_KERNELS
+        print '(A,T27,A,L1)',    "export_rho", "= ", export_rho
+        print '(A,T27,A,L1)',    "export_u_x", "= ", export_u_x
+        print '(A,T27,A,L1)',    "export_u_y", "= ", export_u_y
+        print '(A,T27,A,L1)',    "export_u_mag", "= ", export_u_mag
+        print '(A,T27,A,I0)',    "export_interval", "= ", export_interval
+        print '(A,T27,A,L1)',    "export_initial_state", "= ", export_initial_state
+        print '(A,T27,A,L1)',    "export_final_state", "= ", export_final_state
+        print '(A,T27,A,A)',     "output_dir_name", "= ", output_dir_name
+        print '(A,T27,A,A)',     "export_num", "= ", export_num
         print *
 
         ! memory info
