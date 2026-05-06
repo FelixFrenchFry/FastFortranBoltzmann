@@ -1,6 +1,7 @@
 program main
     ! imports
     use iso_fortran_env, only: int32, int64, real64, output_unit
+    use domain, only: domain_t, initialize_domain, print_domain_summary
     use export, only: should_export_step, export_selected_data, export_metadata
     use initialization, only: initialize_sim_condition
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, &
@@ -13,6 +14,7 @@ program main
     ! misc
     integer(int32) :: step
     logical :: write_macro_fields
+    type(domain_t) :: domain_info
 
     ! parameter set for shear wave
     type(shear_wave_params_t), parameter :: shear_wave_params = shear_wave_params_t( &
@@ -45,10 +47,10 @@ program main
     )
 
     ! export settings
-    logical, parameter :: export_rho = .true.
-    logical, parameter :: export_u_x = .true.
-    logical, parameter :: export_u_y = .true.
-    logical, parameter :: export_u_mag = .true.
+    logical, parameter :: export_rho = .false.
+    logical, parameter :: export_u_x = .false.
+    logical, parameter :: export_u_y = .false.
+    logical, parameter :: export_u_mag = .false.
     integer(int32), parameter :: export_interval = 10000
     logical, parameter :: export_initial_state = .true.
     logical, parameter :: export_final_state = .true.
@@ -89,6 +91,10 @@ program main
     real(FP), allocatable :: rho(:,:)
     real(FP), allocatable :: u_x(:,:)
     real(FP), allocatable :: u_y(:,:)
+
+    ! setup domain decomposition
+    call initialize_domain(domain_info)
+
     allocate(f(N_X, N_Y, N_DIRS))
     allocate(f_next(N_X, N_Y, N_DIRS))
     allocate(rho(N_X, N_Y))
@@ -153,7 +159,9 @@ program main
         print '(A,T27,A,L1)',    "export_final_state", "= ", export_final_state
         print '(A,T27,A,A)',     "output_dir_name", "= ", output_dir_name
         print '(A,T27,A,A)',     "export_num", "= ", export_num
-        print *
+
+        call print_domain_summary(domain_info)
+        print '(A)', ""
 
         ! memory info
         print '(A,T42,A,T45,A,T59,A,T62,A)', "memory usage", "|", "per cell [B]", "|", "all cells [GB]"
