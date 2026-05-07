@@ -6,7 +6,7 @@ program main
     use initialization, only: initialize_sim_condition
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
-        USE_UNROLLED_KERNELS, USE_PUSH_SHIFT_KERNELS, &
+        USE_UNROLLED_KERNELS, USE_PULL_SHIFT_KERNELS, &
         shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
     use simulation, only: execute_full_sim_step, swap_distribution_function_buffers
     implicit none
@@ -149,7 +149,7 @@ program main
         print '(A,T27,A,I0)',    "N_Y_TOTAL", "= ", N_Y
         print '(A,T27,A,I0)',    "N_STEPS", "= ", N_STEPS
         print '(A,T27,A,L1)',    "use_unrolled_kernels", "= ", USE_UNROLLED_KERNELS
-        print '(A,T27,A,L1)',    "use_push_shift_kernels", "= ", USE_PUSH_SHIFT_KERNELS
+        print '(A,T27,A,L1)',    "use_pull_shift_kernels", "= ", USE_PULL_SHIFT_KERNELS
         print '(A,T27,A,L1)',    "export_rho", "= ", export_rho
         print '(A,T27,A,L1)',    "export_u_x", "= ", export_u_x
         print '(A,T27,A,L1)',    "export_u_y", "= ", export_u_y

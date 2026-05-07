@@ -3,7 +3,7 @@ module export
     use iso_fortran_env, only: int32
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, C_X, C_Y, C_X_FP, C_Y_FP, W, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, FP_DTYPE, &
-        USE_UNROLLED_KERNELS, USE_PUSH_SHIFT_KERNELS, &
+        USE_UNROLLED_KERNELS, USE_PULL_SHIFT_KERNELS, &
         shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
     implicit none
 
@@ -162,7 +162,7 @@ contains
         write(unit, '(A,I0,A)') '  "N_DIRS": ', N_DIRS, ','
         write(unit, '(A)') ""
         write(unit, '(A,A,A)') '  "use_unrolled_kernels": ', trim(logical_to_json(USE_UNROLLED_KERNELS)), ','
-        write(unit, '(A,A,A)') '  "use_push_shift_kernels": ', trim(logical_to_json(USE_PUSH_SHIFT_KERNELS)), ','
+        write(unit, '(A,A,A)') '  "use_pull_shift_kernels": ', trim(logical_to_json(USE_PULL_SHIFT_KERNELS)), ','
         write(unit, '(A)') ""
 #ifdef FFB_FP64
         write(unit, '(A)') '  "FFB_FP64": true,'
