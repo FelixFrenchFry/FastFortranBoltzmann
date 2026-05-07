@@ -346,7 +346,7 @@ contains
     end subroutine fuzed_unrolled_pull_streaming_collision_outer_SW
 
 
-    subroutine fuzed_push_shift_streaming_collision_full_SW( &
+    subroutine fuzed_pull_shift_streaming_collision_full_SW( &
         write_macro_fields, omega, f, f_next, rho, u_x, u_y &
         )
         ! inputs
@@ -394,7 +394,7 @@ contains
         ! | 4 1 2 |
         ! | 8 5 9 |
         ! ---------
-        ! periodic streaming of f into f_next (temporary storage)
+        ! periodic pull-style streaming of f into f_next (temporarily)
         f_next(:, :, 2) = cshift(f(:, :, 2), shift=-1, dim=1)
         f_next(:, :, 3) = cshift(f(:, :, 3), shift=-1, dim=2)
         f_next(:, :, 4) = cshift(f(:, :, 4), shift=1, dim=1)
@@ -462,10 +462,10 @@ contains
                 end do
             end do
         end do
-    end subroutine fuzed_push_shift_streaming_collision_full_SW
+    end subroutine fuzed_pull_shift_streaming_collision_full_SW
 
     
-    subroutine fuzed_unrolled_push_shift_streaming_collision_full_SW( &
+    subroutine fuzed_unrolled_pull_shift_streaming_collision_full_SW( &
         write_macro_fields, omega, f, f_next, rho, u_x, u_y &
         )
         ! inputs
@@ -509,7 +509,7 @@ contains
         ! | 4 1 2 |
         ! | 8 5 9 |
         ! ---------
-        ! periodic streaming of f into f_next (temporary storage)
+        ! periodic pull-style streaming of f into f_next (temporarily)
         f_next(:, :, 2) = cshift(f(:, :, 2), shift=-1, dim=1)
         f_next(:, :, 3) = cshift(f(:, :, 3), shift=-1, dim=2)
         f_next(:, :, 4) = cshift(f(:, :, 4), shift=1, dim=1)
@@ -608,6 +608,6 @@ contains
                     1.5_FP * u_squ) - f_9)
             end do
         end do
-    end subroutine fuzed_unrolled_push_shift_streaming_collision_full_SW
+    end subroutine fuzed_unrolled_pull_shift_streaming_collision_full_SW
 
 end module shear_wave

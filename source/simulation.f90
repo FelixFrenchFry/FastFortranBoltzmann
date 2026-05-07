@@ -3,10 +3,10 @@ module simulation
     use iso_fortran_env, only: int32
     use settings, only: N_X, N_Y, N_DIRS, C_X, C_Y, C_X_FP, C_Y_FP, W, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
-        USE_UNROLLED_KERNELS, USE_PUSH_SHIFT_KERNELS, &
+        USE_UNROLLED_KERNELS, USE_PULL_SHIFT_KERNELS, &
         shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t
     use shear_wave, only: fuzed_pull_streaming_collision_outer_SW, fuzed_unrolled_pull_streaming_collision_outer_SW, &
-        fuzed_push_shift_streaming_collision_full_SW, fuzed_unrolled_push_shift_streaming_collision_full_SW
+        fuzed_pull_shift_streaming_collision_full_SW, fuzed_unrolled_pull_shift_streaming_collision_full_SW
     use couette_flow, only: fuzed_pull_streaming_collision_outer_CF
     use poiseuille_flow, only: fuzed_pull_streaming_collision_outer_PF
     use sliding_lid, only: fuzed_pull_streaming_collision_outer_SL
@@ -35,12 +35,12 @@ contains
         ! execute single sim step based on selected sim mode
         select case (SIM_MODE)
         case (SIM_SHEAR_WAVE) ! shear wave
-            if (USE_PUSH_SHIFT_KERNELS) then
+            if (USE_PULL_SHIFT_KERNELS) then
                 if (USE_UNROLLED_KERNELS) then
-                    call fuzed_unrolled_push_shift_streaming_collision_full_SW( &
+                    call fuzed_unrolled_pull_shift_streaming_collision_full_SW( &
                         write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
                 else
-                    call fuzed_push_shift_streaming_collision_full_SW( &
+                    call fuzed_pull_shift_streaming_collision_full_SW( &
                         write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
                 end if
             else if (USE_UNROLLED_KERNELS) then
@@ -55,8 +55,8 @@ contains
                     write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
             end if
         case (SIM_COUETTE_FLOW) ! couette flow
-            if (USE_PUSH_SHIFT_KERNELS) then
-                error stop "error: push-shift couette flow is not implemented yet"
+            if (USE_PULL_SHIFT_KERNELS) then
+                error stop "error: pull-shift couette flow is not implemented yet"
             else if (USE_UNROLLED_KERNELS) then
                 call fuzed_unrolled_pull_streaming_collision_inner_universal( &
                     write_macro_fields, couette_flow_params%omega, f, f_next, rho, u_x, u_y)
@@ -68,8 +68,8 @@ contains
                 write_macro_fields, couette_flow_params%rho_0, couette_flow_params%omega, couette_flow_params%u_wall, &
                 f, f_next, rho, u_x, u_y)
         case (SIM_POISEUILLE_FLOW) ! poiseuille flow
-            if (USE_PUSH_SHIFT_KERNELS) then
-                error stop "error: push-shift poiseuille flow is not implemented yet"
+            if (USE_PULL_SHIFT_KERNELS) then
+                error stop "error: pull-shift poiseuille flow is not implemented yet"
             else if (USE_UNROLLED_KERNELS) then
                 call fuzed_unrolled_pull_streaming_collision_inner_universal( &
                     write_macro_fields, poiseuille_flow_params%omega, f, f_next, rho, u_x, u_y)
@@ -82,8 +82,8 @@ contains
                 poiseuille_flow_params%rho_in, poiseuille_flow_params%rho_out, &
                 f, f_next, rho, u_x, u_y)
         case (SIM_SLIDING_LID) ! sliding lid
-            if (USE_PUSH_SHIFT_KERNELS) then
-                error stop "error: push-shift sliding lid is not implemented yet"
+            if (USE_PULL_SHIFT_KERNELS) then
+                error stop "error: pull-shift sliding lid is not implemented yet"
             else if (USE_UNROLLED_KERNELS) then
                 call fuzed_unrolled_pull_streaming_collision_inner_universal( &
                     write_macro_fields, sliding_lid_params%omega, f, f_next, rho, u_x, u_y)
