@@ -2,20 +2,25 @@ program main
     ! imports
     use iso_fortran_env, only: int32, int64, real64, output_unit
     use domain, only: domain_t, initialize_domain, print_domain_summary
+    use exchange, only: halo_buffers_t, allocate_halo_buffers, exchange_halos
     use export, only: should_export_step, export_selected_data, export_metadata
     use hardware_info, only: hardware_info_t, collect_hardware_info, print_hardware_summary
-    use initialization, only: initialize_sim_condition
+    use initialization, only: initialize_sim_condition, apply_condition_shear_wave_local
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
         USE_UNROLLED_KERNELS, USE_PULL_SHIFT_KERNELS, &
         shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
+    use shear_wave, only: fuzed_unrolled_pull_streaming_collision_inner_local_SW, &
+        fuzed_unrolled_pull_streaming_collision_outer_local_SW
     use simulation, only: execute_full_sim_step, swap_distribution_function_buffers
     implicit none
 
     ! misc
     integer(int32) :: step
     logical :: write_macro_fields
+    logical :: use_distributed_shear_wave
     type(domain_t) :: domain_info
+    type(halo_buffers_t) :: halo_buffers
     type(hardware_info_t) :: machine_info
 
     ! parameter set for shear wave
@@ -97,27 +102,63 @@ program main
     ! setup domain decomposition
     call initialize_domain(domain_info)
 
+    use_distributed_shear_wave = domain_info%n_images > 1 .and. SIM_MODE == SIM_SHEAR_WAVE
+
+    if (domain_info%n_images > 1 .and. SIM_MODE /= SIM_SHEAR_WAVE) then
+        error stop "error: distributed coarray execution is only implemented for shear wave yet"
+    end if
+
+    if (use_distributed_shear_wave .and. USE_PULL_SHIFT_KERNELS) then
+        error stop "error: distributed pull-shift shear wave is not implemented yet"
+    end if
+
+    if (use_distributed_shear_wave .and. .not. USE_UNROLLED_KERNELS) then
+        error stop "error: distributed regular shear wave is not implemented yet"
+    end if
+
+    if (use_distributed_shear_wave .and. &
+        (export_rho .or. export_u_x .or. export_u_y .or. export_u_mag)) then
+        error stop "error: distributed field export is not implemented yet"
+    end if
+
     if (this_image() == 1) then
         call collect_hardware_info(machine_info)
     end if
 
-    allocate(f(N_X, N_Y, N_DIRS))
-    allocate(f_next(N_X, N_Y, N_DIRS))
-    allocate(rho(N_X, N_Y))
-    allocate(u_x(N_X, N_Y))
-    allocate(u_y(N_X, N_Y))
+    if (use_distributed_shear_wave) then
+        allocate(f(0:domain_info%n_x_local+1, 0:domain_info%n_y_local+1, N_DIRS))
+        allocate(f_next(0:domain_info%n_x_local+1, 0:domain_info%n_y_local+1, N_DIRS))
+        allocate(rho(domain_info%n_x_local, domain_info%n_y_local))
+        allocate(u_x(domain_info%n_x_local, domain_info%n_y_local))
+        allocate(u_y(domain_info%n_x_local, domain_info%n_y_local))
+        call allocate_halo_buffers(domain_info, halo_buffers)
+    else
+        allocate(f(N_X, N_Y, N_DIRS))
+        allocate(f_next(N_X, N_Y, N_DIRS))
+        allocate(rho(N_X, N_Y))
+        allocate(u_x(N_X, N_Y))
+        allocate(u_y(N_X, N_Y))
+    end if
 
     ! compute memory metrics for persistent main sim buffers
     bytes_fp = int(storage_size(0.0_FP), int64) / 8_int64
-    dist_function_buffers_bytes = (size(f, kind=int64) + size(f_next, kind=int64)) * bytes_fp
-    macro_field_buffers_bytes = (size(rho, kind=int64) + size(u_x, kind=int64) + size(u_y, kind=int64)) * bytes_fp
+    dist_function_buffers_bytes = (size(f, kind=int64) + size(f_next, kind=int64)) * bytes_fp * &
+        int(domain_info%n_images, int64)
+    macro_field_buffers_bytes = (size(rho, kind=int64) + size(u_x, kind=int64) + size(u_y, kind=int64)) * bytes_fp * &
+        int(domain_info%n_images, int64)
     total_buffer_bytes = dist_function_buffers_bytes + macro_field_buffers_bytes
     total_bytes_per_cell = real(total_buffer_bytes, real64) / real(N_CELLS, real64)
     gb_per_byte = 1.0e-9_real64
 
     ! inital condition
-    call initialize_sim_condition(shear_wave_params, couette_flow_params, poiseuille_flow_params, &
-        sliding_lid_params, f, rho, u_x, u_y)
+    if (use_distributed_shear_wave) then
+        call apply_condition_shear_wave_local( &
+            shear_wave_params%rho_0, shear_wave_params%u_max, shear_wave_params%n_sin, &
+            domain_info%n_x_local, domain_info%n_y_local, domain_info%y_global_start, f, rho, u_x, u_y)
+    else
+        call initialize_sim_condition(shear_wave_params, couette_flow_params, poiseuille_flow_params, &
+            sliding_lid_params, f, rho, u_x, u_y)
+    end if
 
     ! print sim info
     if (this_image() == 1) then
@@ -210,6 +251,10 @@ program main
             launched -------------------------------------------------------"
     end if
 
+    if (use_distributed_shear_wave) then
+        sync all
+    end if
+
     call system_clock(clock_start, clock_rate)
 
     ! simulation loop
@@ -220,9 +265,19 @@ program main
             should_export_step(step, export_interval, export_initial_state, export_final_state) .and. &
             (export_rho .or. export_u_x .or. export_u_y .or. export_u_mag)
 
-        call execute_full_sim_step( &
-            shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
-            write_macro_fields, f, f_next, rho, u_x, u_y)
+        if (use_distributed_shear_wave) then
+            call fuzed_unrolled_pull_streaming_collision_inner_local_SW( &
+                domain_info%n_x_local, domain_info%n_y_local, &
+                write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
+            call exchange_halos(domain_info, halo_buffers, domain_info%n_x_local, domain_info%n_y_local, f)
+            call fuzed_unrolled_pull_streaming_collision_outer_local_SW( &
+                domain_info%n_x_local, domain_info%n_y_local, &
+                write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
+        else
+            call execute_full_sim_step( &
+                shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
+                write_macro_fields, f, f_next, rho, u_x, u_y)
+        end if
 
         call swap_distribution_function_buffers(f, f_next)
 
@@ -270,6 +325,10 @@ program main
         end if
 
     end do
+
+    if (use_distributed_shear_wave) then
+        sync all
+    end if
     
     ! print sim finish timestamp
     if (this_image() == 1 .and. interactive_progress) then
