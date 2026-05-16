@@ -1,6 +1,7 @@
 module export
     ! imports
     use iso_fortran_env, only: int32
+    use hardware_info, only: hardware_info_t, write_hardware_metadata
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, C_X, C_Y, C_X_FP, C_Y_FP, W, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, FP_DTYPE, &
         USE_UNROLLED_KERNELS, USE_PULL_SHIFT_KERNELS, &
@@ -84,11 +85,12 @@ contains
 
 
     subroutine export_metadata( &
-        shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
+        machine_info, shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
         export_rho, export_u_x, export_u_y, export_u_mag, export_interval, output_dir_name, export_num, &
         export_initial_state, export_final_state &
         )
         ! read-only inputs
+        type(hardware_info_t), intent(in) :: machine_info
         type(shear_wave_params_t), intent(in) :: shear_wave_params
         type(couette_flow_params_t), intent(in) :: couette_flow_params
         type(poiseuille_flow_params_t), intent(in) :: poiseuille_flow_params
@@ -124,6 +126,7 @@ contains
         end if
 
         write(unit, '(A)') "{"
+        call write_hardware_metadata(unit, machine_info)
         write(unit, '(A,A,A)') '  "SIM_MODE": "', trim(sim_mode_to_string(SIM_MODE)), '",'
 
         select case (SIM_MODE)

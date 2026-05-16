@@ -3,6 +3,7 @@ program main
     use iso_fortran_env, only: int32, int64, real64, output_unit
     use domain, only: domain_t, initialize_domain, print_domain_summary
     use export, only: should_export_step, export_selected_data, export_metadata
+    use hardware_info, only: hardware_info_t, collect_hardware_info, print_hardware_summary
     use initialization, only: initialize_sim_condition
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
@@ -15,6 +16,7 @@ program main
     integer(int32) :: step
     logical :: write_macro_fields
     type(domain_t) :: domain_info
+    type(hardware_info_t) :: machine_info
 
     ! parameter set for shear wave
     type(shear_wave_params_t), parameter :: shear_wave_params = shear_wave_params_t( &
@@ -95,6 +97,10 @@ program main
     ! setup domain decomposition
     call initialize_domain(domain_info)
 
+    if (this_image() == 1) then
+        call collect_hardware_info(machine_info)
+    end if
+
     allocate(f(N_X, N_Y, N_DIRS))
     allocate(f_next(N_X, N_Y, N_DIRS))
     allocate(rho(N_X, N_Y))
@@ -115,6 +121,9 @@ program main
 
     ! print sim info
     if (this_image() == 1) then
+        print '(A)', ""
+        call print_hardware_summary(machine_info)
+
         print '(A)', ""
         print '(A)', "--- [ simulation parameters ] ---------------------------------------------"
         print '(A,T27,A,A)',     "SIM_MODE", "= ", trim(sim_mode_to_string(SIM_MODE))
@@ -179,7 +188,7 @@ program main
 
     ! export metadata
     if (this_image() == 1) then
-        call export_metadata(shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
+        call export_metadata(machine_info, shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
             export_rho, export_u_x, export_u_y, export_u_mag, export_interval, &
             output_dir_name, export_num, export_initial_state, export_final_state)
     end if
