@@ -32,7 +32,7 @@ def print_param(name, value):
 
 
 def timestamp():
-    return datetime.now().strftime("%H:%M:%S")
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 def parse_args():
