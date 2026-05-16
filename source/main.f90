@@ -73,6 +73,8 @@ program main
     integer(int64) :: clock_end
     integer(int64) :: clock_rate
     integer(int64) :: clock_now
+    integer(int64) :: clock_section_start
+    integer(int64) :: clock_section_end
     integer(int64) :: eta_total_seconds
     integer(int64) :: eta_hours
     integer(int64) :: eta_minutes
@@ -90,7 +92,19 @@ program main
     real(real64) :: mlups
     real(real64) :: gb_per_byte
     real(real64) :: total_bytes_per_cell
+    real(real64) :: kernel_compute_seconds
+    real(real64) :: inner_kernel_seconds
+    real(real64) :: halo_exchange_seconds
+    real(real64) :: outer_kernel_seconds
+    real(real64) :: buffer_swap_seconds
+    real(real64) :: export_seconds
+    real(real64) :: progress_seconds
+    real(real64) :: measured_seconds
+    real(real64) :: other_seconds
+    real(real64) :: execution_time_values(9)[*]
     character(len=10) :: current_time
+    integer(int32) :: image_id
+    integer(int32) :: timing_image_id
 
     ! allocate sim data structures (double-buffered distribution functions)
     real(FP), allocatable :: f(:, :, :) ! read-version of distribution functions f(x, y, dir)
@@ -255,6 +269,14 @@ program main
         sync all
     end if
 
+    kernel_compute_seconds = 0.0_real64
+    inner_kernel_seconds = 0.0_real64
+    halo_exchange_seconds = 0.0_real64
+    outer_kernel_seconds = 0.0_real64
+    buffer_swap_seconds = 0.0_real64
+    export_seconds = 0.0_real64
+    progress_seconds = 0.0_real64
+
     call system_clock(clock_start, clock_rate)
 
     ! simulation loop
@@ -266,33 +288,60 @@ program main
             (export_rho .or. export_u_x .or. export_u_y .or. export_u_mag)
 
         if (use_distributed_shear_wave) then
+            call system_clock(clock_section_start)
             call fuzed_unrolled_pull_streaming_collision_inner_local_SW( &
                 domain_info%n_x_local, domain_info%n_y_local, &
                 write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
+            call system_clock(clock_section_end)
+            inner_kernel_seconds = inner_kernel_seconds + &
+                real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
+
+            call system_clock(clock_section_start)
             call exchange_halos(domain_info, halo_buffers, domain_info%n_x_local, domain_info%n_y_local, f)
+            call system_clock(clock_section_end)
+            halo_exchange_seconds = halo_exchange_seconds + &
+                real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
+
+            call system_clock(clock_section_start)
             call fuzed_unrolled_pull_streaming_collision_outer_local_SW( &
                 domain_info%n_x_local, domain_info%n_y_local, &
                 write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
+            call system_clock(clock_section_end)
+            outer_kernel_seconds = outer_kernel_seconds + &
+                real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
         else
+            call system_clock(clock_section_start)
             call execute_full_sim_step( &
                 shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
                 write_macro_fields, f, f_next, rho, u_x, u_y)
+            call system_clock(clock_section_end)
+            kernel_compute_seconds = kernel_compute_seconds + &
+                real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
         end if
 
+        call system_clock(clock_section_start)
         call swap_distribution_function_buffers(f, f_next)
+        call system_clock(clock_section_end)
+        buffer_swap_seconds = buffer_swap_seconds + &
+            real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
 
         ! export selected field
         if (this_image() == 1) then
             if (should_export_step(step, export_interval, &
                 export_initial_state, export_final_state)) then
+                call system_clock(clock_section_start)
                 call export_selected_data(export_rho, export_u_x, export_u_y, export_u_mag, &
                     output_dir_name, export_num, step, rho, u_x, u_y)
+                call system_clock(clock_section_end)
+                export_seconds = export_seconds + &
+                    real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
             end if
         end if
         
         ! print sim progress info
         if (this_image() == 1) then
             if (mod(step, progress_interval) == 0 .or. step == N_STEPS) then
+                call system_clock(clock_section_start)
                 call system_clock(clock_now)
                 call date_and_time(time=current_time)
 
@@ -321,6 +370,10 @@ program main
                         eta_hours, ":", eta_minutes, ":", eta_seconds_int, ")  ", &
                         step, "/", N_STEPS, " steps  |  avg step: ", avg_millisec_per_step, " ms   "
                 end if
+
+                call system_clock(clock_section_end)
+                progress_seconds = progress_seconds + &
+                    real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
             end if
         end if
 
@@ -346,7 +399,58 @@ program main
     seconds_per_step = elapsed_seconds / real(N_STEPS, real64)
     mlups = real(N_CELLS, real64) * real(N_STEPS, real64) / elapsed_seconds / 1.0e6_real64
 
+    measured_seconds = kernel_compute_seconds + inner_kernel_seconds + halo_exchange_seconds + &
+        outer_kernel_seconds + buffer_swap_seconds + export_seconds + progress_seconds
+    other_seconds = max(0.0_real64, elapsed_seconds - measured_seconds)
+
+    execution_time_values(1) = kernel_compute_seconds
+    execution_time_values(2) = inner_kernel_seconds
+    execution_time_values(3) = halo_exchange_seconds
+    execution_time_values(4) = outer_kernel_seconds
+    execution_time_values(5) = buffer_swap_seconds
+    execution_time_values(6) = export_seconds
+    execution_time_values(7) = progress_seconds
+    execution_time_values(8) = other_seconds
+    execution_time_values(9) = elapsed_seconds
+
+    sync all
+
     if (this_image() == 1) then
+        timing_image_id = 1
+        do image_id = 2, domain_info%n_images
+            if (execution_time_values(9)[image_id] > execution_time_values(9)[timing_image_id]) then
+                timing_image_id = image_id
+            end if
+        end do
+
+        print '(A)', ""
+        print '(A,T34,A,T37,A,T49,A,T52,A,T64,A,T67,A)', &
+            "execution time", "|", "total [sec]", "|", "per step [ms]", "|", "share [%]"
+        print '(A)', "---------------------------------------------------------------------------"
+
+        if (use_distributed_shear_wave) then
+            call print_execution_time_row("inner kernel compute", &
+                execution_time_values(2)[timing_image_id], execution_time_values(9)[timing_image_id])
+            call print_execution_time_row("halo exchange", &
+                execution_time_values(3)[timing_image_id], execution_time_values(9)[timing_image_id])
+            call print_execution_time_row("outer kernel compute", &
+                execution_time_values(4)[timing_image_id], execution_time_values(9)[timing_image_id])
+        else
+            call print_execution_time_row("kernel compute", &
+                execution_time_values(1)[timing_image_id], execution_time_values(9)[timing_image_id])
+        end if
+
+        call print_execution_time_row("buffer swap", &
+            execution_time_values(5)[timing_image_id], execution_time_values(9)[timing_image_id])
+        call print_execution_time_row("export", &
+            execution_time_values(6)[timing_image_id], execution_time_values(9)[timing_image_id])
+        call print_execution_time_row("progress display", &
+            execution_time_values(7)[timing_image_id], execution_time_values(9)[timing_image_id])
+        call print_execution_time_row("other", &
+            execution_time_values(8)[timing_image_id], execution_time_values(9)[timing_image_id])
+        call print_execution_time_row("total", &
+            execution_time_values(9)[timing_image_id], execution_time_values(9)[timing_image_id])
+
         print '(A)', ""
         print '(A)', "--- [ perf metrics ] ------------------------------------------------------"
         print '(A,I0,A,I0,A,I0,A)', "sim size [X/Y/N]:      [ ", N_X, " / ", N_Y, " / ", N_STEPS, " ]"
@@ -354,5 +458,31 @@ program main
         print '(A,F12.3,A)',        "step time:      ", seconds_per_step * 1000.0_real64, " ms"
         print '(A,F12.3)',          "MLUPS:          ", mlups
     end if
+
+contains
+
+    subroutine print_execution_time_row( &
+        row_name, total_seconds, total_loop_seconds &
+        )
+        ! inputs
+        character(len=*), intent(in) :: row_name
+        real(real64), intent(in) :: total_seconds
+        real(real64), intent(in) :: total_loop_seconds
+
+        ! temp
+        real(real64) :: millisec_per_step
+        real(real64) :: time_share
+
+        millisec_per_step = 1000.0_real64 * total_seconds / real(N_STEPS, real64)
+
+        if (total_loop_seconds > 0.0_real64) then
+            time_share = 100.0_real64 * total_seconds / total_loop_seconds
+        else
+            time_share = 0.0_real64
+        end if
+
+        print '(A,T34,A,T37,F10.3,T49,A,T52,F10.3,T64,A,T67,F7.3,A)', &
+            row_name, "|", total_seconds, "|", millisec_per_step, "|", time_share, " %"
+    end subroutine print_execution_time_row
 
 end program main

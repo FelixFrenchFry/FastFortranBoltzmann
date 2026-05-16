@@ -21,7 +21,6 @@ set(CMAKE_Fortran_EXTENSIONS OFF)
 option(FFB_FP64 "Usage of real64 for floating point values enabled" OFF)
 option(FFB_DENSITY_CHECKS "Run-time density checks enabled" OFF)
 option(FFB_BOUNDARY_CHECKS "Run-time boundary condition checks enabled" OFF)
-set(FFB_BUILD_PRESET "manual" CACHE STRING "Name of the selected CMake preset")
 
 # executables in build/bin
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
@@ -60,7 +59,6 @@ target_compile_options(FFB PRIVATE
 target_compile_definitions(FFB PRIVATE
     "FFB_COMPILER_ID=\"${CMAKE_Fortran_COMPILER_ID}\""
     "FFB_COMPILER_VERSION=\"${CMAKE_Fortran_COMPILER_VERSION}\""
-    "FFB_BUILD_PRESET=\"${FFB_BUILD_PRESET}\""
     "FFB_FORTRAN_FLAGS=\"${FFB_ACTIVE_FORTRAN_FLAGS}\""
 )
 

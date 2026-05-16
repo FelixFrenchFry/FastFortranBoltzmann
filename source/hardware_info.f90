@@ -9,9 +9,6 @@ module hardware_info
 #ifndef FFB_COMPILER_VERSION
 #define FFB_COMPILER_VERSION "unknown"
 #endif
-#ifndef FFB_BUILD_PRESET
-#define FFB_BUILD_PRESET "unknown"
-#endif
 #ifndef FFB_FORTRAN_FLAGS
 #define FFB_FORTRAN_FLAGS "unknown"
 #endif
@@ -31,7 +28,6 @@ module hardware_info
 
         ! build info
         character(len=:), allocatable :: compiler
-        character(len=:), allocatable :: build_preset
         character(len=:), allocatable :: compiler_flags
 
     end type hardware_info_t
@@ -39,7 +35,6 @@ module hardware_info
     character(len=*), parameter :: unknown_value = "unknown"
     character(len=*), parameter :: compiler_id = FFB_COMPILER_ID
     character(len=*), parameter :: compiler_version = FFB_COMPILER_VERSION
-    character(len=*), parameter :: cmake_build_preset = FFB_BUILD_PRESET
     character(len=*), parameter :: fortran_flags = FFB_FORTRAN_FLAGS
 
 contains
@@ -60,7 +55,6 @@ contains
             info%logical_threads)
 
         info%compiler = trim(compiler_id) // " " // trim(compiler_version)
-        info%build_preset = trim(cmake_build_preset)
 
         if (len_trim(fortran_flags) > 0) then
             info%compiler_flags = trim(fortran_flags)
@@ -80,7 +74,6 @@ contains
         print '(A,T27,A,A)', "cpu model", "= ", trim(info%cpu_model)
         print '(A,T27,A,A)', "logical threads", "= ", trim(info%logical_threads)
         print '(A,T27,A,A)', "compiler", "= ", trim(info%compiler)
-        print '(A,T27,A,A)', "build preset", "= ", trim(info%build_preset)
         print '(A,T27,A,A)', "compiler flags", "= ", trim(info%compiler_flags)
     end subroutine print_hardware_summary
 
@@ -96,7 +89,6 @@ contains
         write(unit, '(A,A,A)') '    "cpu_model": "', json_escape(info%cpu_model), '",'
         write(unit, '(A,A,A)') '    "logical_threads": ', trim(integer_text_to_json(info%logical_threads)), ','
         write(unit, '(A,A,A)') '    "compiler": "', json_escape(info%compiler), '",'
-        write(unit, '(A,A,A)') '    "build_preset": "', json_escape(info%build_preset), '",'
         write(unit, '(A,A,A)') '    "compiler_flags": "', json_escape(info%compiler_flags), '"'
         write(unit, '(A)') '  },'
         write(unit, '(A)') ""
@@ -112,7 +104,6 @@ contains
         info%cpu_model = unknown_value
         info%logical_threads = unknown_value
         info%compiler = unknown_value
-        info%build_preset = unknown_value
         info%compiler_flags = unknown_value
     end subroutine set_unknown_hardware_info
 

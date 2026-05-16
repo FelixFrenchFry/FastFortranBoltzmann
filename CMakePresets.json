@@ -15,7 +15,6 @@
         "CMAKE_Fortran_COMPILER": "ifx",
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_Fortran_FLAGS": "",
-        "FFB_BUILD_PRESET": "debug",
         "FFB_DENSITY_CHECKS": "ON",
         "FFB_BOUNDARY_CHECKS": "ON"
       }
@@ -29,7 +28,6 @@
         "CMAKE_Fortran_COMPILER": "ifx",
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_Fortran_FLAGS": "",
-        "FFB_BUILD_PRESET": "debug-fp64",
         "FFB_FP64": "ON",
         "FFB_DENSITY_CHECKS": "ON",
         "FFB_BOUNDARY_CHECKS": "ON"
@@ -44,7 +42,6 @@
         "CMAKE_Fortran_COMPILER": "ifx",
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_Fortran_FLAGS": "",
-        "FFB_BUILD_PRESET": "release",
         "CMAKE_Fortran_FLAGS_RELEASE": "-O3"
       }
     },
@@ -57,7 +54,6 @@
         "CMAKE_Fortran_COMPILER": "ifx",
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_Fortran_FLAGS": "",
-        "FFB_BUILD_PRESET": "release-fp64",
         "CMAKE_Fortran_FLAGS_RELEASE": "-O3",
         "FFB_FP64": "ON"
       }
@@ -71,7 +67,6 @@
         "CMAKE_Fortran_COMPILER": "ifx",
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_Fortran_FLAGS": "",
-        "FFB_BUILD_PRESET": "release-native",
         "CMAKE_Fortran_FLAGS_RELEASE": "-O3 -march=native"
       }
     },
@@ -84,7 +79,6 @@
         "CMAKE_Fortran_COMPILER": "ifx",
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_Fortran_FLAGS": "",
-        "FFB_BUILD_PRESET": "release-fp64-native",
         "CMAKE_Fortran_FLAGS_RELEASE": "-O3 -march=native",
         "FFB_FP64": "ON"
       }
