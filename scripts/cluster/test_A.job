@@ -2,8 +2,8 @@
 #SBATCH --job-name=test_A
 #SBATCH --partition=dev_cpu_il
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=64
-#SBATCH --time=00:02:00
+#SBATCH --ntasks-per-node=4
+#SBATCH --time=00:05:00
 #SBATCH --mem-per-cpu=2000mb
 #SBATCH --output=job_%j.out
 #SBATCH --error=job_%j.err
@@ -27,9 +27,19 @@ ifx --version
 echo "MPI:"
 mpirun --version
 
+# create job-specific build
+export BUILD_DIR=$PWD/build/release-native-$SLURM_JOB_ID
+cmake -S . -B $BUILD_DIR -G Ninja \
+    -DCMAKE_Fortran_COMPILER=ifx \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_Fortran_FLAGS="" \
+    -DCMAKE_Fortran_FLAGS_RELEASE="-O3 -march=native" \
+    -DFFB_BUILD_PRESET=release-native
+cmake --build $BUILD_DIR
+
 # generate config file and run
 export FOR_COARRAY_CONFIG_FILE=$HOME/FastFortranBoltzmann/${SLURM_JOB_ID}.conf
-export EXE=$PWD/build/release-native/bin/FFB
+export EXE=$BUILD_DIR/bin/FFB
 echo "-genvall -genv FOR_ICAF_STATUS launched -genv I_MPI_FABRICS=shm:ofi -n "$SLURM_NTASKS" "$EXE > $FOR_COARRAY_CONFIG_FILE
 
-scripts/benchmark_runs.py --exe $EXE --runs 10 --images $SLURM_NTASKS
+python3 scripts/benchmark_runs.py --exe $EXE --runs 10 --images $SLURM_NTASKS
