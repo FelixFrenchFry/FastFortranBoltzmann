@@ -1,0 +1,35 @@
+#!/bin/bash
+#SBATCH --job-name=test_A
+#SBATCH --partition=dev_cpu_il
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=64
+#SBATCH --time=00:02:00
+#SBATCH --mem-per-cpu=2000mb
+#SBATCH --output=job_%j.out
+#SBATCH --error=job_%j.err
+
+cd $HOME/FastFortranBoltzmann
+source .venv/bin/activate
+
+# load modules
+module purge
+module load compiler/intel
+module load mpi/impi
+
+# print metadata
+echo "ID/NAME:    $SLURM_JOB_ID / $SLURM_JOB_NAME"
+echo "USER:       $SLURM_JOB_USER"
+echo "PARTITION:  $SLURM_JOB_PARTITION"
+echo "TASKS:      $SLURM_TASKS_PER_NODE tasks/node x $SLURM_JOB_NUM_NODES nodes = $SLURM_NTASKS tasks"
+echo "NODES:      $SLURM_JOB_NODELIST"
+echo "COMPILER:"
+ifx --version
+echo "MPI:"
+mpirun --version
+
+# generate config file and run
+export FOR_COARRAY_CONFIG_FILE=$HOME/FastFortranBoltzmann/${SLURM_JOB_ID}.conf
+export EXE=$PWD/build/release-native/bin/FFB
+echo "-genvall -genv FOR_ICAF_STATUS launched -genv I_MPI_FABRICS=shm:ofi -n "$SLURM_NTASKS" "$EXE > $FOR_COARRAY_CONFIG_FILE
+
+scripts/benchmark_runs.py --exe $EXE --runs 10 --images $SLURM_NTASKS

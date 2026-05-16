@@ -52,7 +52,8 @@ def parse_last(pattern, text, name):
 
 def run_once(exe, images, run_num):
     env = os.environ.copy()
-    env["FOR_COARRAY_NUM_IMAGES"] = str(images)
+    if "FOR_COARRAY_CONFIG_FILE" not in env:
+        env["FOR_COARRAY_NUM_IMAGES"] = str(images)
 
     completed = subprocess.run(
         [exe],
