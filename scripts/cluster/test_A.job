@@ -22,8 +22,7 @@ cmake -S . -B $BUILD_DIR -G Ninja \
     -DCMAKE_Fortran_COMPILER=ifx \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_Fortran_FLAGS="" \
-    -DCMAKE_Fortran_FLAGS_RELEASE="-O3 -march=native" \
-    -DFFB_BUILD_PRESET=release-native
+    -DCMAKE_Fortran_FLAGS_RELEASE="-O3 -march=native"
 cmake --build $BUILD_DIR
 
 # print metadata
