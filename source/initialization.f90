@@ -97,6 +97,69 @@ contains
     end subroutine apply_condition_shear_wave
 
 
+    subroutine apply_condition_shear_wave_local( &
+        rho_0, u_max, n_sin, n_x_local, n_y_local, y_global_start, f, rho, u_x, u_y &
+        )
+        ! read-only inputs
+        real(FP), intent(in) :: rho_0
+        real(FP), intent(in) :: u_max
+        real(FP), intent(in) :: n_sin
+        integer(int32), intent(in) :: n_x_local
+        integer(int32), intent(in) :: n_y_local
+        integer(int32), intent(in) :: y_global_start
+
+        ! write destinations
+        real(FP), intent(out) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
+        real(FP), intent(out) :: rho(n_x_local, n_y_local)
+        real(FP), intent(out) :: u_x(n_x_local, n_y_local)
+        real(FP), intent(out) :: u_y(n_x_local, n_y_local)
+
+        ! temp
+        integer(int32) :: x, y, i
+        integer(int32) :: y_global
+        real(FP) :: u_x_val
+        real(FP) :: u_y_val
+        real(FP) :: u_squ
+        real(FP) :: c_dot_u
+        real(FP) :: f_eq_val
+
+        f = 0.0_FP
+
+        ! loop over local rows
+        do y = 1, n_y_local
+
+            ! shear wave velocity for this global row
+            y_global = y_global_start + y - 1
+            u_x_val = u_max * sin((2.0_FP * PI * real(n_sin, FP) * real(y_global - 1, FP)) / real(N_Y, FP))
+            u_y_val = 0.0_FP
+            u_squ = u_x_val * u_x_val
+
+            ! loop over local cols
+            do x = 1, n_x_local
+
+                rho(x, y) = rho_0
+                u_x(x, y) = u_x_val
+                u_y(x, y) = u_y_val
+
+                ! init distribution functions in all dirs
+                do i = 1, N_DIRS
+
+                    ! compute equilibrium distribution function for dir i
+                    c_dot_u = C_X_FP(i) * u_x_val + C_Y_FP(i) * u_y_val
+                    f_eq_val = W(i) * rho_0 * ( &
+                        1.0_FP + &
+                        3.0_FP * c_dot_u + &
+                        4.5_FP * c_dot_u * c_dot_u - &
+                        1.5_FP * u_squ)
+
+                    ! write to destination dir i of this local cell
+                    f(x, y, i) = f_eq_val
+                end do
+            end do
+        end do
+    end subroutine apply_condition_shear_wave_local
+
+
     subroutine apply_condition_couette_flow( &
         rho_0, f, rho, u_x, u_y &
         )
