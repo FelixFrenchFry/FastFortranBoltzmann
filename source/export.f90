@@ -182,6 +182,7 @@ contains
 #else
         write(unit, '(A)') '  "FFB_BOUNDARY_CHECKS": false,'
 #endif
+        write(unit, '(A)') '  "FFB_DISTRIBUTED_COARRAYS": true,'
         write(unit, '(A)') ""
         write(unit, '(A,A,A)') '  "export_rho": ', trim(logical_to_json(export_rho)), ','
         write(unit, '(A,A,A)') '  "export_u_x": ', trim(logical_to_json(export_u_x)), ','

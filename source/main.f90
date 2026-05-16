@@ -159,6 +159,7 @@ program main
         print '(A,T27,A,I0)',    "N_STEPS", "= ", N_STEPS
         print '(A,T27,A,L1)',    "use_unrolled_kernels", "= ", USE_UNROLLED_KERNELS
         print '(A,T27,A,L1)',    "use_pull_shift_kernels", "= ", USE_PULL_SHIFT_KERNELS
+        print '(A,T27,A,L1)',    "distributed_coarrays", "= ", .true.
         print '(A,T27,A,L1)',    "export_rho", "= ", export_rho
         print '(A,T27,A,L1)',    "export_u_x", "= ", export_u_x
         print '(A,T27,A,L1)',    "export_u_y", "= ", export_u_y
