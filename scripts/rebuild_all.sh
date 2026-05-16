@@ -6,10 +6,8 @@ presets=(
   debug-fp64
   release
   release-fp64
-  release-intel
-  release-amd
-  release-fp64-intel
-  release-fp64-amd
+  release-native
+  release-fp64-native
 )
 
 rm -rf build

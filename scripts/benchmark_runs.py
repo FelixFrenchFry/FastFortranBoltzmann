@@ -7,6 +7,7 @@ import re
 import statistics
 import subprocess
 import sys
+from datetime import datetime
 
 
 NUMBER = r"(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)"
@@ -27,7 +28,11 @@ def print_header(title):
 
 
 def print_param(name, value):
-    print(f"{name:<24} = {value}")
+    print(f"{name:<25} = {value}")
+
+
+def timestamp():
+    return datetime.now().strftime("%H:%M:%S")
 
 
 def parse_args():
@@ -81,12 +86,14 @@ def print_static_app_output(output):
 def get_stats(values, higher_is_better):
     best = max(values) if higher_is_better else min(values)
     worst = min(values) if higher_is_better else max(values)
+    mean = statistics.mean(values)
+    stddev = statistics.stdev(values) if len(values) > 1 else 0.0
     return {
         "median": statistics.median(values),
         "best": best,
         "worst": worst,
-        "mean": statistics.mean(values),
-        "stddev": statistics.stdev(values) if len(values) > 1 else 0.0,
+        "mean": mean,
+        "stddev_percent": 100.0 * stddev / mean if mean != 0.0 else 0.0,
     }
 
 
@@ -105,6 +112,7 @@ def main():
     step_times = []
     mlups_values = []
 
+    print()
     print_header("benchmark script settings")
     print_param("executable", args.exe)
     print_param("runs", args.runs)
@@ -118,7 +126,7 @@ def main():
             print_static_app_output(output)
             print_header("benchmark runs")
 
-        print(f"{run_num:03d} | avg step: {step_ms:.3f} ms | MLUPS: {mlups:.3f}")
+        print(f"{run_num:03d} | [{timestamp()}] | avg step: {step_ms:.3f} ms | MLUPS: {mlups:.3f}")
 
         step_times.append(step_ms)
         mlups_values.append(mlups)
@@ -132,7 +140,7 @@ def main():
     print_param("best", f"{step_stats['best']:.3f} ms")
     print_param("worst", f"{step_stats['worst']:.3f} ms")
     print_param("mean", f"{step_stats['mean']:.3f} ms")
-    print_param("stddev", f"{step_stats['stddev']:.3f} ms")
+    print_param("stddev", f"{step_stats['stddev_percent']:.3f} %")
 
     print()
     print_header("MLUPS metrics")
@@ -140,7 +148,7 @@ def main():
     print_param("best", f"{mlups_stats['best']:.3f}")
     print_param("worst", f"{mlups_stats['worst']:.3f}")
     print_param("mean", f"{mlups_stats['mean']:.3f}")
-    print_param("stddev", f"{mlups_stats['stddev']:.3f}")
+    print_param("stddev", f"{mlups_stats['stddev_percent']:.3f} %")
 
 
 if __name__ == "__main__":
