@@ -1,6 +1,6 @@
 module hardware_info
     ! imports
-    use iso_fortran_env, only: int64, real64
+    use iso_fortran_env, only: int64
     implicit none
 
 #ifndef FFB_COMPILER_ID
@@ -26,10 +26,8 @@ module hardware_info
     type :: hardware_info_t
 
         ! machine info
-        character(len=:), allocatable :: hostname
         character(len=:), allocatable :: cpu_model
         character(len=:), allocatable :: logical_threads
-        character(len=:), allocatable :: memory_total
 
         ! build info
         character(len=:), allocatable :: compiler
@@ -52,30 +50,14 @@ contains
         ! output
         type(hardware_info_t), intent(out) :: info
 
-        ! locals
-        character(len=:), allocatable :: mem_total_kb_text
-        integer(int64) :: mem_total_kb
-        integer :: io_stat
-
         call set_unknown_hardware_info(info)
 
-        call read_command_output("hostname", info%hostname)
         call read_command_output( &
             "sh -c ""sed -n 's/^model name[[:space:]]*:[[:space:]]*//p' /proc/cpuinfo | head -n 1""", &
             info%cpu_model)
         call read_command_output( &
             "sh -c ""grep -c '^processor' /proc/cpuinfo""", &
             info%logical_threads)
-        call read_command_output( &
-            "sh -c ""grep '^MemTotal:' /proc/meminfo | tr -s ' ' | cut -d' ' -f2""", &
-            mem_total_kb_text)
-
-        if (len_trim(mem_total_kb_text) > 0 .and. trim(mem_total_kb_text) /= unknown_value) then
-            read(mem_total_kb_text, *, iostat=io_stat) mem_total_kb
-            if (io_stat == 0) then
-                info%memory_total = format_memory_gb(mem_total_kb)
-            end if
-        end if
 
         info%compiler = trim(compiler_id) // " " // trim(compiler_version)
         info%build_preset = trim(cmake_build_preset)
@@ -95,10 +77,8 @@ contains
         type(hardware_info_t), intent(in) :: info
 
         print '(A)', "--- [ hardware ] ----------------------------------------------------------"
-        print '(A,T27,A,A)', "hostname", "= ", trim(info%hostname)
         print '(A,T27,A,A)', "cpu model", "= ", trim(info%cpu_model)
         print '(A,T27,A,A)', "logical threads", "= ", trim(info%logical_threads)
-        print '(A,T27,A,A)', "memory total", "= ", trim(info%memory_total)
         print '(A,T27,A,A)', "compiler", "= ", trim(info%compiler)
         print '(A,T27,A,A)', "build preset", "= ", trim(info%build_preset)
         print '(A,T27,A,A)', "compiler flags", "= ", trim(info%compiler_flags)
@@ -113,10 +93,8 @@ contains
         type(hardware_info_t), intent(in) :: info
 
         write(unit, '(A)') '  "hardware": {'
-        write(unit, '(A,A,A)') '    "hostname": "', json_escape(info%hostname), '",'
         write(unit, '(A,A,A)') '    "cpu_model": "', json_escape(info%cpu_model), '",'
         write(unit, '(A,A,A)') '    "logical_threads": ', trim(integer_text_to_json(info%logical_threads)), ','
-        write(unit, '(A,A,A)') '    "memory_total": "', json_escape(info%memory_total), '",'
         write(unit, '(A,A,A)') '    "compiler": "', json_escape(info%compiler), '",'
         write(unit, '(A,A,A)') '    "build_preset": "', json_escape(info%build_preset), '",'
         write(unit, '(A,A,A)') '    "compiler_flags": "', json_escape(info%compiler_flags), '"'
@@ -131,10 +109,8 @@ contains
         ! output
         type(hardware_info_t), intent(out) :: info
 
-        info%hostname = unknown_value
         info%cpu_model = unknown_value
         info%logical_threads = unknown_value
-        info%memory_total = unknown_value
         info%compiler = unknown_value
         info%build_preset = unknown_value
         info%compiler_flags = unknown_value
@@ -177,20 +153,6 @@ contains
 
         call execute_command_line("rm -f " // tmp_file)
     end subroutine read_command_output
-
-
-    function format_memory_gb( &
-        mem_total_kb &
-        ) result(text)
-        ! inputs
-        integer(int64), intent(in) :: mem_total_kb
-
-        ! output
-        character(len=32) :: text
-
-        write(text, '(F0.1,A)') real(mem_total_kb, real64) / 1024.0_real64 / 1024.0_real64, " GB"
-        text = adjustl(text)
-    end function format_memory_gb
 
 
     function integer_text_to_json( &
