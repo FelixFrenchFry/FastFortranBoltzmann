@@ -46,7 +46,7 @@ string(STRIP "${FFB_ACTIVE_FORTRAN_FLAGS}" FFB_ACTIVE_FORTRAN_FLAGS)
 
 # debug flags for ifx
 target_compile_options(FFB PRIVATE
-    -coarray
+    -coarray=distributed
     -fpp
     -warn all
     -standard-semantics
@@ -74,5 +74,5 @@ if(FFB_BOUNDARY_CHECKS)
 endif()
 
 target_link_options(FFB PRIVATE
-    -coarray
+    -coarray=distributed
 )
