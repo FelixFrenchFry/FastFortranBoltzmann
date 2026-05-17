@@ -117,7 +117,7 @@ def main():
     print_header("benchmark script settings")
     print_param("executable", args.exe)
     print_param("runs", args.runs)
-    print_param("coarray images", args.images)
+    print_param("images", args.images)
     print()
 
     for run_num in range(1, args.runs + 1):

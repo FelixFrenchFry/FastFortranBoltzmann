@@ -74,7 +74,7 @@ contains
         print '(A,T27,A,A)', "cpu model", "= ", trim(info%cpu_model)
         print '(A,T27,A,A)', "logical threads", "= ", trim(info%logical_threads)
         print '(A,T27,A,A)', "compiler", "= ", trim(info%compiler)
-        print '(A,T27,A,A)', "compiler flags", "= ", trim(info%compiler_flags)
+        print '(A,T27,A,A)', "flags", "= ", trim(info%compiler_flags)
     end subroutine print_hardware_summary
 
 
