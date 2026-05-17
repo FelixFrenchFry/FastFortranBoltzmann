@@ -424,8 +424,7 @@ program main
         end do
 
         print '(A)', ""
-        print '(A,T34,A,T37,A,T49,A,T52,A,T64,A,T67,A)', &
-            "execution time", "|", "total [sec]", "|", "per step [ms]", "|", "share [%]"
+        print '(A,T42,A,T45,A,T59,A,T62,A)', "execution time", "|", "total [sec]", "|", "share [%]"
         print '(A)', "---------------------------------------------------------------------------"
 
         if (use_distributed_shear_wave) then
@@ -470,10 +469,7 @@ contains
         real(real64), intent(in) :: total_loop_seconds
 
         ! temp
-        real(real64) :: millisec_per_step
         real(real64) :: time_share
-
-        millisec_per_step = 1000.0_real64 * total_seconds / real(N_STEPS, real64)
 
         if (total_loop_seconds > 0.0_real64) then
             time_share = 100.0_real64 * total_seconds / total_loop_seconds
@@ -481,8 +477,8 @@ contains
             time_share = 0.0_real64
         end if
 
-        print '(A,T34,A,T37,F10.3,T49,A,T52,F10.3,T64,A,T67,F7.3,A)', &
-            row_name, "|", total_seconds, "|", millisec_per_step, "|", time_share, " %"
+        print '(A,T42,A,T45,F12.3,T59,A,T62,F10.3,A)', &
+            row_name, "|", total_seconds, "|", time_share, " %"
     end subroutine print_execution_time_row
 
 end program main
