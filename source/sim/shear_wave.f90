@@ -662,6 +662,302 @@ contains
     end subroutine fuzed_unrolled_pull_streaming_collision_outer_local_SW
 
 
+    subroutine fuzed_unrolled_pull_streaming_collision_inner_local_no_macro_SW( &
+        n_x_local, n_y_local, omega, f, f_next &
+        )
+        ! inputs
+        integer(int32), intent(in) :: n_x_local
+        integer(int32), intent(in) :: n_y_local
+        real(FP), intent(in) :: omega
+        real(FP), intent(in) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
+
+        ! write destinations
+        real(FP), intent(inout) :: f_next(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
+
+        ! temp
+        integer(int32) :: x, y
+        real(FP) :: f_1
+        real(FP) :: f_2
+        real(FP) :: f_3
+        real(FP) :: f_4
+        real(FP) :: f_5
+        real(FP) :: f_6
+        real(FP) :: f_7
+        real(FP) :: f_8
+        real(FP) :: f_9
+        real(FP) :: rho_val
+        real(FP) :: u_x_val
+        real(FP) :: u_y_val
+        real(FP) :: u_squ
+
+        ! loop over rows and cols of local inner cells only
+        do y = 2, n_y_local - 1
+            do x = 2, n_x_local - 1
+
+                ! 1: ( 0,  0) = rest
+                ! 2: ( 1,  0) = east
+                ! 3: ( 0,  1) = north
+                ! 4: (-1,  0) = west
+                ! 5: ( 0, -1) = south
+                ! 6: ( 1,  1) = north-east
+                ! 7: (-1,  1) = north-west
+                ! 8: (-1, -1) = south-west
+                ! 9: ( 1, -1) = south-east
+                ! ---------
+                ! | 7 3 6 |
+                ! | 4 1 2 |
+                ! | 8 5 9 |
+                ! ---------
+                ! pull streamed distribution functions from source cells in all channels
+                ! (no halo access for local inner cells, manually unrolled)
+                f_1 = f(x, y, 1)
+                f_2 = f(x - 1, y, 2)
+                f_3 = f(x, y - 1, 3)
+                f_4 = f(x + 1, y, 4)
+                f_5 = f(x, y + 1, 5)
+                f_6 = f(x - 1, y - 1, 6)
+                f_7 = f(x + 1, y - 1, 7)
+                f_8 = f(x + 1, y + 1, 8)
+                f_9 = f(x - 1, y + 1, 9)
+
+                rho_val = f_1 + f_2 + f_3 + f_4 + f_5 + f_6 + f_7 + f_8 + f_9
+                u_x_val = f_2 - f_4 + f_6 - f_7 - f_8 + f_9
+                u_y_val = f_3 - f_5 + f_6 + f_7 - f_8 - f_9
+
+                ! safety check to avoid division by zero in case of wrong density
+            #ifdef FFB_DENSITY_CHECKS
+                if (rho_val <= 0.0_FP) then
+                    error stop "error: density is zero in collision/streaming step (rho_val <= 0)"
+                end if
+            #endif
+
+                ! finalize density and velocity
+                u_x_val = u_x_val / rho_val
+                u_y_val = u_y_val / rho_val
+                u_squ = u_x_val * u_x_val + u_y_val * u_y_val
+
+                ! collide and stream locally to destination channels
+                ! (manually unrolled)
+                ! 1: (0, 0)
+                f_next(x, y, 1) = f_1 + omega * ((4.0_FP/9.0_FP) * rho_val * ( &
+                    1.0_FP - 1.5_FP * u_squ) - f_1)
+
+                ! 2: (1, 0)
+                f_next(x, y, 2) = f_2 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
+                    1.0_FP + 3.0_FP * u_x_val + 4.5_FP * u_x_val * u_x_val - &
+                    1.5_FP * u_squ) - f_2)
+
+                ! 3: (0, 1)
+                f_next(x, y, 3) = f_3 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
+                    1.0_FP + 3.0_FP * u_y_val + 4.5_FP * u_y_val * u_y_val - &
+                    1.5_FP * u_squ) - f_3)
+
+                ! 4: (-1, 0)
+                f_next(x, y, 4) = f_4 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
+                    1.0_FP - 3.0_FP * u_x_val + 4.5_FP * u_x_val * u_x_val - &
+                    1.5_FP * u_squ) - f_4)
+
+                ! 5: (0, -1)
+                f_next(x, y, 5) = f_5 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
+                    1.0_FP - 3.0_FP * u_y_val + 4.5_FP * u_y_val * u_y_val - &
+                    1.5_FP * u_squ) - f_5)
+
+                ! 6: (1, 1)
+                f_next(x, y, 6) = f_6 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
+                    1.0_FP + 3.0_FP * (u_x_val + u_y_val) + &
+                    4.5_FP * (u_x_val + u_y_val) * (u_x_val + u_y_val) - &
+                    1.5_FP * u_squ) - f_6)
+
+                ! 7: (-1, 1)
+                f_next(x, y, 7) = f_7 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
+                    1.0_FP + 3.0_FP * (-u_x_val + u_y_val) + &
+                    4.5_FP * (-u_x_val + u_y_val) * (-u_x_val + u_y_val) - &
+                    1.5_FP * u_squ) - f_7)
+
+                ! 8: (-1, -1)
+                f_next(x, y, 8) = f_8 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
+                    1.0_FP - 3.0_FP * (u_x_val + u_y_val) + &
+                    4.5_FP * (u_x_val + u_y_val) * (u_x_val + u_y_val) - &
+                    1.5_FP * u_squ) - f_8)
+
+                ! 9: (1, -1)
+                f_next(x, y, 9) = f_9 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
+                    1.0_FP + 3.0_FP * (u_x_val - u_y_val) + &
+                    4.5_FP * (u_x_val - u_y_val) * (u_x_val - u_y_val) - &
+                    1.5_FP * u_squ) - f_9)
+            end do
+        end do
+    end subroutine fuzed_unrolled_pull_streaming_collision_inner_local_no_macro_SW
+
+
+    subroutine fuzed_unrolled_pull_streaming_collision_outer_local_no_macro_SW( &
+        n_x_local, n_y_local, omega, f, f_next &
+        )
+        ! inputs
+        integer(int32), intent(in) :: n_x_local
+        integer(int32), intent(in) :: n_y_local
+        real(FP), intent(in) :: omega
+        real(FP), intent(in) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
+
+        ! write destinations
+        real(FP), intent(inout) :: f_next(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
+
+        ! temp
+        integer(int32) :: x, y
+
+        ! bottom row
+        y = 1
+        do x = 1, n_x_local
+            call stream_collide_outer_cell_SW(x, y)
+        end do
+
+        ! top row
+        y = n_y_local
+        do x = 1, n_x_local
+            call stream_collide_outer_cell_SW(x, y)
+        end do
+
+        ! left col (no corners)
+        x = 1
+        do y = 2, n_y_local - 1
+            call stream_collide_outer_cell_SW(x, y)
+        end do
+
+        ! right col (no corners)
+        x = n_x_local
+        do y = 2, n_y_local - 1
+            call stream_collide_outer_cell_SW(x, y)
+        end do
+
+    contains ! helper subroutine
+
+        subroutine stream_collide_outer_cell_SW( &
+            x, y &
+            )
+            ! inputs
+            integer(int32), intent(in) :: x
+            integer(int32), intent(in) :: y
+
+            ! temp
+            integer(int32) :: src_x_minus
+            integer(int32) :: src_x_plus
+            integer(int32) :: src_y_minus
+            integer(int32) :: src_y_plus
+            real(FP) :: f_1
+            real(FP) :: f_2
+            real(FP) :: f_3
+            real(FP) :: f_4
+            real(FP) :: f_5
+            real(FP) :: f_6
+            real(FP) :: f_7
+            real(FP) :: f_8
+            real(FP) :: f_9
+            real(FP) :: rho_val
+            real(FP) :: u_x_val
+            real(FP) :: u_y_val
+            real(FP) :: u_squ
+
+            ! 1: ( 0,  0) = rest
+            ! 2: ( 1,  0) = east
+            ! 3: ( 0,  1) = north
+            ! 4: (-1,  0) = west
+            ! 5: ( 0, -1) = south
+            ! 6: ( 1,  1) = north-east
+            ! 7: (-1,  1) = north-west
+            ! 8: (-1, -1) = south-west
+            ! 9: ( 1, -1) = south-east
+            ! ---------
+            ! | 7 3 6 |
+            ! | 4 1 2 |
+            ! | 8 5 9 |
+            ! ---------
+            ! source cell indices, with halo cells available at local boundaries
+            src_x_minus = x - 1
+            src_x_plus = x + 1
+            src_y_minus = y - 1
+            src_y_plus = y + 1
+
+            ! pull streamed distribution functions from source cells in all channels
+            ! (local boundary handling through halo cells, manually unrolled)
+            f_1 = f(x, y, 1)
+            f_2 = f(src_x_minus, y, 2)
+            f_3 = f(x, src_y_minus, 3)
+            f_4 = f(src_x_plus, y, 4)
+            f_5 = f(x, src_y_plus, 5)
+            f_6 = f(src_x_minus, src_y_minus, 6)
+            f_7 = f(src_x_plus, src_y_minus, 7)
+            f_8 = f(src_x_plus, src_y_plus, 8)
+            f_9 = f(src_x_minus, src_y_plus, 9)
+
+            rho_val = f_1 + f_2 + f_3 + f_4 + f_5 + f_6 + f_7 + f_8 + f_9
+            u_x_val = f_2 - f_4 + f_6 - f_7 - f_8 + f_9
+            u_y_val = f_3 - f_5 + f_6 + f_7 - f_8 - f_9
+
+            ! safety check to avoid division by zero in case of wrong density
+        #ifdef FFB_DENSITY_CHECKS
+            if (rho_val <= 0.0_FP) then
+                error stop "error: density is zero in collision/streaming step (rho_val <= 0)"
+            end if
+        #endif
+
+            ! finalize density and velocity
+            u_x_val = u_x_val / rho_val
+            u_y_val = u_y_val / rho_val
+            u_squ = u_x_val * u_x_val + u_y_val * u_y_val
+
+            ! collide and stream locally to destination channels
+            ! (manually unrolled)
+            ! 1: (0, 0)
+            f_next(x, y, 1) = f_1 + omega * ((4.0_FP/9.0_FP) * rho_val * ( &
+                1.0_FP - 1.5_FP * u_squ) - f_1)
+
+            ! 2: (1, 0)
+            f_next(x, y, 2) = f_2 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
+                1.0_FP + 3.0_FP * u_x_val + 4.5_FP * u_x_val * u_x_val - &
+                1.5_FP * u_squ) - f_2)
+
+            ! 3: (0, 1)
+            f_next(x, y, 3) = f_3 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
+                1.0_FP + 3.0_FP * u_y_val + 4.5_FP * u_y_val * u_y_val - &
+                1.5_FP * u_squ) - f_3)
+
+            ! 4: (-1, 0)
+            f_next(x, y, 4) = f_4 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
+                1.0_FP - 3.0_FP * u_x_val + 4.5_FP * u_x_val * u_x_val - &
+                1.5_FP * u_squ) - f_4)
+
+            ! 5: (0, -1)
+            f_next(x, y, 5) = f_5 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
+                1.0_FP - 3.0_FP * u_y_val + 4.5_FP * u_y_val * u_y_val - &
+                1.5_FP * u_squ) - f_5)
+
+            ! 6: (1, 1)
+            f_next(x, y, 6) = f_6 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
+                1.0_FP + 3.0_FP * (u_x_val + u_y_val) + &
+                4.5_FP * (u_x_val + u_y_val) * (u_x_val + u_y_val) - &
+                1.5_FP * u_squ) - f_6)
+
+            ! 7: (-1, 1)
+            f_next(x, y, 7) = f_7 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
+                1.0_FP + 3.0_FP * (-u_x_val + u_y_val) + &
+                4.5_FP * (-u_x_val + u_y_val) * (-u_x_val + u_y_val) - &
+                1.5_FP * u_squ) - f_7)
+
+            ! 8: (-1, -1)
+            f_next(x, y, 8) = f_8 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
+                1.0_FP - 3.0_FP * (u_x_val + u_y_val) + &
+                4.5_FP * (u_x_val + u_y_val) * (u_x_val + u_y_val) - &
+                1.5_FP * u_squ) - f_8)
+
+            ! 9: (1, -1)
+            f_next(x, y, 9) = f_9 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
+                1.0_FP + 3.0_FP * (u_x_val - u_y_val) + &
+                4.5_FP * (u_x_val - u_y_val) * (u_x_val - u_y_val) - &
+                1.5_FP * u_squ) - f_9)
+        end subroutine stream_collide_outer_cell_SW
+    end subroutine fuzed_unrolled_pull_streaming_collision_outer_local_no_macro_SW
+
+
     subroutine fuzed_pull_shift_streaming_collision_full_SW( &
         write_macro_fields, omega, f, f_next, rho, u_x, u_y &
         )
