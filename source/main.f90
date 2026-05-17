@@ -11,7 +11,9 @@ program main
         USE_UNROLLED_KERNELS, USE_PULL_SHIFT_KERNELS, &
         shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
     use shear_wave, only: fuzed_unrolled_pull_streaming_collision_inner_local_SW, &
-        fuzed_unrolled_pull_streaming_collision_outer_local_SW
+        fuzed_unrolled_pull_streaming_collision_inner_local_no_macro_SW, &
+        fuzed_unrolled_pull_streaming_collision_outer_local_SW, &
+        fuzed_unrolled_pull_streaming_collision_outer_local_no_macro_SW
     use simulation, only: execute_full_sim_step, swap_distribution_function_buffers
     implicit none
 
@@ -289,9 +291,15 @@ program main
 
         if (use_distributed_shear_wave) then
             call system_clock(clock_section_start)
-            call fuzed_unrolled_pull_streaming_collision_inner_local_SW( &
-                domain_info%n_x_local, domain_info%n_y_local, &
-                write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
+            if (write_macro_fields) then
+                call fuzed_unrolled_pull_streaming_collision_inner_local_SW( &
+                    domain_info%n_x_local, domain_info%n_y_local, &
+                    write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
+            else
+                call fuzed_unrolled_pull_streaming_collision_inner_local_no_macro_SW( &
+                    domain_info%n_x_local, domain_info%n_y_local, &
+                    shear_wave_params%omega, f, f_next)
+            end if
             call system_clock(clock_section_end)
             inner_kernel_seconds = inner_kernel_seconds + &
                 real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
@@ -303,9 +311,15 @@ program main
                 real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
 
             call system_clock(clock_section_start)
-            call fuzed_unrolled_pull_streaming_collision_outer_local_SW( &
-                domain_info%n_x_local, domain_info%n_y_local, &
-                write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
+            if (write_macro_fields) then
+                call fuzed_unrolled_pull_streaming_collision_outer_local_SW( &
+                    domain_info%n_x_local, domain_info%n_y_local, &
+                    write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
+            else
+                call fuzed_unrolled_pull_streaming_collision_outer_local_no_macro_SW( &
+                    domain_info%n_x_local, domain_info%n_y_local, &
+                    shear_wave_params%omega, f, f_next)
+            end if
             call system_clock(clock_section_end)
             outer_kernel_seconds = outer_kernel_seconds + &
                 real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
