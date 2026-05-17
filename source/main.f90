@@ -118,7 +118,8 @@ program main
     ! setup domain decomposition
     call initialize_domain(domain_info)
 
-    use_distributed_shear_wave = domain_info%n_images > 1 .and. SIM_MODE == SIM_SHEAR_WAVE
+    !use_distributed_shear_wave = domain_info%n_images > 1 .and. SIM_MODE == SIM_SHEAR_WAVE
+    use_distributed_shear_wave = SIM_MODE == SIM_SHEAR_WAVE
 
     if (domain_info%n_images > 1 .and. SIM_MODE /= SIM_SHEAR_WAVE) then
         error stop "error: distributed coarray execution is only implemented for shear wave yet"
