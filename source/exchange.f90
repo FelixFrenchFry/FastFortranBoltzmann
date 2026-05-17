@@ -77,6 +77,8 @@ contains
         integer(int32) :: n_y_neighbor_images
         integer(int32) :: x_neighbor_images(2)
         integer(int32) :: y_neighbor_images(2)
+        integer(int32) :: x
+        integer(int32) :: y
 
         ! left/right or bottom/top can be the same image for 2-image axes
         x_neighbor_images(1) = domain_info%left_image_id
@@ -96,13 +98,15 @@ contains
         end if
 
         ! pack owned left/right borders
-        halo_buffers%send_left(:, 1) = f(1, 1:n_y_local, 4)
-        halo_buffers%send_left(:, 2) = f(1, 1:n_y_local, 7)
-        halo_buffers%send_left(:, 3) = f(1, 1:n_y_local, 8)
+        do y = 1, n_y_local
+            halo_buffers%send_left(y, 1) = f(1, y, 4)
+            halo_buffers%send_left(y, 2) = f(1, y, 7)
+            halo_buffers%send_left(y, 3) = f(1, y, 8)
 
-        halo_buffers%send_right(:, 1) = f(n_x_local, 1:n_y_local, 2)
-        halo_buffers%send_right(:, 2) = f(n_x_local, 1:n_y_local, 6)
-        halo_buffers%send_right(:, 3) = f(n_x_local, 1:n_y_local, 9)
+            halo_buffers%send_right(y, 1) = f(n_x_local, y, 2)
+            halo_buffers%send_right(y, 2) = f(n_x_local, y, 6)
+            halo_buffers%send_right(y, 3) = f(n_x_local, y, 9)
+        end do
 
         call sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
 
@@ -110,38 +114,44 @@ contains
         halo_buffers%recv_left(:, :) = halo_buffers%send_right(:, :)[domain_info%left_image_id]
         halo_buffers%recv_right(:, :) = halo_buffers%send_left(:, :)[domain_info%right_image_id]
 
-        f(0, 1:n_y_local, 2) = halo_buffers%recv_left(:, 1)
-        f(0, 1:n_y_local, 6) = halo_buffers%recv_left(:, 2)
-        f(0, 1:n_y_local, 9) = halo_buffers%recv_left(:, 3)
+        do y = 1, n_y_local
+            f(0, y, 2) = halo_buffers%recv_left(y, 1)
+            f(0, y, 6) = halo_buffers%recv_left(y, 2)
+            f(0, y, 9) = halo_buffers%recv_left(y, 3)
 
-        f(n_x_local+1, 1:n_y_local, 4) = halo_buffers%recv_right(:, 1)
-        f(n_x_local+1, 1:n_y_local, 7) = halo_buffers%recv_right(:, 2)
-        f(n_x_local+1, 1:n_y_local, 8) = halo_buffers%recv_right(:, 3)
+            f(n_x_local+1, y, 4) = halo_buffers%recv_right(y, 1)
+            f(n_x_local+1, y, 7) = halo_buffers%recv_right(y, 2)
+            f(n_x_local+1, y, 8) = halo_buffers%recv_right(y, 3)
+        end do
 
         call sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
 
         ! pack bottom/top borders, including updated x-halos carrying corner halo values
-        halo_buffers%send_bottom(:, 1) = f(0:n_x_local+1, 1, 5)
-        halo_buffers%send_bottom(:, 2) = f(0:n_x_local+1, 1, 8)
-        halo_buffers%send_bottom(:, 3) = f(0:n_x_local+1, 1, 9)
+        do x = 0, n_x_local + 1
+            halo_buffers%send_bottom(x, 1) = f(x, 1, 5)
+            halo_buffers%send_bottom(x, 2) = f(x, 1, 8)
+            halo_buffers%send_bottom(x, 3) = f(x, 1, 9)
 
-        halo_buffers%send_top(:, 1) = f(0:n_x_local+1, n_y_local, 3)
-        halo_buffers%send_top(:, 2) = f(0:n_x_local+1, n_y_local, 6)
-        halo_buffers%send_top(:, 3) = f(0:n_x_local+1, n_y_local, 7)
+            halo_buffers%send_top(x, 1) = f(x, n_y_local, 3)
+            halo_buffers%send_top(x, 2) = f(x, n_y_local, 6)
+            halo_buffers%send_top(x, 3) = f(x, n_y_local, 7)
+        end do
 
         call sync_neighbor_images(y_neighbor_images, n_y_neighbor_images)
 
         ! unpack bottom/top halos from neighboring images
         halo_buffers%recv_bottom(:, :) = halo_buffers%send_top(:, :)[domain_info%bottom_image_id]
         halo_buffers%recv_top(:, :) = halo_buffers%send_bottom(:, :)[domain_info%top_image_id]
+ 
+        do x = 0, n_x_local + 1
+            f(x, 0, 3) = halo_buffers%recv_bottom(x, 1)
+            f(x, 0, 6) = halo_buffers%recv_bottom(x, 2)
+            f(x, 0, 7) = halo_buffers%recv_bottom(x, 3)
 
-        f(0:n_x_local+1, 0, 3) = halo_buffers%recv_bottom(:, 1)
-        f(0:n_x_local+1, 0, 6) = halo_buffers%recv_bottom(:, 2)
-        f(0:n_x_local+1, 0, 7) = halo_buffers%recv_bottom(:, 3)
-
-        f(0:n_x_local+1, n_y_local+1, 5) = halo_buffers%recv_top(:, 1)
-        f(0:n_x_local+1, n_y_local+1, 8) = halo_buffers%recv_top(:, 2)
-        f(0:n_x_local+1, n_y_local+1, 9) = halo_buffers%recv_top(:, 3)
+            f(x, n_y_local+1, 5) = halo_buffers%recv_top(x, 1)
+            f(x, n_y_local+1, 8) = halo_buffers%recv_top(x, 2)
+            f(x, n_y_local+1, 9) = halo_buffers%recv_top(x, 3)
+        end do
 
         call sync_neighbor_images(y_neighbor_images, n_y_neighbor_images)
     contains
