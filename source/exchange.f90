@@ -11,6 +11,8 @@ module exchange
     public :: exchange_halos
     public :: exchange_halos_direct_put
     public :: finish_halos_direct_put
+    public :: exchange_halos_hybrid_start
+    public :: exchange_halos_hybrid_finish
 
     integer(int32), parameter :: N_HALO_DIRS = 3_int32
 
@@ -19,6 +21,8 @@ module exchange
         ! x-direction send buffers
         real(FP), allocatable :: send_left(:,:)[:]
         real(FP), allocatable :: send_right(:,:)[:]
+        real(FP), allocatable :: send_left_hybrid(:,:,:)[:]
+        real(FP), allocatable :: send_right_hybrid(:,:,:)[:]
 
         ! y-direction send buffers
         real(FP), allocatable :: send_bottom(:,:)[:]
@@ -52,6 +56,8 @@ contains
         ! bottom/top buffers include corners
         allocate(halo_buffers%send_left(domain_info%n_y_local, N_HALO_DIRS)[*])
         allocate(halo_buffers%send_right(domain_info%n_y_local, N_HALO_DIRS)[*])
+        allocate(halo_buffers%send_left_hybrid(domain_info%n_y_local, N_HALO_DIRS, 2)[*])
+        allocate(halo_buffers%send_right_hybrid(domain_info%n_y_local, N_HALO_DIRS, 2)[*])
         allocate(halo_buffers%send_bottom(0:domain_info%n_x_local+1, N_HALO_DIRS)[*])
         allocate(halo_buffers%send_top(0:domain_info%n_x_local+1, N_HALO_DIRS)[*])
 
@@ -269,6 +275,122 @@ contains
             sync images(neighbor_images(1:n_neighbor_images))
         end if
     end subroutine finish_halos_direct_put
+
+
+    subroutine exchange_halos_hybrid_start( &
+        domain_info, halo_buffers, n_x_local, n_y_local, active_buffer, f &
+        )
+        ! inputs
+        type(domain_t), intent(in) :: domain_info
+        integer(int32), intent(in) :: n_x_local
+        integer(int32), intent(in) :: n_y_local
+        integer(int32), intent(in) :: active_buffer
+
+        ! read/write inputs
+        type(halo_buffers_t), intent(inout) :: halo_buffers
+        real(FP), intent(inout) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS, 2)[*]
+
+        ! locals
+        integer(int32) :: y
+
+        if (domain_info%n_images == 1) then
+            call exchange_halos_direct_local(n_x_local, n_y_local, f(:, :, :, active_buffer))
+            return
+        end if
+
+        ! pack strided left/right columns into compact x-direction buffers
+        do y = 1, n_y_local
+            halo_buffers%send_left_hybrid(y, 1, active_buffer) = f(1, y, 4, active_buffer)
+            halo_buffers%send_left_hybrid(y, 2, active_buffer) = f(1, y, 7, active_buffer)
+            halo_buffers%send_left_hybrid(y, 3, active_buffer) = f(1, y, 8, active_buffer)
+
+            halo_buffers%send_right_hybrid(y, 1, active_buffer) = f(n_x_local, y, 2, active_buffer)
+            halo_buffers%send_right_hybrid(y, 2, active_buffer) = f(n_x_local, y, 6, active_buffer)
+            halo_buffers%send_right_hybrid(y, 3, active_buffer) = f(n_x_local, y, 9, active_buffer)
+        end do
+
+        ! write contiguous bottom/top rows on neighboring images directly from owned borders
+        f(1:n_x_local, n_y_local+1, 5, active_buffer)[domain_info%bottom_image_id] = &
+            f(1:n_x_local, 1, 5, active_buffer)
+        f(1:n_x_local, 0, 3, active_buffer)[domain_info%top_image_id] = &
+            f(1:n_x_local, n_y_local, 3, active_buffer)
+
+        if (n_x_local > 1) then
+            f(2:n_x_local, n_y_local+1, 8, active_buffer)[domain_info%bottom_image_id] = &
+                f(2:n_x_local, 1, 8, active_buffer)
+            f(1:n_x_local-1, n_y_local+1, 9, active_buffer)[domain_info%bottom_image_id] = &
+                f(1:n_x_local-1, 1, 9, active_buffer)
+
+            f(1:n_x_local-1, 0, 6, active_buffer)[domain_info%top_image_id] = &
+                f(1:n_x_local-1, n_y_local, 6, active_buffer)
+            f(2:n_x_local, 0, 7, active_buffer)[domain_info%top_image_id] = &
+                f(2:n_x_local, n_y_local, 7, active_buffer)
+        end if
+
+        ! write corner halos directly to diagonal neighbors
+        f(0, 0, 6, active_buffer)[domain_info%top_right_image_id] = &
+            f(n_x_local, n_y_local, 6, active_buffer)
+        f(n_x_local+1, 0, 7, active_buffer)[domain_info%top_left_image_id] = &
+            f(1, n_y_local, 7, active_buffer)
+        f(n_x_local+1, n_y_local+1, 8, active_buffer)[domain_info%bottom_left_image_id] = &
+            f(1, 1, 8, active_buffer)
+        f(0, n_y_local+1, 9, active_buffer)[domain_info%bottom_right_image_id] = &
+            f(n_x_local, 1, 9, active_buffer)
+    end subroutine exchange_halos_hybrid_start
+
+
+    subroutine exchange_halos_hybrid_finish( &
+        domain_info, halo_buffers, n_x_local, n_y_local, active_buffer, f &
+        )
+        ! inputs
+        type(domain_t), intent(in) :: domain_info
+        integer(int32), intent(in) :: n_x_local
+        integer(int32), intent(in) :: n_y_local
+        integer(int32), intent(in) :: active_buffer
+
+        ! read/write inputs
+        type(halo_buffers_t), intent(inout) :: halo_buffers
+        real(FP), intent(inout) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS, 2)[*]
+
+        ! locals
+        integer(int32) :: y
+        integer(int32) :: n_neighbor_images
+        integer(int32) :: neighbor_images(8)
+
+        if (domain_info%n_images == 1) then
+            return
+        end if
+
+        n_neighbor_images = 0
+        call append_unique_image(domain_info%left_image_id, neighbor_images, n_neighbor_images)
+        call append_unique_image(domain_info%right_image_id, neighbor_images, n_neighbor_images)
+        call append_unique_image(domain_info%bottom_image_id, neighbor_images, n_neighbor_images)
+        call append_unique_image(domain_info%top_image_id, neighbor_images, n_neighbor_images)
+        call append_unique_image(domain_info%bottom_left_image_id, neighbor_images, n_neighbor_images)
+        call append_unique_image(domain_info%bottom_right_image_id, neighbor_images, n_neighbor_images)
+        call append_unique_image(domain_info%top_left_image_id, neighbor_images, n_neighbor_images)
+        call append_unique_image(domain_info%top_right_image_id, neighbor_images, n_neighbor_images)
+
+        if (n_neighbor_images == 1) then
+            sync images(neighbor_images(1))
+        else
+            sync images(neighbor_images(1:n_neighbor_images))
+        end if
+
+        ! unpack left/right halos from compact neighboring x-direction buffers
+        halo_buffers%recv_left(:, :) = halo_buffers%send_right_hybrid(:, :, active_buffer)[domain_info%left_image_id]
+        halo_buffers%recv_right(:, :) = halo_buffers%send_left_hybrid(:, :, active_buffer)[domain_info%right_image_id]
+
+        do y = 1, n_y_local
+            f(0, y, 2, active_buffer) = halo_buffers%recv_left(y, 1)
+            f(0, y, 6, active_buffer) = halo_buffers%recv_left(y, 2)
+            f(0, y, 9, active_buffer) = halo_buffers%recv_left(y, 3)
+
+            f(n_x_local+1, y, 4, active_buffer) = halo_buffers%recv_right(y, 1)
+            f(n_x_local+1, y, 7, active_buffer) = halo_buffers%recv_right(y, 2)
+            f(n_x_local+1, y, 8, active_buffer) = halo_buffers%recv_right(y, 3)
+        end do
+    end subroutine exchange_halos_hybrid_finish
 
 
     subroutine append_unique_image( &
