@@ -59,8 +59,7 @@ module settings
     ! kernel selection
     logical, parameter :: USE_UNROLLED_KERNELS = .true.
     logical, parameter :: USE_PULL_SHIFT_KERNELS = .false.
-    logical, parameter :: USE_DIRECT_COARRAY_HALOS = .false.
-    logical, parameter :: USE_HYBRID_COARRAY_HALOS = .true.
+    logical, parameter :: USE_DIRECT_COARRAY_HALOS = .true.
 
     ! misc
     real(FP), parameter :: PI = 3.141592653589793238462643383279502884197_FP
