@@ -53,15 +53,15 @@ program main
     )
 
     ! export settings
-    logical, parameter :: export_rho = .true.
-    logical, parameter :: export_u_x = .true.
-    logical, parameter :: export_u_y = .true.
-    logical, parameter :: export_u_mag = .true.
+    logical, parameter :: export_rho = .false.
+    logical, parameter :: export_u_x = .false.
+    logical, parameter :: export_u_y = .false.
+    logical, parameter :: export_u_mag = .false.
     integer(int32), parameter :: export_interval = 100000
     logical, parameter :: export_initial_state = .true.
     logical, parameter :: export_final_state = .true.
     character(len=*), parameter :: output_dir_name = "output"
-    character(len=*), parameter :: export_num = "run_005"
+    character(len=*), parameter :: export_num = "run_000"
 
     ! progress display settings
     logical, parameter :: interactive_progress = .true.
