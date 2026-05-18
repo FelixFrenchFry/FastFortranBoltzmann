@@ -362,33 +362,6 @@ contains
         real(FP), intent(inout) :: u_x(n_x_local, n_y_local)
         real(FP), intent(inout) :: u_y(n_x_local, n_y_local)
 
-        call fuzed_unrolled_pull_streaming_collision_range_SW( &
-            1_int32, n_x_local, 1_int32, n_y_local, &
-            n_x_local, n_y_local, write_macro_fields, omega, f, f_next, rho, u_x, u_y)
-    end subroutine fuzed_unrolled_pull_streaming_collision_local_SW
-
-
-    subroutine fuzed_unrolled_pull_streaming_collision_range_SW( &
-        x_start, x_end, y_start, y_end, n_x_local, n_y_local, &
-        write_macro_fields, omega, f, f_next, rho, u_x, u_y &
-        )
-        ! inputs
-        integer(int32), intent(in) :: x_start
-        integer(int32), intent(in) :: x_end
-        integer(int32), intent(in) :: y_start
-        integer(int32), intent(in) :: y_end
-        integer(int32), intent(in) :: n_x_local
-        integer(int32), intent(in) :: n_y_local
-        logical, intent(in) :: write_macro_fields
-        real(FP), intent(in) :: omega
-        real(FP), intent(in) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
-
-        ! write destinations
-        real(FP), intent(inout) :: f_next(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
-        real(FP), intent(inout) :: rho(n_x_local, n_y_local)
-        real(FP), intent(inout) :: u_x(n_x_local, n_y_local)
-        real(FP), intent(inout) :: u_y(n_x_local, n_y_local)
-
         ! temp
         integer(int32) :: x, y
         real(FP) :: f_1
@@ -405,13 +378,9 @@ contains
         real(FP) :: u_y_val
         real(FP) :: u_squ
 
-        if (x_start > x_end .or. y_start > y_end) then
-            return
-        end if
-
-        ! loop over selected owned local cells
-        do y = y_start, y_end
-            do x = x_start, x_end
+        ! loop over all owned local cells
+        do y = 1, n_y_local
+            do x = 1, n_x_local
 
                 ! 1: ( 0,  0) = rest
                 ! 2: ( 1,  0) = east
@@ -512,7 +481,7 @@ contains
                     1.5_FP * u_squ) - f_9)
             end do
         end do
-    end subroutine fuzed_unrolled_pull_streaming_collision_range_SW
+    end subroutine fuzed_unrolled_pull_streaming_collision_local_SW
 
 
     subroutine fuzed_pull_shift_streaming_collision_full_SW( &
