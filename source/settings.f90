@@ -13,9 +13,9 @@ module settings
 #endif
 
     ! sim size and duration
-    integer(int32), parameter :: N_X = 5040
-    integer(int32), parameter :: N_Y = 5040
-    integer(int32), parameter :: N_STEPS = 5000000
+    integer(int32), parameter :: N_X = 9000
+    integer(int32), parameter :: N_Y = 9000
+    integer(int32), parameter :: N_STEPS = 300
     integer(int64), parameter :: N_CELLS = int(N_X, int64) * int(N_Y, int64)
     integer(int32), parameter :: N_DIRS = 9
 
