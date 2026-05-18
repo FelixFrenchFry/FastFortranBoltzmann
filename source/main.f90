@@ -11,7 +11,6 @@ program main
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
         USE_UNROLLED_KERNELS, USE_PULL_SHIFT_KERNELS, USE_DIRECT_COARRAY_HALOS, USE_HYBRID_COARRAY_HALOS, &
-        USE_SCALAR_COLUMN_REMOTE_PUTS, &
         shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
     use shear_wave, only: fuzed_unrolled_pull_streaming_collision_local_SW, &
         fuzed_unrolled_pull_streaming_collision_range_SW
@@ -26,7 +25,6 @@ program main
     logical :: use_distributed_shear_wave
     logical :: direct_coarray_halos_enabled
     logical :: hybrid_coarray_halos_enabled
-    logical :: scalar_column_remote_puts_enabled
     type(domain_t) :: domain_info
     type(halo_buffers_t) :: halo_buffers
     type(hardware_info_t) :: machine_info
@@ -126,7 +124,6 @@ program main
     use_distributed_shear_wave = SIM_MODE == SIM_SHEAR_WAVE
     direct_coarray_halos_enabled = use_distributed_shear_wave .and. USE_DIRECT_COARRAY_HALOS
     hybrid_coarray_halos_enabled = use_distributed_shear_wave .and. USE_HYBRID_COARRAY_HALOS
-    scalar_column_remote_puts_enabled = direct_coarray_halos_enabled .and. USE_SCALAR_COLUMN_REMOTE_PUTS
     active_buffer = 1_int32
     next_buffer = 2_int32
 
@@ -245,7 +242,6 @@ program main
         print '(A,T27,A,L1)',    "use_pull_shift_kernels", "= ", USE_PULL_SHIFT_KERNELS
         print '(A,T27,A,L1)',    "use_direct_coarray_halos", "= ", direct_coarray_halos_enabled
         print '(A,T27,A,L1)',    "use_hybrid_coarray_halos", "= ", hybrid_coarray_halos_enabled
-        print '(A,T27,A,L1)',    "use_scalar_column_puts", "= ", scalar_column_remote_puts_enabled
         print '(A,T27,A,L1)',    "distributed_coarrays", "= ", .true.
         print '(A,T27,A,L1)',    "export_rho", "= ", export_rho
         print '(A,T27,A,L1)',    "export_u_x", "= ", export_u_x
