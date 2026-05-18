@@ -2,7 +2,7 @@ module exchange
     ! imports
     use iso_fortran_env, only: int32
     use domain, only: domain_t
-    use settings, only: N_DIRS, FP, USE_SCALAR_COLUMN_REMOTE_PUTS
+    use settings, only: N_DIRS, FP
     implicit none
     private
 
@@ -197,27 +197,22 @@ contains
             return
         end if
 
-        if (USE_SCALAR_COLUMN_REMOTE_PUTS) then
-            call exchange_x_halos_direct_scalar_put( &
-                domain_info, n_x_local, n_y_local, active_buffer, f)
-        else
-            ! write left/right halos on neighboring images directly from owned borders
-            f(n_x_local+1, 1:n_y_local, 4, active_buffer)[domain_info%left_image_id] = &
-                f(1, 1:n_y_local, 4, active_buffer)
-            f(0, 1:n_y_local, 2, active_buffer)[domain_info%right_image_id] = &
-                f(n_x_local, 1:n_y_local, 2, active_buffer)
+        ! write left/right halos on neighboring images directly from owned borders
+        f(n_x_local+1, 1:n_y_local, 4, active_buffer)[domain_info%left_image_id] = &
+            f(1, 1:n_y_local, 4, active_buffer)
+        f(0, 1:n_y_local, 2, active_buffer)[domain_info%right_image_id] = &
+            f(n_x_local, 1:n_y_local, 2, active_buffer)
 
-            if (n_y_local > 1) then
-                f(n_x_local+1, 1:n_y_local-1, 7, active_buffer)[domain_info%left_image_id] = &
-                    f(1, 1:n_y_local-1, 7, active_buffer)
-                f(n_x_local+1, 2:n_y_local, 8, active_buffer)[domain_info%left_image_id] = &
-                    f(1, 2:n_y_local, 8, active_buffer)
+        if (n_y_local > 1) then
+            f(n_x_local+1, 1:n_y_local-1, 7, active_buffer)[domain_info%left_image_id] = &
+                f(1, 1:n_y_local-1, 7, active_buffer)
+            f(n_x_local+1, 2:n_y_local, 8, active_buffer)[domain_info%left_image_id] = &
+                f(1, 2:n_y_local, 8, active_buffer)
 
-                f(0, 1:n_y_local-1, 6, active_buffer)[domain_info%right_image_id] = &
-                    f(n_x_local, 1:n_y_local-1, 6, active_buffer)
-                f(0, 2:n_y_local, 9, active_buffer)[domain_info%right_image_id] = &
-                    f(n_x_local, 2:n_y_local, 9, active_buffer)
-            end if
+            f(0, 1:n_y_local-1, 6, active_buffer)[domain_info%right_image_id] = &
+                f(n_x_local, 1:n_y_local-1, 6, active_buffer)
+            f(0, 2:n_y_local, 9, active_buffer)[domain_info%right_image_id] = &
+                f(n_x_local, 2:n_y_local, 9, active_buffer)
         end if
 
         ! write bottom/top halos on neighboring images directly from owned borders
@@ -248,55 +243,6 @@ contains
         f(0, n_y_local+1, 9, active_buffer)[domain_info%bottom_right_image_id] = &
             f(n_x_local, 1, 9, active_buffer)
     end subroutine exchange_halos_direct_put
-
-
-    subroutine exchange_x_halos_direct_scalar_put( &
-        domain_info, n_x_local, n_y_local, active_buffer, f &
-        )
-        ! inputs
-        type(domain_t), intent(in) :: domain_info
-        integer(int32), intent(in) :: n_x_local
-        integer(int32), intent(in) :: n_y_local
-        integer(int32), intent(in) :: active_buffer
-
-        ! read/write inputs
-        real(FP), intent(inout) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS, 2)[*]
-
-        ! locals
-        integer(int32) :: y
-
-        ! write left halos on neighboring images directly from owned borders
-        do y = 1, n_y_local
-            f(n_x_local+1, y, 4, active_buffer)[domain_info%left_image_id] = &
-                f(1, y, 4, active_buffer)
-        end do
-
-        do y = 1, n_y_local - 1
-            f(n_x_local+1, y, 7, active_buffer)[domain_info%left_image_id] = &
-                f(1, y, 7, active_buffer)
-        end do
-
-        do y = 2, n_y_local
-            f(n_x_local+1, y, 8, active_buffer)[domain_info%left_image_id] = &
-                f(1, y, 8, active_buffer)
-        end do
-
-        ! write right halos on neighboring images directly from owned borders
-        do y = 1, n_y_local
-            f(0, y, 2, active_buffer)[domain_info%right_image_id] = &
-                f(n_x_local, y, 2, active_buffer)
-        end do
-
-        do y = 1, n_y_local - 1
-            f(0, y, 6, active_buffer)[domain_info%right_image_id] = &
-                f(n_x_local, y, 6, active_buffer)
-        end do
-
-        do y = 2, n_y_local
-            f(0, y, 9, active_buffer)[domain_info%right_image_id] = &
-                f(n_x_local, y, 9, active_buffer)
-        end do
-    end subroutine exchange_x_halos_direct_scalar_put
 
 
     subroutine finish_halos_direct_put( &
