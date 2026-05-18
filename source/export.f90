@@ -1,6 +1,7 @@
 module export
     ! imports
     use iso_fortran_env, only: int32
+    use domain, only: domain_t
     use hardware_info, only: hardware_info_t, write_hardware_metadata
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, C_X, C_Y, C_X_FP, C_Y_FP, W, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, FP_DTYPE, &
@@ -12,6 +13,7 @@ module export
 
     public :: should_export_step
     public :: export_selected_data
+    public :: export_selected_data_distributed
     public :: export_metadata
 
 contains
@@ -82,6 +84,51 @@ contains
             call export_scalar_field(velocity_mag, "velocity_mag", output_dir_name, export_num, suffix_num)
         end if
     end subroutine export_selected_data
+
+
+    subroutine export_selected_data_distributed( &
+        domain_info, export_rho, export_u_x, export_u_y, export_u_mag, &
+        output_dir_name, export_num, suffix_num, rho, u_x, u_y &
+        )
+        ! read-only inputs
+        type(domain_t), intent(in) :: domain_info
+        logical, intent(in) :: export_rho
+        logical, intent(in) :: export_u_x
+        logical, intent(in) :: export_u_y
+        logical, intent(in) :: export_u_mag
+        character(len=*), intent(in) :: output_dir_name
+        character(len=*), intent(in) :: export_num
+        integer(int32), intent(in) :: suffix_num
+        real(FP), intent(in) :: rho(:,:)
+        real(FP), intent(in) :: u_x(:,:)
+        real(FP), intent(in) :: u_y(:,:)
+
+        ! temp
+        real(FP), allocatable :: velocity_mag(:,:)
+
+        ! export selected scalar fields
+        if (export_rho) then
+            call export_scalar_field_distributed( &
+                domain_info, rho, "density", output_dir_name, export_num, suffix_num)
+        end if
+
+        if (export_u_x) then
+            call export_scalar_field_distributed( &
+                domain_info, u_x, "velocity_x", output_dir_name, export_num, suffix_num)
+        end if
+
+        if (export_u_y) then
+            call export_scalar_field_distributed( &
+                domain_info, u_y, "velocity_y", output_dir_name, export_num, suffix_num)
+        end if
+
+        if (export_u_mag) then
+            allocate(velocity_mag(size(u_x, 1), size(u_x, 2)))
+            velocity_mag = sqrt(u_x * u_x + u_y * u_y) ! element-wise sqrt of velocity magnitude
+            call export_scalar_field_distributed( &
+                domain_info, velocity_mag, "velocity_mag", output_dir_name, export_num, suffix_num)
+        end if
+    end subroutine export_selected_data_distributed
 
 
     subroutine export_metadata( &
@@ -222,6 +269,67 @@ contains
         call ensure_output_directory(output_path)
         call write_binary_field(field, file_path)
     end subroutine export_scalar_field
+
+
+    subroutine export_scalar_field_distributed( &
+        domain_info, local_field, field_name, output_dir_name, export_num, suffix_num &
+        )
+        ! read-only inputs
+        type(domain_t), intent(in) :: domain_info
+        real(FP), intent(in) :: local_field(:,:)
+        character(len=*), intent(in) :: field_name
+        character(len=*), intent(in) :: output_dir_name
+        character(len=*), intent(in) :: export_num
+        integer(int32), intent(in) :: suffix_num
+
+        ! temp
+        integer(int32) :: image_id
+        integer(int32) :: image_x
+        integer(int32) :: image_y
+        integer(int32) :: x_global_start
+        integer(int32) :: x_global_end
+        integer(int32) :: y_global_start
+        integer(int32) :: y_global_end
+        character(len=:), allocatable :: output_path
+        character(len=:), allocatable :: file_path
+        real(FP), allocatable :: global_field(:,:)
+        real(FP), allocatable :: export_buffer(:,:)[:]
+
+        if (size(local_field, 1) /= domain_info%n_x_local .or. &
+            size(local_field, 2) /= domain_info%n_y_local) then
+            error stop "error: local distributed export field has wrong shape"
+        end if
+
+        allocate(export_buffer(domain_info%n_x_local, domain_info%n_y_local)[*])
+        export_buffer(:, :) = local_field(:, :)
+
+        sync all
+
+        if (this_image() == 1) then
+            allocate(global_field(N_X, N_Y))
+
+            do image_id = 1, domain_info%n_images
+                image_x = modulo(image_id - 1, domain_info%n_images_x) + 1
+                image_y = (image_id - 1) / domain_info%n_images_x + 1
+
+                x_global_start = (image_x - 1) * domain_info%n_x_local + 1
+                x_global_end = image_x * domain_info%n_x_local
+                y_global_start = (image_y - 1) * domain_info%n_y_local + 1
+                y_global_end = image_y * domain_info%n_y_local
+
+                global_field(x_global_start:x_global_end, y_global_start:y_global_end) = &
+                    export_buffer(:, :)[image_id]
+            end do
+
+            output_path = trim(output_dir_name) // "/" // trim(export_num)
+            file_path = output_path // "/" // trim(field_name) // format_step_suffix(suffix_num) // ".bin"
+
+            call ensure_output_directory(output_path)
+            call write_binary_field(global_field, file_path)
+        end if
+
+        sync all
+    end subroutine export_scalar_field_distributed
 
 
     pure function format_step_suffix( &
