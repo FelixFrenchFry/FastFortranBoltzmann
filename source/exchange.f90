@@ -1,6 +1,6 @@
 module exchange
     ! imports
-    use iso_fortran_env, only: int32
+    use iso_fortran_env, only: int32, int64, real64
     use domain, only: domain_t
     use settings, only: N_DIRS, FP
     implicit none
@@ -24,6 +24,10 @@ module exchange
 
         ! corner send buffers
         real(FP), allocatable :: send_corners(:)[:]
+
+        ! neighbor images
+        integer(int32) :: n_neighbor_images
+        integer(int32) :: neighbor_images(8)
 
         ! x-direction receive buffers
         real(FP), allocatable :: recv_left(:,:)
@@ -60,11 +64,30 @@ contains
         allocate(halo_buffers%recv_right(domain_info%n_y_local, N_HALO_DIRS))
         allocate(halo_buffers%recv_bottom(domain_info%n_x_local, N_HALO_DIRS))
         allocate(halo_buffers%recv_top(domain_info%n_x_local, N_HALO_DIRS))
+
+        halo_buffers%n_neighbor_images = 0
+        call append_unique_image(domain_info%left_image_id, &
+            halo_buffers%neighbor_images, halo_buffers%n_neighbor_images)
+        call append_unique_image(domain_info%right_image_id, &
+            halo_buffers%neighbor_images, halo_buffers%n_neighbor_images)
+        call append_unique_image(domain_info%bottom_image_id, &
+            halo_buffers%neighbor_images, halo_buffers%n_neighbor_images)
+        call append_unique_image(domain_info%top_image_id, &
+            halo_buffers%neighbor_images, halo_buffers%n_neighbor_images)
+        call append_unique_image(domain_info%bottom_left_image_id, &
+            halo_buffers%neighbor_images, halo_buffers%n_neighbor_images)
+        call append_unique_image(domain_info%bottom_right_image_id, &
+            halo_buffers%neighbor_images, halo_buffers%n_neighbor_images)
+        call append_unique_image(domain_info%top_left_image_id, &
+            halo_buffers%neighbor_images, halo_buffers%n_neighbor_images)
+        call append_unique_image(domain_info%top_right_image_id, &
+            halo_buffers%neighbor_images, halo_buffers%n_neighbor_images)
     end subroutine allocate_halo_buffers
 
 
     subroutine exchange_halos( &
-        domain_info, halo_buffers, n_x_local, n_y_local, f &
+        domain_info, halo_buffers, n_x_local, n_y_local, f, &
+        halo_pack_seconds, halo_sync_ready_seconds, halo_read_seconds, halo_sync_guard_seconds &
         )
         ! inputs
         type(domain_t), intent(in) :: domain_info
@@ -75,21 +98,28 @@ contains
         type(halo_buffers_t), intent(inout) :: halo_buffers
         real(FP), intent(inout) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
 
+        ! optional timing inputs
+        real(real64), intent(inout), optional :: halo_pack_seconds
+        real(real64), intent(inout), optional :: halo_sync_ready_seconds
+        real(real64), intent(inout), optional :: halo_read_seconds
+        real(real64), intent(inout), optional :: halo_sync_guard_seconds
+
         ! locals
-        integer(int32) :: n_x_neighbor_images
-        integer(int32) :: n_y_corner_neighbor_images
-        integer(int32) :: x_neighbor_images(2)
-        integer(int32) :: y_corner_neighbor_images(6)
+        integer(int64) :: clock_rate
+        integer(int64) :: clock_section_start
+        integer(int64) :: clock_section_end
         integer(int32) :: x
         integer(int32) :: y
+        logical :: measure_timings
 
-        ! left/right can be the same image for 2-image axes
-        x_neighbor_images(1) = domain_info%left_image_id
-        if (domain_info%right_image_id == domain_info%left_image_id) then
-            n_x_neighbor_images = 1
-        else
-            x_neighbor_images(2) = domain_info%right_image_id
-            n_x_neighbor_images = 2
+        measure_timings = present(halo_pack_seconds) .and. &
+            present(halo_sync_ready_seconds) .and. &
+            present(halo_read_seconds) .and. &
+            present(halo_sync_guard_seconds)
+
+        if (measure_timings) then
+            call system_clock(count_rate=clock_rate)
+            call system_clock(clock_section_start)
         end if
 
         ! pack owned left/right borders
@@ -120,15 +150,21 @@ contains
         halo_buffers%send_corners(3) = f(1, 1, 8)
         halo_buffers%send_corners(4) = f(n_x_local, 1, 9)
 
-        n_y_corner_neighbor_images = 0
-        call append_unique_image(domain_info%bottom_image_id, y_corner_neighbor_images, n_y_corner_neighbor_images)
-        call append_unique_image(domain_info%top_image_id, y_corner_neighbor_images, n_y_corner_neighbor_images)
-        call append_unique_image(domain_info%bottom_left_image_id, y_corner_neighbor_images, n_y_corner_neighbor_images)
-        call append_unique_image(domain_info%bottom_right_image_id, y_corner_neighbor_images, n_y_corner_neighbor_images)
-        call append_unique_image(domain_info%top_left_image_id, y_corner_neighbor_images, n_y_corner_neighbor_images)
-        call append_unique_image(domain_info%top_right_image_id, y_corner_neighbor_images, n_y_corner_neighbor_images)
+        if (measure_timings) then
+            call system_clock(clock_section_end)
+            halo_pack_seconds = halo_pack_seconds + &
+                real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
+            call system_clock(clock_section_start)
+        end if
 
-        call sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
+        call sync_neighbor_images(halo_buffers%neighbor_images, halo_buffers%n_neighbor_images)
+
+        if (measure_timings) then
+            call system_clock(clock_section_end)
+            halo_sync_ready_seconds = halo_sync_ready_seconds + &
+                real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
+            call system_clock(clock_section_start)
+        end if
 
         ! unpack left/right halos from neighboring images
         halo_buffers%recv_left(:, :) = halo_buffers%send_right(:, :)[domain_info%left_image_id]
@@ -143,9 +179,6 @@ contains
             f(n_x_local+1, y, 7) = halo_buffers%recv_right(y, 2)
             f(n_x_local+1, y, 8) = halo_buffers%recv_right(y, 3)
         end do
-
-        call sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
-        call sync_neighbor_images(y_corner_neighbor_images, n_y_corner_neighbor_images)
 
         ! unpack bottom/top halos from neighboring images
         halo_buffers%recv_bottom(:, :) = halo_buffers%send_top(:, :)[domain_info%bottom_image_id]
@@ -167,7 +200,20 @@ contains
         f(n_x_local+1, n_y_local+1, 8) = halo_buffers%send_corners(3)[domain_info%top_right_image_id]
         f(0, n_y_local+1, 9) = halo_buffers%send_corners(4)[domain_info%top_left_image_id]
 
-        call sync_neighbor_images(y_corner_neighbor_images, n_y_corner_neighbor_images)
+        if (measure_timings) then
+            call system_clock(clock_section_end)
+            halo_read_seconds = halo_read_seconds + &
+                real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
+            call system_clock(clock_section_start)
+        end if
+
+        call sync_neighbor_images(halo_buffers%neighbor_images, halo_buffers%n_neighbor_images)
+
+        if (measure_timings) then
+            call system_clock(clock_section_end)
+            halo_sync_guard_seconds = halo_sync_guard_seconds + &
+                real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
+        end if
     end subroutine exchange_halos
 
 
