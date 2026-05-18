@@ -3,7 +3,7 @@ program main
     use iso_fortran_env, only: int32, int64, real64, output_unit
     use domain, only: domain_t, initialize_domain, print_domain_summary
     use exchange, only: halo_buffers_t, allocate_halo_buffers, exchange_halos
-    use export, only: should_export_step, export_selected_data, export_metadata
+    use export, only: should_export_step, export_selected_data, export_selected_data_distributed, export_metadata
     use hardware_info, only: hardware_info_t, collect_hardware_info, print_hardware_summary
     use initialization, only: initialize_sim_condition, apply_condition_shear_wave_local
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, &
@@ -27,7 +27,7 @@ program main
         rho_0 = 1.0_FP, &
         omega = 1.5_FP, &
         u_max = 0.1_FP, &
-        n_sin = 2.0_FP &
+        n_sin = 3.0_FP &
     )
 
     ! parameter set for couette flow
@@ -53,15 +53,15 @@ program main
     )
 
     ! export settings
-    logical, parameter :: export_rho = .false.
-    logical, parameter :: export_u_x = .false.
-    logical, parameter :: export_u_y = .false.
-    logical, parameter :: export_u_mag = .false.
-    integer(int32), parameter :: export_interval = 10000
+    logical, parameter :: export_rho = .true.
+    logical, parameter :: export_u_x = .true.
+    logical, parameter :: export_u_y = .true.
+    logical, parameter :: export_u_mag = .true.
+    integer(int32), parameter :: export_interval = 100000
     logical, parameter :: export_initial_state = .true.
     logical, parameter :: export_final_state = .true.
     character(len=*), parameter :: output_dir_name = "output"
-    character(len=*), parameter :: export_num = "run_000"
+    character(len=*), parameter :: export_num = "run_005"
 
     ! progress display settings
     logical, parameter :: interactive_progress = .true.
@@ -125,11 +125,6 @@ program main
 
     if (use_distributed_shear_wave .and. .not. USE_UNROLLED_KERNELS) then
         error stop "error: distributed regular shear wave is not implemented yet"
-    end if
-
-    if (use_distributed_shear_wave .and. &
-        (export_rho .or. export_u_x .or. export_u_y .or. export_u_mag)) then
-        error stop "error: distributed field export is not implemented yet"
     end if
 
     if (this_image() == 1) then
@@ -247,9 +242,12 @@ program main
     end if
 
     ! export initial condition
-    if (this_image() == 1) then
-        if (should_export_step(0_int32, export_interval, &
-            export_initial_state, export_final_state)) then
+    if (should_export_step(0_int32, export_interval, &
+        export_initial_state, export_final_state)) then
+        if (use_distributed_shear_wave) then
+            call export_selected_data_distributed(domain_info, export_rho, export_u_x, export_u_y, export_u_mag, &
+                output_dir_name, export_num, 0_int32, rho, u_x, u_y)
+        else if (this_image() == 1) then
             call export_selected_data(export_rho, export_u_x, export_u_y, export_u_mag, &
                 output_dir_name, export_num, 0_int32, rho, u_x, u_y)
         end if
@@ -313,9 +311,16 @@ program main
             real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
 
         ! export selected field
-        if (this_image() == 1) then
-            if (should_export_step(step, export_interval, &
-                export_initial_state, export_final_state)) then
+        if (should_export_step(step, export_interval, &
+            export_initial_state, export_final_state)) then
+            if (use_distributed_shear_wave) then
+                call system_clock(clock_section_start)
+                call export_selected_data_distributed(domain_info, export_rho, export_u_x, export_u_y, export_u_mag, &
+                    output_dir_name, export_num, step, rho, u_x, u_y)
+                call system_clock(clock_section_end)
+                export_seconds = export_seconds + &
+                    real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
+            else if (this_image() == 1) then
                 call system_clock(clock_section_start)
                 call export_selected_data(export_rho, export_u_x, export_u_y, export_u_mag, &
                     output_dir_name, export_num, step, rho, u_x, u_y)
@@ -409,7 +414,7 @@ program main
         end do
 
         print '(A)', ""
-        print '(A,T42,A,T45,A,T59,A,T62,A)', "execution time", "|", "total [sec]", "|", "share [%]"
+        print '(A,T42,A,T46,A,T59,A,T67,A)', "execution time", "|", "total [sec]", "|", "share [%]"
         print '(A)', "---------------------------------------------------------------------------"
 
         if (use_distributed_shear_wave) then
@@ -424,7 +429,7 @@ program main
 
         call print_execution_time_row("buffer swap", &
             execution_time_values(3)[timing_image_id], execution_time_values(7)[timing_image_id])
-        call print_execution_time_row("export", &
+        call print_execution_time_row("data export", &
             execution_time_values(4)[timing_image_id], execution_time_values(7)[timing_image_id])
         call print_execution_time_row("progress display", &
             execution_time_values(5)[timing_image_id], execution_time_values(7)[timing_image_id])
@@ -460,7 +465,7 @@ contains
             time_share = 0.0_real64
         end if
 
-        print '(A,T42,A,T45,F12.3,T59,A,T62,F10.3,A)', &
+        print '(A,T42,A,T45,F12.3,T59,A,T64,F10.3,A)', &
             row_name, "|", total_seconds, "|", time_share, " %"
     end subroutine print_execution_time_row
 
