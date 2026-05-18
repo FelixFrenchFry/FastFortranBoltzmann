@@ -93,12 +93,17 @@ program main
     real(real64) :: total_bytes_per_cell
     real(real64) :: kernel_compute_seconds
     real(real64) :: halo_exchange_seconds
+    real(real64) :: halo_pack_seconds
+    real(real64) :: halo_sync_ready_seconds
+    real(real64) :: halo_read_seconds
+    real(real64) :: halo_sync_guard_seconds
+    real(real64) :: halo_other_seconds
     real(real64) :: buffer_swap_seconds
     real(real64) :: export_seconds
     real(real64) :: progress_seconds
     real(real64) :: measured_seconds
     real(real64) :: other_seconds
-    real(real64) :: execution_time_values(7)[*]
+    real(real64) :: execution_time_values(12)[*]
     character(len=10) :: current_time
     integer(int32) :: image_id
     integer(int32) :: timing_image_id
@@ -266,6 +271,10 @@ program main
 
     kernel_compute_seconds = 0.0_real64
     halo_exchange_seconds = 0.0_real64
+    halo_pack_seconds = 0.0_real64
+    halo_sync_ready_seconds = 0.0_real64
+    halo_read_seconds = 0.0_real64
+    halo_sync_guard_seconds = 0.0_real64
     buffer_swap_seconds = 0.0_real64
     export_seconds = 0.0_real64
     progress_seconds = 0.0_real64
@@ -282,7 +291,9 @@ program main
 
         if (use_distributed_shear_wave) then
             call system_clock(clock_section_start)
-            call exchange_halos(domain_info, halo_buffers, domain_info%n_x_local, domain_info%n_y_local, f)
+            call exchange_halos( &
+                domain_info, halo_buffers, domain_info%n_x_local, domain_info%n_y_local, f, &
+                halo_pack_seconds, halo_sync_ready_seconds, halo_read_seconds, halo_sync_guard_seconds)
             call system_clock(clock_section_end)
             halo_exchange_seconds = halo_exchange_seconds + &
                 real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
@@ -393,22 +404,29 @@ program main
 
     measured_seconds = kernel_compute_seconds + halo_exchange_seconds + &
         buffer_swap_seconds + export_seconds + progress_seconds
+    halo_other_seconds = max(0.0_real64, halo_exchange_seconds - &
+        (halo_pack_seconds + halo_sync_ready_seconds + halo_read_seconds + halo_sync_guard_seconds))
     other_seconds = max(0.0_real64, elapsed_seconds - measured_seconds)
 
     execution_time_values(1) = kernel_compute_seconds
     execution_time_values(2) = halo_exchange_seconds
-    execution_time_values(3) = buffer_swap_seconds
-    execution_time_values(4) = export_seconds
-    execution_time_values(5) = progress_seconds
-    execution_time_values(6) = other_seconds
-    execution_time_values(7) = elapsed_seconds
+    execution_time_values(3) = halo_pack_seconds
+    execution_time_values(4) = halo_sync_ready_seconds
+    execution_time_values(5) = halo_read_seconds
+    execution_time_values(6) = halo_sync_guard_seconds
+    execution_time_values(7) = halo_other_seconds
+    execution_time_values(8) = buffer_swap_seconds
+    execution_time_values(9) = export_seconds
+    execution_time_values(10) = progress_seconds
+    execution_time_values(11) = other_seconds
+    execution_time_values(12) = elapsed_seconds
 
     sync all
 
     if (this_image() == 1) then
         timing_image_id = 1
         do image_id = 2, domain_info%n_images
-            if (execution_time_values(7)[image_id] > execution_time_values(7)[timing_image_id]) then
+            if (execution_time_values(12)[image_id] > execution_time_values(12)[timing_image_id]) then
                 timing_image_id = image_id
             end if
         end do
@@ -419,24 +437,34 @@ program main
 
         if (use_distributed_shear_wave) then
             call print_execution_time_row("kernel compute", &
-                execution_time_values(1)[timing_image_id], execution_time_values(7)[timing_image_id])
+                execution_time_values(1)[timing_image_id], execution_time_values(12)[timing_image_id])
             call print_execution_time_row("halo exchange", &
-                execution_time_values(2)[timing_image_id], execution_time_values(7)[timing_image_id])
+                execution_time_values(2)[timing_image_id], execution_time_values(12)[timing_image_id])
+            call print_execution_time_row("  halo pack", &
+                execution_time_values(3)[timing_image_id], execution_time_values(12)[timing_image_id])
+            call print_execution_time_row("  halo sync ready", &
+                execution_time_values(4)[timing_image_id], execution_time_values(12)[timing_image_id])
+            call print_execution_time_row("  halo read", &
+                execution_time_values(5)[timing_image_id], execution_time_values(12)[timing_image_id])
+            call print_execution_time_row("  halo sync guard", &
+                execution_time_values(6)[timing_image_id], execution_time_values(12)[timing_image_id])
+            call print_execution_time_row("  halo other", &
+                execution_time_values(7)[timing_image_id], execution_time_values(12)[timing_image_id])
         else
             call print_execution_time_row("kernel compute", &
-                execution_time_values(1)[timing_image_id], execution_time_values(7)[timing_image_id])
+                execution_time_values(1)[timing_image_id], execution_time_values(12)[timing_image_id])
         end if
 
         call print_execution_time_row("buffer swap", &
-            execution_time_values(3)[timing_image_id], execution_time_values(7)[timing_image_id])
+            execution_time_values(8)[timing_image_id], execution_time_values(12)[timing_image_id])
         call print_execution_time_row("data export", &
-            execution_time_values(4)[timing_image_id], execution_time_values(7)[timing_image_id])
+            execution_time_values(9)[timing_image_id], execution_time_values(12)[timing_image_id])
         call print_execution_time_row("progress display", &
-            execution_time_values(5)[timing_image_id], execution_time_values(7)[timing_image_id])
+            execution_time_values(10)[timing_image_id], execution_time_values(12)[timing_image_id])
         call print_execution_time_row("other", &
-            execution_time_values(6)[timing_image_id], execution_time_values(7)[timing_image_id])
+            execution_time_values(11)[timing_image_id], execution_time_values(12)[timing_image_id])
         call print_execution_time_row("total", &
-            execution_time_values(7)[timing_image_id], execution_time_values(7)[timing_image_id])
+            execution_time_values(12)[timing_image_id], execution_time_values(12)[timing_image_id])
 
         print '(A)', ""
         print '(A)', "--- [ perf metrics ] ------------------------------------------------------"
