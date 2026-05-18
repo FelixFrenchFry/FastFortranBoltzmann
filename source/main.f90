@@ -2,22 +2,27 @@ program main
     ! imports
     use iso_fortran_env, only: int32, int64, real64, output_unit
     use domain, only: domain_t, initialize_domain, print_domain_summary
-    use exchange, only: halo_buffers_t, allocate_halo_buffers, exchange_halos
+    use exchange, only: halo_buffers_t, allocate_halo_buffers, exchange_halos, &
+        exchange_halos_direct_put, finish_halos_direct_put
     use export, only: should_export_step, export_selected_data, export_selected_data_distributed, export_metadata
     use hardware_info, only: hardware_info_t, collect_hardware_info, print_hardware_summary
     use initialization, only: initialize_sim_condition, apply_condition_shear_wave_local
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
-        USE_UNROLLED_KERNELS, USE_PULL_SHIFT_KERNELS, &
+        USE_UNROLLED_KERNELS, USE_PULL_SHIFT_KERNELS, USE_DIRECT_COARRAY_HALOS, &
         shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
-    use shear_wave, only: fuzed_unrolled_pull_streaming_collision_local_SW
+    use shear_wave, only: fuzed_unrolled_pull_streaming_collision_local_SW, &
+        fuzed_unrolled_pull_streaming_collision_range_SW
     use simulation, only: execute_full_sim_step, swap_distribution_function_buffers
     implicit none
 
     ! misc
     integer(int32) :: step
+    integer(int32) :: active_buffer
+    integer(int32) :: next_buffer
     logical :: write_macro_fields
     logical :: use_distributed_shear_wave
+    logical :: direct_coarray_halos_enabled
     type(domain_t) :: domain_info
     type(halo_buffers_t) :: halo_buffers
     type(hardware_info_t) :: machine_info
@@ -53,15 +58,15 @@ program main
     )
 
     ! export settings
-    logical, parameter :: export_rho = .true.
-    logical, parameter :: export_u_x = .true.
-    logical, parameter :: export_u_y = .true.
-    logical, parameter :: export_u_mag = .true.
-    integer(int32), parameter :: export_interval = 100000
+    logical, parameter :: export_rho = .false.
+    logical, parameter :: export_u_x = .false.
+    logical, parameter :: export_u_y = .false.
+    logical, parameter :: export_u_mag = .false.
+    integer(int32), parameter :: export_interval = 10000
     logical, parameter :: export_initial_state = .true.
     logical, parameter :: export_final_state = .true.
     character(len=*), parameter :: output_dir_name = "output"
-    character(len=*), parameter :: export_num = "run_005"
+    character(len=*), parameter :: export_num = "run_000"
 
     ! progress display settings
     logical, parameter :: interactive_progress = .true.
@@ -106,6 +111,7 @@ program main
     ! allocate sim data structures (double-buffered distribution functions)
     real(FP), allocatable :: f(:, :, :) ! read-version of distribution functions f(x, y, dir)
     real(FP), allocatable :: f_next(:, :, :) ! write-version version of f(x, y, dir)
+    real(FP), allocatable :: f_direct(:, :, :, :)[:] ! double-buffered coarray version of f(x, y, dir)
     real(FP), allocatable :: rho(:,:)
     real(FP), allocatable :: u_x(:,:)
     real(FP), allocatable :: u_y(:,:)
@@ -114,6 +120,9 @@ program main
     call initialize_domain(domain_info)
 
     use_distributed_shear_wave = SIM_MODE == SIM_SHEAR_WAVE
+    direct_coarray_halos_enabled = use_distributed_shear_wave .and. USE_DIRECT_COARRAY_HALOS
+    active_buffer = 1_int32
+    next_buffer = 2_int32
 
     if (domain_info%n_images > 1 .and. SIM_MODE /= SIM_SHEAR_WAVE) then
         error stop "error: distributed coarray execution is only implemented for shear wave yet"
@@ -131,7 +140,12 @@ program main
         call collect_hardware_info(machine_info)
     end if
 
-    if (use_distributed_shear_wave) then
+    if (direct_coarray_halos_enabled) then
+        allocate(f_direct(0:domain_info%n_x_local+1, 0:domain_info%n_y_local+1, N_DIRS, 2)[*])
+        allocate(rho(domain_info%n_x_local, domain_info%n_y_local))
+        allocate(u_x(domain_info%n_x_local, domain_info%n_y_local))
+        allocate(u_y(domain_info%n_x_local, domain_info%n_y_local))
+    else if (use_distributed_shear_wave) then
         allocate(f(0:domain_info%n_x_local+1, 0:domain_info%n_y_local+1, N_DIRS))
         allocate(f_next(0:domain_info%n_x_local+1, 0:domain_info%n_y_local+1, N_DIRS))
         allocate(rho(domain_info%n_x_local, domain_info%n_y_local))
@@ -148,8 +162,13 @@ program main
 
     ! compute memory metrics for persistent main sim buffers
     bytes_fp = int(storage_size(0.0_FP), int64) / 8_int64
-    dist_function_buffers_bytes = (size(f, kind=int64) + size(f_next, kind=int64)) * bytes_fp * &
-        int(domain_info%n_images, int64)
+    if (direct_coarray_halos_enabled) then
+        dist_function_buffers_bytes = size(f_direct, kind=int64) * bytes_fp * &
+            int(domain_info%n_images, int64)
+    else
+        dist_function_buffers_bytes = (size(f, kind=int64) + size(f_next, kind=int64)) * bytes_fp * &
+            int(domain_info%n_images, int64)
+    end if
     macro_field_buffers_bytes = (size(rho, kind=int64) + size(u_x, kind=int64) + size(u_y, kind=int64)) * bytes_fp * &
         int(domain_info%n_images, int64)
     total_buffer_bytes = dist_function_buffers_bytes + macro_field_buffers_bytes
@@ -157,7 +176,12 @@ program main
     gb_per_byte = 1.0e-9_real64
 
     ! inital condition
-    if (use_distributed_shear_wave) then
+    if (direct_coarray_halos_enabled) then
+        call apply_condition_shear_wave_local( &
+            shear_wave_params%rho_0, shear_wave_params%u_max, shear_wave_params%n_sin, &
+            domain_info%n_x_local, domain_info%n_y_local, domain_info%y_global_start, &
+            f_direct(:, :, :, active_buffer), rho, u_x, u_y)
+    else if (use_distributed_shear_wave) then
         call apply_condition_shear_wave_local( &
             shear_wave_params%rho_0, shear_wave_params%u_max, shear_wave_params%n_sin, &
             domain_info%n_x_local, domain_info%n_y_local, domain_info%y_global_start, f, rho, u_x, u_y)
@@ -206,6 +230,7 @@ program main
         print '(A,T27,A,I0)',    "N_STEPS", "= ", N_STEPS
         print '(A,T27,A,L1)',    "use_unrolled_kernels", "= ", USE_UNROLLED_KERNELS
         print '(A,T27,A,L1)',    "use_pull_shift_kernels", "= ", USE_PULL_SHIFT_KERNELS
+        print '(A,T27,A,L1)',    "use_direct_coarray_halos", "= ", direct_coarray_halos_enabled
         print '(A,T27,A,L1)',    "distributed_coarrays", "= ", .true.
         print '(A,T27,A,L1)',    "export_rho", "= ", export_rho
         print '(A,T27,A,L1)',    "export_u_x", "= ", export_u_x
@@ -280,7 +305,66 @@ program main
             should_export_step(step, export_interval, export_initial_state, export_final_state) .and. &
             (export_rho .or. export_u_x .or. export_u_y .or. export_u_mag)
 
-        if (use_distributed_shear_wave) then
+        if (direct_coarray_halos_enabled) then
+            call system_clock(clock_section_start)
+            call exchange_halos_direct_put( &
+                domain_info, domain_info%n_x_local, domain_info%n_y_local, active_buffer, f_direct)
+            call system_clock(clock_section_end)
+            halo_exchange_seconds = halo_exchange_seconds + &
+                real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
+
+            call system_clock(clock_section_start)
+            call fuzed_unrolled_pull_streaming_collision_range_SW( &
+                2_int32, domain_info%n_x_local - 1_int32, 2_int32, domain_info%n_y_local - 1_int32, &
+                domain_info%n_x_local, domain_info%n_y_local, &
+                write_macro_fields, shear_wave_params%omega, &
+                f_direct(:, :, :, active_buffer), f_direct(:, :, :, next_buffer), rho, u_x, u_y)
+            call system_clock(clock_section_end)
+            kernel_compute_seconds = kernel_compute_seconds + &
+                real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
+
+            call system_clock(clock_section_start)
+            call finish_halos_direct_put(domain_info)
+            call system_clock(clock_section_end)
+            halo_exchange_seconds = halo_exchange_seconds + &
+                real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
+
+            call system_clock(clock_section_start)
+            call fuzed_unrolled_pull_streaming_collision_range_SW( &
+                1_int32, domain_info%n_x_local, 1_int32, 1_int32, &
+                domain_info%n_x_local, domain_info%n_y_local, &
+                write_macro_fields, shear_wave_params%omega, &
+                f_direct(:, :, :, active_buffer), f_direct(:, :, :, next_buffer), rho, u_x, u_y)
+
+            if (domain_info%n_y_local > 1) then
+                call fuzed_unrolled_pull_streaming_collision_range_SW( &
+                    1_int32, domain_info%n_x_local, domain_info%n_y_local, domain_info%n_y_local, &
+                    domain_info%n_x_local, domain_info%n_y_local, &
+                    write_macro_fields, shear_wave_params%omega, &
+                    f_direct(:, :, :, active_buffer), f_direct(:, :, :, next_buffer), rho, u_x, u_y)
+            end if
+
+            if (domain_info%n_y_local > 2) then
+                call fuzed_unrolled_pull_streaming_collision_range_SW( &
+                    1_int32, 1_int32, 2_int32, domain_info%n_y_local - 1_int32, &
+                    domain_info%n_x_local, domain_info%n_y_local, &
+                    write_macro_fields, shear_wave_params%omega, &
+                    f_direct(:, :, :, active_buffer), f_direct(:, :, :, next_buffer), rho, u_x, u_y)
+
+                if (domain_info%n_x_local > 1) then
+                    call fuzed_unrolled_pull_streaming_collision_range_SW( &
+                        domain_info%n_x_local, domain_info%n_x_local, &
+                        2_int32, domain_info%n_y_local - 1_int32, &
+                        domain_info%n_x_local, domain_info%n_y_local, &
+                        write_macro_fields, shear_wave_params%omega, &
+                        f_direct(:, :, :, active_buffer), f_direct(:, :, :, next_buffer), rho, u_x, u_y)
+                end if
+            end if
+
+            call system_clock(clock_section_end)
+            kernel_compute_seconds = kernel_compute_seconds + &
+                real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
+        else if (use_distributed_shear_wave) then
             call system_clock(clock_section_start)
             call exchange_halos(domain_info, halo_buffers, domain_info%n_x_local, domain_info%n_y_local, f)
             call system_clock(clock_section_end)
@@ -305,7 +389,12 @@ program main
         end if
 
         call system_clock(clock_section_start)
-        call swap_distribution_function_buffers(f, f_next)
+        if (direct_coarray_halos_enabled) then
+            active_buffer = 3_int32 - active_buffer
+            next_buffer = 3_int32 - next_buffer
+        else
+            call swap_distribution_function_buffers(f, f_next)
+        end if
         call system_clock(clock_section_end)
         buffer_swap_seconds = buffer_swap_seconds + &
             real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
