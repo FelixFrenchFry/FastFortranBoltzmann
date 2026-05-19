@@ -9,17 +9,11 @@ program main
         apply_condition_couette_flow_local, apply_condition_poiseuille_flow_local, apply_condition_sliding_lid_local
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
-        USE_UNROLLED_KERNELS, USE_PULL_SHIFT_KERNELS, &
+        USE_PULL_SHIFT_KERNELS, &
         shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t
-    use shear_wave, only: fuzed_pull_streaming_collision_local_SW, fuzed_pull_shift_streaming_collision_local_SW, &
-        fuzed_pull_shift_streaming_collision_local_unrolled_SW, fuzed_pull_streaming_collision_local_unrolled_SW
-    use couette_flow, only: fuzed_pull_streaming_collision_local_CF, fuzed_pull_streaming_collision_local_unrolled_CF
-    use poiseuille_flow, only: fuzed_pull_streaming_collision_local_PF, &
-        fuzed_pull_streaming_collision_local_unrolled_PF
-    use sliding_lid, only: fuzed_pull_streaming_collision_local_SL, fuzed_pull_streaming_collision_local_unrolled_SL
     use reporting, only: print_run_summary, print_launch_timestamp, print_progress_status, print_finish_timestamp, &
         print_execution_summary
-    use simulation, only: execute_full_sim_step, swap_distribution_function_buffers
+    use simulation, only: execute_local_sim_step, swap_distribution_function_buffers
     implicit none
 
     ! misc
@@ -251,93 +245,15 @@ program main
                 real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
 
             call system_clock(clock_section_start)
-            select case (SIM_MODE)
-            case (SIM_SHEAR_WAVE)
-                if (USE_PULL_SHIFT_KERNELS) then
-                    if (USE_UNROLLED_KERNELS) then
-                        call fuzed_pull_shift_streaming_collision_local_unrolled_SW( &
-                            domain_info%n_x_local, domain_info%n_y_local, &
-                            write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
-                    else
-                        call fuzed_pull_shift_streaming_collision_local_SW( &
-                            domain_info%n_x_local, domain_info%n_y_local, &
-                            write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
-                    end if
-                else if (USE_UNROLLED_KERNELS) then
-                    call fuzed_pull_streaming_collision_local_unrolled_SW( &
-                        domain_info%n_x_local, domain_info%n_y_local, &
-                        write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
-                else
-                    call fuzed_pull_streaming_collision_local_SW( &
-                        domain_info%n_x_local, domain_info%n_y_local, &
-                        write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
-                end if
-            case (SIM_COUETTE_FLOW)
-                if (USE_UNROLLED_KERNELS) then
-                    call fuzed_pull_streaming_collision_local_unrolled_CF( &
-                        domain_info%n_x_local, domain_info%n_y_local, &
-                        domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
-                        write_macro_fields, couette_flow_params%rho_0, couette_flow_params%omega, couette_flow_params%u_wall, &
-                        f, f_next, rho, u_x, u_y)
-                else
-                    call fuzed_pull_streaming_collision_local_CF( &
-                        domain_info%n_x_local, domain_info%n_y_local, &
-                        domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
-                        write_macro_fields, couette_flow_params%rho_0, couette_flow_params%omega, couette_flow_params%u_wall, &
-                        f, f_next, rho, u_x, u_y)
-                end if
-            case (SIM_POISEUILLE_FLOW)
-                if (USE_UNROLLED_KERNELS) then
-                    call fuzed_pull_streaming_collision_local_unrolled_PF( &
-                        domain_info%n_x_local, domain_info%n_y_local, &
-                        domain_info%at_left_boundary, domain_info%at_right_boundary, &
-                        domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
-                        write_macro_fields, poiseuille_flow_params%omega, &
-                        poiseuille_flow_params%rho_in, poiseuille_flow_params%rho_out, &
-                        f, f_next, rho, u_x, u_y, &
-                        halo_buffers%recv_macro_left, halo_buffers%recv_macro_right, &
-                        halo_buffers%send_macro_left, halo_buffers%send_macro_right)
-                else
-                    call fuzed_pull_streaming_collision_local_PF( &
-                        domain_info%n_x_local, domain_info%n_y_local, &
-                        domain_info%at_left_boundary, domain_info%at_right_boundary, &
-                        domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
-                        write_macro_fields, poiseuille_flow_params%omega, &
-                        poiseuille_flow_params%rho_in, poiseuille_flow_params%rho_out, &
-                        f, f_next, rho, u_x, u_y, &
-                        halo_buffers%recv_macro_left, halo_buffers%recv_macro_right, &
-                        halo_buffers%send_macro_left, halo_buffers%send_macro_right)
-                end if
-            case (SIM_SLIDING_LID)
-                if (USE_UNROLLED_KERNELS) then
-                    call fuzed_pull_streaming_collision_local_unrolled_SL( &
-                        domain_info%n_x_local, domain_info%n_y_local, &
-                        domain_info%at_left_boundary, domain_info%at_right_boundary, &
-                        domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
-                        write_macro_fields, sliding_lid_params%rho_0, sliding_lid_params%omega, &
-                        sliding_lid_params%u_wall, f, f_next, rho, u_x, u_y)
-                else
-                    call fuzed_pull_streaming_collision_local_SL( &
-                        domain_info%n_x_local, domain_info%n_y_local, &
-                        domain_info%at_left_boundary, domain_info%at_right_boundary, &
-                        domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
-                        write_macro_fields, sliding_lid_params%rho_0, sliding_lid_params%omega, &
-                        sliding_lid_params%u_wall, f, f_next, rho, u_x, u_y)
-                end if
-            case default
-                error stop "error: unknown distributed sim mode in main simulation loop"
-            end select
-            call system_clock(clock_section_end)
-            kernel_compute_seconds = kernel_compute_seconds + &
-                real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
-        else
-            call system_clock(clock_section_start)
-            call execute_full_sim_step( &
+            call execute_local_sim_step( &
+                domain_info, halo_buffers, domain_info%n_x_local, domain_info%n_y_local, &
                 shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
                 write_macro_fields, f, f_next, rho, u_x, u_y)
             call system_clock(clock_section_end)
             kernel_compute_seconds = kernel_compute_seconds + &
                 real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
+        else
+            error stop "error: selected sim mode is not implemented for distributed local execution"
         end if
 
         call system_clock(clock_section_start)
