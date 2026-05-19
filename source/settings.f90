@@ -13,8 +13,8 @@ module settings
 #endif
 
     ! sim size and duration
-    integer(int32), parameter :: N_X = 18000
-    integer(int32), parameter :: N_Y = 18000
+    integer(int32), parameter :: N_X = 14400
+    integer(int32), parameter :: N_Y = 14400
     integer(int32), parameter :: N_STEPS = 300
     integer(int64), parameter :: N_CELLS = int(N_X, int64) * int(N_Y, int64)
     integer(int32), parameter :: N_DIRS = 9
@@ -57,7 +57,7 @@ module settings
     integer(int32), parameter :: SIM_MODE = 1 ! selected sim mode
 
     ! kernel selection
-    logical, parameter :: USE_UNROLLED_KERNELS = .true.
+    logical, parameter :: USE_UNROLLED_KERNELS = .false.
     logical, parameter :: USE_PULL_SHIFT_KERNELS = .false.
 
     ! misc

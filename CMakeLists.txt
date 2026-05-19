@@ -31,6 +31,7 @@ add_executable(FFB
     source/export.f90
     source/hardware_info.f90
     source/initialization.f90
+    source/reporting.f90
     source/main.f90
     source/settings.f90
     source/simulation.f90
