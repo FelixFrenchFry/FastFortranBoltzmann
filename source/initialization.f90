@@ -278,6 +278,46 @@ contains
     end subroutine apply_condition_poiseuille_flow
 
 
+    subroutine apply_condition_poiseuille_flow_local( &
+        rho_0, n_x_local, n_y_local, f, rho, u_x, u_y &
+        )
+        ! read-only inputs
+        real(FP), intent(in) :: rho_0
+        integer(int32), intent(in) :: n_x_local
+        integer(int32), intent(in) :: n_y_local
+
+        ! write destinations
+        real(FP), intent(out) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
+        real(FP), intent(out) :: rho(n_x_local, n_y_local)
+        real(FP), intent(out) :: u_x(n_x_local, n_y_local)
+        real(FP), intent(out) :: u_y(n_x_local, n_y_local)
+
+        ! temp
+        integer(int32) :: x, y, i
+        real(FP) :: f_eq(N_DIRS)
+
+        ! pre-computed equilibrium distribution at t=0
+        do i = 1, N_DIRS
+            f_eq(i) = W(i) * rho_0
+        end do
+
+        ! loop over rows and cols
+        do y = 1, n_y_local
+            do x = 1, n_x_local
+
+                rho(x, y) = rho_0
+                u_x(x, y) = 0.0_FP
+                u_y(x, y) = 0.0_FP
+
+                ! init distribution functions in all dirs
+                do i = 1, N_DIRS
+                    f(x, y, i) = f_eq(i)
+                end do
+            end do
+        end do
+    end subroutine apply_condition_poiseuille_flow_local
+
+
     subroutine apply_condition_sliding_lid( &
         rho_0, f, rho, u_x, u_y &
         )

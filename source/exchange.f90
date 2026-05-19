@@ -30,6 +30,14 @@ module exchange
         real(FP), allocatable :: recv_bottom(:,:)
         real(FP), allocatable :: recv_top(:,:)
 
+        ! x-direction macro field send buffers
+        real(FP), allocatable :: send_macro_left(:,:)[:]
+        real(FP), allocatable :: send_macro_right(:,:)[:]
+
+        ! x-direction macro field receive buffers
+        real(FP), allocatable :: recv_macro_left(:,:)
+        real(FP), allocatable :: recv_macro_right(:,:)
+
     end type halo_buffers_t
 
 contains
@@ -57,16 +65,22 @@ contains
         allocate(halo_buffers%recv_right(domain_info%n_y_local, N_HALO_DIRS))
         allocate(halo_buffers%recv_bottom(0:domain_info%n_x_local+1, N_HALO_DIRS))
         allocate(halo_buffers%recv_top(0:domain_info%n_x_local+1, N_HALO_DIRS))
+
+        allocate(halo_buffers%send_macro_left(domain_info%n_y_local, 3)[*])
+        allocate(halo_buffers%send_macro_right(domain_info%n_y_local, 3)[*])
+        allocate(halo_buffers%recv_macro_left(domain_info%n_y_local, 3))
+        allocate(halo_buffers%recv_macro_right(domain_info%n_y_local, 3))
     end subroutine allocate_halo_buffers
 
 
     subroutine exchange_halos( &
-        domain_info, halo_buffers, n_x_local, n_y_local, f &
+        domain_info, halo_buffers, n_x_local, n_y_local, f, exchange_pressure_macros &
         )
         ! inputs
         type(domain_t), intent(in) :: domain_info
         integer(int32), intent(in) :: n_x_local
         integer(int32), intent(in) :: n_y_local
+        logical, intent(in), optional :: exchange_pressure_macros
 
         ! read/write inputs
         type(halo_buffers_t), intent(inout) :: halo_buffers
@@ -79,6 +93,7 @@ contains
         integer(int32) :: y_neighbor_images(2)
         integer(int32) :: x
         integer(int32) :: y
+        logical :: do_exchange_pressure_macros
 
         ! left/right or bottom/top can be the same image for 2-image axes
         x_neighbor_images(1) = domain_info%left_image_id
@@ -97,6 +112,11 @@ contains
             n_y_neighbor_images = 2
         end if
 
+        do_exchange_pressure_macros = .false.
+        if (present(exchange_pressure_macros)) then
+            do_exchange_pressure_macros = exchange_pressure_macros
+        end if
+
         ! pack owned left/right borders
         do y = 1, n_y_local
             halo_buffers%send_left(y, 1) = f(1, y, 4)
@@ -113,6 +133,17 @@ contains
         ! unpack left/right halos from neighboring images
         halo_buffers%recv_left(:, :) = halo_buffers%send_right(:, :)[domain_info%left_image_id]
         halo_buffers%recv_right(:, :) = halo_buffers%send_left(:, :)[domain_info%right_image_id]
+
+        ! pressure-periodic macro strips are maintained by the poiseuille kernels
+        if (do_exchange_pressure_macros) then
+            if (domain_info%at_left_boundary) then
+                halo_buffers%recv_macro_left(:, :) = halo_buffers%send_macro_right(:, :)[domain_info%left_image_id]
+            end if
+
+            if (domain_info%at_right_boundary) then
+                halo_buffers%recv_macro_right(:, :) = halo_buffers%send_macro_left(:, :)[domain_info%right_image_id]
+            end if
+        end if
 
         do y = 1, n_y_local
             f(0, y, 2) = halo_buffers%recv_left(y, 1)
