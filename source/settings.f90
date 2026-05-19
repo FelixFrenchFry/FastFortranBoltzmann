@@ -58,6 +58,7 @@ module settings
 
     ! kernel selection
     logical, parameter :: USE_UNROLLED_KERNELS = .true.
+    logical, parameter :: USE_UNIVERSAL_KERNELS = .true.
     logical, parameter :: USE_PULL_SHIFT_KERNELS = .false.
 
     ! misc
