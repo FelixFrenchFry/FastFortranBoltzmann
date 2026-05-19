@@ -8,19 +8,20 @@ import statistics
 import subprocess
 import sys
 from datetime import datetime
+from pathlib import Path
 
 
 NUMBER = r"(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)"
 STEP_RE = re.compile(rf"step time:\s*({NUMBER})\s*ms", re.IGNORECASE)
 MLUPS_RE = re.compile(rf"MLUPS:\s*({NUMBER})", re.IGNORECASE)
 LAUNCHED_RE = re.compile(r"^\[[0-9:]+\]\s+launched", re.MULTILINE)
+SIM_SIZE_RE = re.compile(r"^\s*integer\(int32\), parameter :: (N_[XY])\s*=\s*([0-9]+)", re.MULTILINE)
 HEADER_WIDTH = 75
 MAX_RUNS = 999
 
 # settings
 DEFAULT_EXE = "build/release/bin/FFB"
-DEFAULT_RUNS = 10
-DEFAULT_IMAGES = 1
+DEFAULT_RUNS = 5
 
 
 def print_header(title):
@@ -39,8 +40,21 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--exe", default=DEFAULT_EXE)
     parser.add_argument("--runs", type=int, default=DEFAULT_RUNS)
-    parser.add_argument("--images", type=int, default=DEFAULT_IMAGES)
+    parser.add_argument("--images", type=int, required=True)
+    parser.add_argument("--ix", type=int, required=True)
+    parser.add_argument("--iy", type=int, required=True)
     return parser.parse_args()
+
+
+def read_sim_size():
+    settings_path = Path(__file__).resolve().parents[1] / "source" / "settings.f90"
+    settings = settings_path.read_text()
+    values = {name: int(value) for name, value in SIM_SIZE_RE.findall(settings)}
+
+    if "N_X" not in values or "N_Y" not in values:
+        raise RuntimeError("could not parse N_X/N_Y from source/settings.f90")
+
+    return values["N_X"], values["N_Y"]
 
 
 def parse_last(pattern, text, name):
@@ -50,10 +64,12 @@ def parse_last(pattern, text, name):
     return float(matches[-1])
 
 
-def run_once(exe, images, run_num):
+def run_once(exe, images, ix, iy, run_num):
     env = os.environ.copy()
     if "FOR_COARRAY_CONFIG_FILE" not in env:
         env["FOR_COARRAY_NUM_IMAGES"] = str(images)
+    env["I_X"] = str(ix)
+    env["I_Y"] = str(iy)
 
     completed = subprocess.run(
         [exe],
@@ -107,6 +123,15 @@ def main():
         sys.exit(f"error: --runs must be <= {MAX_RUNS}")
     if args.images <= 0:
         sys.exit("error: --images must be positive")
+    if args.ix <= 0 or args.iy <= 0:
+        sys.exit("error: --ix and --iy must be positive")
+    if args.images != args.ix * args.iy:
+        sys.exit("error: --images must match --ix * --iy")
+    n_x, n_y = read_sim_size()
+    if n_x % args.ix != 0:
+        sys.exit("error: N_X must be divisible by --ix")
+    if n_y % args.iy != 0:
+        sys.exit("error: N_Y must be divisible by --iy")
     if not os.path.exists(args.exe):
         sys.exit(f"error: executable not found: {args.exe}")
 
@@ -118,10 +143,12 @@ def main():
     print_param("executable", args.exe)
     print_param("runs", args.runs)
     print_param("images", args.images)
+    print_param("image grid", f"{args.ix} x {args.iy}")
+    print_param("sim size", f"{n_x} x {n_y}")
     print()
 
     for run_num in range(1, args.runs + 1):
-        step_ms, mlups, output = run_once(args.exe, args.images, run_num)
+        step_ms, mlups, output = run_once(args.exe, args.images, args.ix, args.iy, run_num)
 
         if run_num == 1:
             print_static_app_output(output)
