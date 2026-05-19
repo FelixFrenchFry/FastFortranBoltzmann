@@ -29,7 +29,7 @@ program main
         rho_0 = 1.0_FP, &
         omega = 1.5_FP, &
         u_max = 0.1_FP, &
-        n_sin = 3.0_FP &
+        n_sin = 2.0_FP &
     )
 
     ! parameter set for couette flow
@@ -194,8 +194,8 @@ program main
 
     ! export metadata
     if (this_image() == 1) then
-        call export_metadata(machine_info, shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
-            export_rho, export_u_x, export_u_y, export_u_mag, export_interval, &
+        call export_metadata(machine_info, SIM_MODE, shear_wave_params, couette_flow_params, poiseuille_flow_params, &
+            sliding_lid_params, export_rho, export_u_x, export_u_y, export_u_mag, export_interval, &
             output_dir_name, export_num, export_initial_state, export_final_state)
     end if
 
