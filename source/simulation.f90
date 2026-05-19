@@ -14,7 +14,8 @@ module simulation
         fuzed_pull_streaming_collision_local_unrolled_CF
     use poiseuille_flow, only: fuzed_pull_streaming_collision_local_PF, &
         fuzed_pull_streaming_collision_local_unrolled_PF
-    use sliding_lid, only: fuzed_pull_streaming_collision_local_SL, fuzed_pull_streaming_collision_local_unrolled_SL
+    use sliding_lid, only: prepare_sliding_lid_halos_SL, fuzed_pull_streaming_collision_local_SL, &
+        fuzed_pull_streaming_collision_local_unrolled_SL
     implicit none
 
 contains
@@ -136,7 +137,20 @@ contains
             if (USE_PULL_SHIFT_KERNELS) then
                 error stop "error: distributed pull-shift is not implemented for this simulation mode yet"
             else if (USE_UNIVERSAL_KERNELS) then
-                error stop "error: universal kernel path is not implemented for sliding lid yet"
+                call prepare_sliding_lid_halos_SL( &
+                    n_x_local, n_y_local, &
+                    domain_info%at_left_boundary, domain_info%at_right_boundary, &
+                    domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
+                    sliding_lid_params%rho_0, sliding_lid_params%u_wall, f)
+                if (USE_UNROLLED_KERNELS) then
+                    call fuzed_pull_streaming_collision_local_unrolled_universal( &
+                        n_x_local, n_y_local, &
+                        write_macro_fields, sliding_lid_params%omega, f, f_next, rho, u_x, u_y)
+                else
+                    call fuzed_pull_streaming_collision_local_universal( &
+                        n_x_local, n_y_local, &
+                        write_macro_fields, sliding_lid_params%omega, f, f_next, rho, u_x, u_y)
+                end if
             else if (USE_UNROLLED_KERNELS) then
                 call fuzed_pull_streaming_collision_local_unrolled_SL( &
                     n_x_local, n_y_local, &
