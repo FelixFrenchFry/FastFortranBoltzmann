@@ -12,7 +12,8 @@ module simulation
         fuzed_pull_shift_streaming_collision_local_unrolled_SW
     use couette_flow, only: prepare_couette_flow_halos_CF, fuzed_pull_streaming_collision_local_CF, &
         fuzed_pull_streaming_collision_local_unrolled_CF
-    use poiseuille_flow, only: fuzed_pull_streaming_collision_local_PF, &
+    use poiseuille_flow, only: prepare_poiseuille_flow_halos_PF, update_poiseuille_flow_macro_strips_PF, &
+        fuzed_pull_streaming_collision_local_PF, &
         fuzed_pull_streaming_collision_local_unrolled_PF
     use sliding_lid, only: prepare_sliding_lid_halos_SL, fuzed_pull_streaming_collision_local_SL, &
         fuzed_pull_streaming_collision_local_unrolled_SL
@@ -111,7 +112,25 @@ contains
             if (USE_PULL_SHIFT_KERNELS) then
                 error stop "error: distributed pull-shift is not implemented for this simulation mode yet"
             else if (USE_UNIVERSAL_KERNELS) then
-                error stop "error: universal kernel path is not implemented for poiseuille flow yet"
+                call prepare_poiseuille_flow_halos_PF( &
+                    n_x_local, n_y_local, &
+                    domain_info%at_left_boundary, domain_info%at_right_boundary, &
+                    domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
+                    poiseuille_flow_params%rho_in, poiseuille_flow_params%rho_out, &
+                    f, halo_buffers%recv_macro_left, halo_buffers%recv_macro_right)
+                call update_poiseuille_flow_macro_strips_PF( &
+                    n_x_local, n_y_local, &
+                    domain_info%at_left_boundary, domain_info%at_right_boundary, f, &
+                    halo_buffers%send_macro_left, halo_buffers%send_macro_right)
+                if (USE_UNROLLED_KERNELS) then
+                    call fuzed_pull_streaming_collision_local_unrolled_universal( &
+                        n_x_local, n_y_local, &
+                        write_macro_fields, poiseuille_flow_params%omega, f, f_next, rho, u_x, u_y)
+                else
+                    call fuzed_pull_streaming_collision_local_universal( &
+                        n_x_local, n_y_local, &
+                        write_macro_fields, poiseuille_flow_params%omega, f, f_next, rho, u_x, u_y)
+                end if
             else if (USE_UNROLLED_KERNELS) then
                 call fuzed_pull_streaming_collision_local_unrolled_PF( &
                     n_x_local, n_y_local, &
