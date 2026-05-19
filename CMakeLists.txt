@@ -36,7 +36,6 @@ add_executable(FFB
     source/settings.f90
     source/simulation.f90
     source/sim/couette_flow.f90
-    source/sim/legacy.f90
     source/sim/poiseuille_flow.f90
     source/sim/shear_wave.f90
     source/sim/sliding_lid.f90
