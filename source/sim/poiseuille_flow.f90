@@ -1,235 +1,480 @@
 module poiseuille_flow
     ! imports
     use iso_fortran_env, only: int32
-    use settings, only: N_X, N_Y, N_DIRS, C_X, C_Y, C_X_FP, C_Y_FP, W, FP
+    use settings, only: N_DIRS, C_X, C_Y, C_X_FP, C_Y_FP, W, FP
     implicit none
 
 contains
 
-    subroutine fuzed_pull_streaming_collision_outer_PF( &
-        write_macro_fields, omega, rho_in, rho_out, f, f_next, rho, u_x, u_y &
+    subroutine fuzed_pull_streaming_collision_local_PF( &
+        n_x_local, n_y_local, at_left_boundary, at_right_boundary, at_bottom_boundary, at_top_boundary, &
+        write_macro_fields, omega, rho_in, rho_out, f, f_next, rho, u_x, u_y, &
+        macro_left, macro_right, macro_send_left, macro_send_right &
         )
         ! inputs
+        integer(int32), intent(in) :: n_x_local
+        integer(int32), intent(in) :: n_y_local
+        logical, intent(in) :: at_left_boundary
+        logical, intent(in) :: at_right_boundary
+        logical, intent(in) :: at_bottom_boundary
+        logical, intent(in) :: at_top_boundary
         logical, intent(in) :: write_macro_fields
         real(FP), intent(in) :: omega
         real(FP), intent(in) :: rho_in
         real(FP), intent(in) :: rho_out
-        real(FP), intent(in) :: f(N_X, N_Y, N_DIRS)
+        real(FP), intent(in) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
+        real(FP), intent(in) :: macro_left(n_y_local, 3)
+        real(FP), intent(in) :: macro_right(n_y_local, 3)
 
         ! write destinations
-        real(FP), intent(inout) :: f_next(N_X, N_Y, N_DIRS)
-        real(FP), intent(inout) :: rho(N_X, N_Y)
-        real(FP), intent(inout) :: u_x(N_X, N_Y)
-        real(FP), intent(inout) :: u_y(N_X, N_Y)
+        real(FP), intent(inout) :: f_next(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
+        real(FP), intent(inout) :: rho(n_x_local, n_y_local)
+        real(FP), intent(inout) :: u_x(n_x_local, n_y_local)
+        real(FP), intent(inout) :: u_y(n_x_local, n_y_local)
+        real(FP), intent(inout) :: macro_send_left(n_y_local, 3)
+        real(FP), intent(inout) :: macro_send_right(n_y_local, 3)
+
+        ! temp
+        integer(int32) :: x, y, i
+        integer(int32) :: src_x, src_y
+        real(FP) :: f_pulled(N_DIRS)
+        real(FP) :: rho_val
+        real(FP) :: u_x_val
+        real(FP) :: u_y_val
+        real(FP) :: u_squ
+        real(FP) :: c_dot_u
+        real(FP) :: f_eq_val
+        real(FP) :: f_next_val
+
+        ! loop over all owned local cells
+        do y = 1, n_y_local
+            do x = 1, n_x_local
+
+                rho_val = 0.0_FP
+                u_x_val = 0.0_FP
+                u_y_val = 0.0_FP
+
+                ! 1: ( 0,  0) = rest
+                ! 2: ( 1,  0) = east
+                ! 3: ( 0,  1) = north
+                ! 4: (-1,  0) = west
+                ! 5: ( 0, -1) = south
+                ! 6: ( 1,  1) = north-east
+                ! 7: (-1,  1) = north-west
+                ! 8: (-1, -1) = south-west
+                ! 9: ( 1, -1) = south-east
+                ! ---------
+                ! | 7 3 6 |
+                ! | 4 1 2 |
+                ! | 8 5 9 |
+                ! ---------
+                ! pull streamed distribution functions from source cells in all channels
+                ! (local interior handling through halo cells)
+                !DIR$ UNROLL(9)
+                do i = 1, N_DIRS
+
+                    src_x = x - C_X(i)
+                    src_y = y - C_Y(i)
+
+                    ! no pressure-periodic boundary or bounce-back
+                    if (src_x >= 1 .and. src_x <= n_x_local .and. &
+                        src_y >= 1 .and. src_y <= n_y_local) then
+                        f_pulled(i) = f(src_x, src_y, i)
+
+                    ! pressure-periodic inlet for global left boundary
+                    else if (src_x < 1 .and. at_left_boundary) then
+                        f_pulled(i) = pressure_periodic_distribution( &
+                            i, f(0, y, i), macro_left(y, 1), macro_left(y, 2), macro_left(y, 3), rho_in)
+
+                    ! pressure-periodic outlet for global right boundary
+                    else if (src_x > n_x_local .and. at_right_boundary) then
+                        f_pulled(i) = pressure_periodic_distribution( &
+                            i, f(n_x_local+1, y, i), macro_right(y, 1), macro_right(y, 2), macro_right(y, 3), rho_out)
+
+                    ! bounce-back for global bottom boundary (static)
+                    else if (src_y < 1 .and. at_bottom_boundary) then
+                        select case (i)
+                        case (3)
+                            f_pulled(i) = f(x, y, 5)
+                        case (6)
+                            f_pulled(i) = f(x, y, 8)
+                        case (7)
+                            f_pulled(i) = f(x, y, 9)
+                    #ifdef FFB_BOUNDARY_CHECKS
+                        case default
+                            error stop "error: invalid bottom boundary channel in poiseuille flow"
+                    #endif
+                        end select
+
+                    ! bounce-back for global top boundary (static)
+                    else if (src_y > n_y_local .and. at_top_boundary) then
+                        select case(i)
+                        case (5)
+                            f_pulled(i) = f(x, y, 3)
+                        case (8)
+                            f_pulled(i) = f(x, y, 6)
+                        case (9)
+                            f_pulled(i) = f(x, y, 7)
+                    #ifdef FFB_BOUNDARY_CHECKS
+                        case default
+                            error stop "error: invalid top boundary channel in poiseuille flow"
+                    #endif
+                        end select
+
+                    ! interior image boundary
+                    else
+                        f_pulled(i) = f(src_x, src_y, i)
+                    end if
+
+                    rho_val = rho_val + f_pulled(i)
+                    u_x_val = u_x_val + f_pulled(i) * C_X_FP(i)
+                    u_y_val = u_y_val + f_pulled(i) * C_Y_FP(i)
+                end do
+
+                ! safety check to avoid division by zero in case of wrong density
+            #ifdef FFB_DENSITY_CHECKS
+                if (rho_val <= 0.0_FP) then
+                    error stop "error: density is zero in collision/streaming step (rho_val <= 0)"
+                end if
+            #endif
+
+                ! finalize density and velocity
+                u_x_val = u_x_val / rho_val
+                u_y_val = u_y_val / rho_val
+                u_squ = u_x_val * u_x_val + u_y_val * u_y_val
+
+                if (at_left_boundary .and. x == 1) then
+                    macro_send_left(y, 1) = rho_val
+                    macro_send_left(y, 2) = u_x_val
+                    macro_send_left(y, 3) = u_y_val
+                end if
+
+                if (at_right_boundary .and. x == n_x_local) then
+                    macro_send_right(y, 1) = rho_val
+                    macro_send_right(y, 2) = u_x_val
+                    macro_send_right(y, 3) = u_y_val
+                end if
+
+                if (write_macro_fields) then
+                    rho(x, y) = rho_val
+                    u_x(x, y) = u_x_val
+                    u_y(x, y) = u_y_val
+                end if
+
+                ! collide and stream locally to destination channels
+                !DIR$ UNROLL(9)
+                do i = 1, N_DIRS
+
+                    ! compute equilibrium distribution function for channel i
+                    c_dot_u = C_X_FP(i) * u_x_val + C_Y_FP(i) * u_y_val
+                    f_eq_val = W(i) * rho_val * ( &
+                        1.0_FP + &
+                        3.0_FP * c_dot_u + &
+                        4.5_FP * c_dot_u * c_dot_u - &
+                        1.5_FP * u_squ)
+
+                    ! relax towards equilibrium and write to destination channel in this cell
+                    f_next_val = f_pulled(i) + omega * (f_eq_val - f_pulled(i))
+                    f_next(x, y, i) = f_next_val
+                end do
+            end do
+        end do
+    end subroutine fuzed_pull_streaming_collision_local_PF
+
+
+    subroutine fuzed_pull_streaming_collision_local_unrolled_PF( &
+        n_x_local, n_y_local, at_left_boundary, at_right_boundary, at_bottom_boundary, at_top_boundary, &
+        write_macro_fields, omega, rho_in, rho_out, f, f_next, rho, u_x, u_y, &
+        macro_left, macro_right, macro_send_left, macro_send_right &
+        )
+        ! inputs
+        integer(int32), intent(in) :: n_x_local
+        integer(int32), intent(in) :: n_y_local
+        logical, intent(in) :: at_left_boundary
+        logical, intent(in) :: at_right_boundary
+        logical, intent(in) :: at_bottom_boundary
+        logical, intent(in) :: at_top_boundary
+        logical, intent(in) :: write_macro_fields
+        real(FP), intent(in) :: omega
+        real(FP), intent(in) :: rho_in
+        real(FP), intent(in) :: rho_out
+        real(FP), intent(in) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
+        real(FP), intent(in) :: macro_left(n_y_local, 3)
+        real(FP), intent(in) :: macro_right(n_y_local, 3)
+
+        ! write destinations
+        real(FP), intent(inout) :: f_next(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
+        real(FP), intent(inout) :: rho(n_x_local, n_y_local)
+        real(FP), intent(inout) :: u_x(n_x_local, n_y_local)
+        real(FP), intent(inout) :: u_y(n_x_local, n_y_local)
+        real(FP), intent(inout) :: macro_send_left(n_y_local, 3)
+        real(FP), intent(inout) :: macro_send_right(n_y_local, 3)
 
         ! temp
         integer(int32) :: x, y
+        logical :: left_pressure_cell
+        logical :: right_pressure_cell
+        logical :: bottom_wall_row
+        logical :: top_wall_row
+        real(FP) :: f_1
+        real(FP) :: f_2
+        real(FP) :: f_3
+        real(FP) :: f_4
+        real(FP) :: f_5
+        real(FP) :: f_6
+        real(FP) :: f_7
+        real(FP) :: f_8
+        real(FP) :: f_9
+        real(FP) :: rho_val
+        real(FP) :: u_x_val
+        real(FP) :: u_y_val
+        real(FP) :: u_squ
+        real(FP) :: rho_src
+        real(FP) :: u_x_src
+        real(FP) :: u_y_src
+        real(FP) :: u_squ_src
+        real(FP) :: c_dot_u_src
+        real(FP) :: pressure_factor
 
-        ! copied boundary densities and velocities for streaming step
-        real(FP) :: rho_left(N_Y), rho_right(N_Y)
-        real(FP) :: u_x_left(N_Y), u_x_right(N_Y)
-        real(FP) :: u_y_left(N_Y), u_y_right(N_Y)
-        rho_left(:) = rho(1, :)
-        rho_right(:) = rho(N_X, :)
-        u_x_left(:) = u_x(1, :)
-        u_x_right(:) = u_x(N_X, :)
-        u_y_left(:) = u_y(1, :)
-        u_y_right(:) = u_y(N_X, :)
+        ! loop over all owned local cells
+        do y = 1, n_y_local
 
-        ! bottom row
-        y = 1
-        do x = 1, N_X
-            call stream_collide_outer_cell_PF(x, y)
-        end do
+            bottom_wall_row = at_bottom_boundary .and. y == 1
+            top_wall_row = at_top_boundary .and. y == n_y_local
 
-        ! top row
-        y = N_Y
-        do x = 1, N_X
-            call stream_collide_outer_cell_PF(x, y)
-        end do
+            do x = 1, n_x_local
 
-        ! left col (no corners)
-        x = 1
-        do y = 2, N_Y - 1
-            call stream_collide_outer_cell_PF(x, y)
-        end do
+                left_pressure_cell = at_left_boundary .and. x == 1
+                right_pressure_cell = at_right_boundary .and. x == n_x_local
 
-        ! right col (no corners)
-        x = N_X
-        do y = 2, N_Y - 1
-            call stream_collide_outer_cell_PF(x, y)
-        end do
+                ! 1: ( 0,  0) = rest
+                ! 2: ( 1,  0) = east
+                ! 3: ( 0,  1) = north
+                ! 4: (-1,  0) = west
+                ! 5: ( 0, -1) = south
+                ! 6: ( 1,  1) = north-east
+                ! 7: (-1,  1) = north-west
+                ! 8: (-1, -1) = south-west
+                ! 9: ( 1, -1) = south-east
+                ! ---------
+                ! | 7 3 6 |
+                ! | 4 1 2 |
+                ! | 8 5 9 |
+                ! ---------
+                ! pull streamed distribution functions from source cells in all channels
+                ! (local interior handling through halo cells, manually unrolled)
+                f_1 = f(x, y, 1)
 
-    contains ! helper subroutine
+                if (left_pressure_cell) then
+                    rho_src = macro_left(y, 1)
+                    u_x_src = macro_left(y, 2)
+                    u_y_src = macro_left(y, 3)
+                    u_squ_src = u_x_src * u_x_src + u_y_src * u_y_src
 
-        subroutine stream_collide_outer_cell_PF( &
-            x, y &
-            )
-            ! inputs
-            integer(int32), intent(in) :: x
-            integer(int32), intent(in) :: y
+                    ! 2: (1, 0)
+                    c_dot_u_src = u_x_src
+                    pressure_factor = 1.0_FP + 3.0_FP * c_dot_u_src + &
+                        4.5_FP * c_dot_u_src * c_dot_u_src - 1.5_FP * u_squ_src
+                    f_2 = f(0, y, 2) + W(2) * (rho_in - rho_src) * pressure_factor
 
-            ! temp
-            integer(int32) :: i
-            integer(int32) :: src_x, src_y
-            real(FP) :: f_pulled(N_DIRS)
-            real(FP) :: rho_val
-            real(FP) :: u_x_val
-            real(FP) :: u_y_val
-            real(FP) :: u_squ
-            real(FP) :: c_dot_u
-            real(FP) :: f_eq_val
-            real(FP) :: f_next_val
-            real(FP) :: u_squ_src
-            real(FP) :: c_dot_u_src
-            real(FP) :: f_eq_src
-            real(FP) :: f_eq_boundary
+                    ! 6: (1, 1)
+                    c_dot_u_src = u_x_src + u_y_src
+                    pressure_factor = 1.0_FP + 3.0_FP * c_dot_u_src + &
+                        4.5_FP * c_dot_u_src * c_dot_u_src - 1.5_FP * u_squ_src
+                    f_6 = f(0, y, 6) + W(6) * (rho_in - rho_src) * pressure_factor
 
-            rho_val = 0.0_FP
-            u_x_val = 0.0_FP
-            u_y_val = 0.0_FP
+                    ! 9: (1, -1)
+                    c_dot_u_src = u_x_src - u_y_src
+                    pressure_factor = 1.0_FP + 3.0_FP * c_dot_u_src + &
+                        4.5_FP * c_dot_u_src * c_dot_u_src - 1.5_FP * u_squ_src
+                    f_9 = f(0, y, 9) + W(9) * (rho_in - rho_src) * pressure_factor
+                else
+                    f_2 = f(x - 1, y, 2)
 
-            ! 1: ( 0,  0) = rest
-            ! 2: ( 1,  0) = east
-            ! 3: ( 0,  1) = north
-            ! 4: (-1,  0) = west
-            ! 5: ( 0, -1) = south
-            ! 6: ( 1,  1) = north-east
-            ! 7: (-1,  1) = north-west
-            ! 8: (-1, -1) = south-west
-            ! 9: ( 1, -1) = south-east
-            ! ---------
-            ! | 7 3 6 |
-            ! | 4 1 2 |
-            ! | 8 5 9 |
-            ! ---------
-            ! pull streamed distribution functions from source cells in all channels
-            !DIR$ UNROLL(9)
-            do i = 1, N_DIRS
+                    if (bottom_wall_row) then
+                        ! bounce-back for global bottom boundary (static)
+                        f_6 = f(x, y, 8)
+                    else
+                        f_6 = f(x - 1, y - 1, 6)
+                    end if
 
-                src_x = x - C_X(i)
-                src_y = y - C_Y(i)
-
-                ! no period or bounce-back
-                if (src_x >= 1 .and. src_x <= N_X .and. &
-                    src_y >= 1 .and. src_y <= N_Y) then
-                    f_pulled(i) = f(src_x, src_y, i)
-                
-                ! pressure-periodic inlet for left boundary
-                else if (src_x < 1) then
-
-                    u_squ_src = u_x_right(y) * u_x_right(y) + u_y_right(y) * u_y_right(y)
-                    c_dot_u_src = C_X_FP(i) * u_x_right(y) + C_Y_FP(i) * u_y_right(y)
-
-                    ! equilibrium distribution function for the source cell at the opposite (right) boundary
-                    f_eq_src = W(i) * rho_right(y) * ( &
-                        1.0_FP + &
-                        3.0_FP * c_dot_u_src + &
-                        4.5_FP * c_dot_u_src * c_dot_u_src - &
-                        1.5_FP * u_squ_src)
-
-                    ! equilibrium distribution function at this cell
-                    f_eq_boundary = W(i) * rho_in * ( &
-                        1.0_FP + &
-                        3.0_FP * c_dot_u_src + &
-                        4.5_FP * c_dot_u_src * c_dot_u_src - &
-                        1.5_FP * u_squ_src)
-
-                    f_pulled(i) = f(N_X, y, i) - f_eq_src + f_eq_boundary
-
-                ! pressure-periodic outlet for right boundary
-                else if (src_x > N_X) then
-
-                    u_squ_src = u_x_left(y) * u_x_left(y) + u_y_left(y) * u_y_left(y)
-                    c_dot_u_src = C_X_FP(i) * u_x_left(y) + C_Y_FP(i) * u_y_left(y)
-
-                    ! equilibrium distribution function for the source cell at the opposite (left) boundary
-                    f_eq_src = W(i) * rho_left(y) * ( &
-                        1.0_FP + &
-                        3.0_FP * c_dot_u_src + &
-                        4.5_FP * c_dot_u_src * c_dot_u_src - &
-                        1.5_FP * u_squ_src)
-
-                    ! equilibrium distribution function at this cell
-                    f_eq_boundary = W(i) * rho_out * ( &
-                        1.0_FP + &
-                        3.0_FP * c_dot_u_src + &
-                        4.5_FP * c_dot_u_src * c_dot_u_src - &
-                        1.5_FP * u_squ_src)
-
-                    f_pulled(i) = f(1, y, i) - f_eq_src + f_eq_boundary
-
-                ! bounce-back for bottom boundary (static)
-                else if (src_y < 1) then
-                    select case (i)
-                    case (3)
-                        f_pulled(i) = f(x, y, 5)
-                    case (6)
-                        f_pulled(i) = f(x, y, 8)
-                    case (7)
-                        f_pulled(i) = f(x, y, 9)
-                #ifdef FFB_BOUNDARY_CHECKS
-                    case default
-                        error stop "error: invalid bottom boundary channel in poiseuille flow"
-                #endif
-                    end select
-
-                ! bounce-back for top boundary (static)
-                else if (src_y > N_Y) then
-                    select case (i)
-                    case (5)
-                        f_pulled(i) = f(x, y, 3)
-                    case (8)
-                        f_pulled(i) = f(x, y, 6)
-                    case (9)
-                        f_pulled(i) = f(x, y, 7)
-                #ifdef FFB_BOUNDARY_CHECKS
-                    case default
-                        error stop "error: invalid top boundary channel in poiseuille flow"
-                #endif
-                    end select
+                    if (top_wall_row) then
+                        ! bounce-back for global top boundary (static)
+                        f_9 = f(x, y, 7)
+                    else
+                        f_9 = f(x - 1, y + 1, 9)
+                    end if
                 end if
 
-                rho_val = rho_val + f_pulled(i)
-                u_x_val = u_x_val + f_pulled(i) * C_X_FP(i)
-                u_y_val = u_y_val + f_pulled(i) * C_Y_FP(i)
+                if (right_pressure_cell) then
+                    rho_src = macro_right(y, 1)
+                    u_x_src = macro_right(y, 2)
+                    u_y_src = macro_right(y, 3)
+                    u_squ_src = u_x_src * u_x_src + u_y_src * u_y_src
+
+                    ! 4: (-1, 0)
+                    c_dot_u_src = -u_x_src
+                    pressure_factor = 1.0_FP + 3.0_FP * c_dot_u_src + &
+                        4.5_FP * c_dot_u_src * c_dot_u_src - 1.5_FP * u_squ_src
+                    f_4 = f(n_x_local+1, y, 4) + W(4) * (rho_out - rho_src) * pressure_factor
+
+                    ! 7: (-1, 1)
+                    c_dot_u_src = -u_x_src + u_y_src
+                    pressure_factor = 1.0_FP + 3.0_FP * c_dot_u_src + &
+                        4.5_FP * c_dot_u_src * c_dot_u_src - 1.5_FP * u_squ_src
+                    f_7 = f(n_x_local+1, y, 7) + W(7) * (rho_out - rho_src) * pressure_factor
+
+                    ! 8: (-1, -1)
+                    c_dot_u_src = -u_x_src - u_y_src
+                    pressure_factor = 1.0_FP + 3.0_FP * c_dot_u_src + &
+                        4.5_FP * c_dot_u_src * c_dot_u_src - 1.5_FP * u_squ_src
+                    f_8 = f(n_x_local+1, y, 8) + W(8) * (rho_out - rho_src) * pressure_factor
+                else
+                    f_4 = f(x + 1, y, 4)
+
+                    if (bottom_wall_row) then
+                        ! bounce-back for global bottom boundary (static)
+                        f_7 = f(x, y, 9)
+                    else
+                        f_7 = f(x + 1, y - 1, 7)
+                    end if
+
+                    if (top_wall_row) then
+                        ! bounce-back for global top boundary (static)
+                        f_8 = f(x, y, 6)
+                    else
+                        f_8 = f(x + 1, y + 1, 8)
+                    end if
+                end if
+
+                if (bottom_wall_row) then
+                    ! bounce-back for global bottom boundary (static)
+                    f_3 = f(x, y, 5)
+                else
+                    f_3 = f(x, y - 1, 3)
+                end if
+
+                if (top_wall_row) then
+                    ! bounce-back for global top boundary (static)
+                    f_5 = f(x, y, 3)
+                else
+                    f_5 = f(x, y + 1, 5)
+                end if
+
+                rho_val = f_1 + f_2 + f_3 + f_4 + f_5 + f_6 + f_7 + f_8 + f_9
+                u_x_val = f_2 - f_4 + f_6 - f_7 - f_8 + f_9
+                u_y_val = f_3 - f_5 + f_6 + f_7 - f_8 - f_9
+
+                ! safety check to avoid division by zero in case of wrong density
+            #ifdef FFB_DENSITY_CHECKS
+                if (rho_val <= 0.0_FP) then
+                    error stop "error: density is zero in collision/streaming step (rho_val <= 0)"
+                end if
+            #endif
+
+                ! finalize density and velocity
+                u_x_val = u_x_val / rho_val
+                u_y_val = u_y_val / rho_val
+                u_squ = u_x_val * u_x_val + u_y_val * u_y_val
+
+                if (left_pressure_cell) then
+                    macro_send_left(y, 1) = rho_val
+                    macro_send_left(y, 2) = u_x_val
+                    macro_send_left(y, 3) = u_y_val
+                end if
+
+                if (right_pressure_cell) then
+                    macro_send_right(y, 1) = rho_val
+                    macro_send_right(y, 2) = u_x_val
+                    macro_send_right(y, 3) = u_y_val
+                end if
+
+                if (write_macro_fields) then
+                    rho(x, y) = rho_val
+                    u_x(x, y) = u_x_val
+                    u_y(x, y) = u_y_val
+                end if
+
+                ! collide and stream locally to destination channels
+                ! (manually unrolled)
+                ! 1: (0, 0)
+                f_next(x, y, 1) = f_1 + omega * ((4.0_FP/9.0_FP) * rho_val * ( &
+                    1.0_FP - 1.5_FP * u_squ) - f_1)
+
+                ! 2: (1, 0)
+                f_next(x, y, 2) = f_2 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
+                    1.0_FP + 3.0_FP * u_x_val + 4.5_FP * u_x_val * u_x_val - &
+                    1.5_FP * u_squ) - f_2)
+
+                ! 3: (0, 1)
+                f_next(x, y, 3) = f_3 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
+                    1.0_FP + 3.0_FP * u_y_val + 4.5_FP * u_y_val * u_y_val - &
+                    1.5_FP * u_squ) - f_3)
+
+                ! 4: (-1, 0)
+                f_next(x, y, 4) = f_4 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
+                    1.0_FP - 3.0_FP * u_x_val + 4.5_FP * u_x_val * u_x_val - &
+                    1.5_FP * u_squ) - f_4)
+
+                ! 5: (0, -1)
+                f_next(x, y, 5) = f_5 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
+                    1.0_FP - 3.0_FP * u_y_val + 4.5_FP * u_y_val * u_y_val - &
+                    1.5_FP * u_squ) - f_5)
+
+                ! 6: (1, 1)
+                f_next(x, y, 6) = f_6 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
+                    1.0_FP + 3.0_FP * (u_x_val + u_y_val) + &
+                    4.5_FP * (u_x_val + u_y_val) * (u_x_val + u_y_val) - &
+                    1.5_FP * u_squ) - f_6)
+
+                ! 7: (-1, 1)
+                f_next(x, y, 7) = f_7 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
+                    1.0_FP + 3.0_FP * (-u_x_val + u_y_val) + &
+                    4.5_FP * (-u_x_val + u_y_val) * (-u_x_val + u_y_val) - &
+                    1.5_FP * u_squ) - f_7)
+
+                ! 8: (-1, -1)
+                f_next(x, y, 8) = f_8 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
+                    1.0_FP - 3.0_FP * (u_x_val + u_y_val) + &
+                    4.5_FP * (u_x_val + u_y_val) * (u_x_val + u_y_val) - &
+                    1.5_FP * u_squ) - f_8)
+
+                ! 9: (1, -1)
+                f_next(x, y, 9) = f_9 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
+                    1.0_FP + 3.0_FP * (u_x_val - u_y_val) + &
+                    4.5_FP * (u_x_val - u_y_val) * (u_x_val - u_y_val) - &
+                    1.5_FP * u_squ) - f_9)
             end do
+        end do
+    end subroutine fuzed_pull_streaming_collision_local_unrolled_PF
 
-            ! safety check to avoid division by zero in case of wrong density
-        #ifdef FFB_DENSITY_CHECKS
-            if (rho_val <= 0.0_FP) then
-                error stop "error: density is zero in collision/streaming step (rho_val <= 0)"
-            end if
-        #endif
 
-            ! finalize density and velocity
-            u_x_val = u_x_val / rho_val
-            u_y_val = u_y_val / rho_val
-            u_squ = u_x_val * u_x_val + u_y_val * u_y_val
+    pure function pressure_periodic_distribution( &
+        i, f_src, rho_src, u_x_src, u_y_src, rho_boundary &
+        ) result(f_boundary)
+        ! inputs
+        integer(int32), intent(in) :: i
+        real(FP), intent(in) :: f_src
+        real(FP), intent(in) :: rho_src
+        real(FP), intent(in) :: u_x_src
+        real(FP), intent(in) :: u_y_src
+        real(FP), intent(in) :: rho_boundary
 
-            if (write_macro_fields) then
-                rho(x, y) = rho_val
-                u_x(x, y) = u_x_val
-                u_y(x, y) = u_y_val
-            end if
+        ! output
+        real(FP) :: f_boundary
 
-            ! collide and stream locally to destination channels
-            !DIR$ UNROLL(9)
-            do i = 1, N_DIRS
+        ! temp
+        real(FP) :: u_squ_src
+        real(FP) :: c_dot_u_src
+        real(FP) :: pressure_factor
 
-                ! compute equilibrium distribution function for channels i
-                c_dot_u = C_X_FP(i) * u_x_val + C_Y_FP(i) * u_y_val
-                f_eq_val = W(i) * rho_val * ( &
-                    1.0_FP + &
-                    3.0_FP * c_dot_u + &
-                    4.5_FP * c_dot_u * c_dot_u - &
-                    1.5_FP * u_squ)
+        u_squ_src = u_x_src * u_x_src + u_y_src * u_y_src
+        c_dot_u_src = C_X_FP(i) * u_x_src + C_Y_FP(i) * u_y_src
+        pressure_factor = 1.0_FP + 3.0_FP * c_dot_u_src + &
+            4.5_FP * c_dot_u_src * c_dot_u_src - 1.5_FP * u_squ_src
 
-                ! relax towards equilibrium and write to destination channel in this cell
-                f_next_val = f_pulled(i) + omega * (f_eq_val - f_pulled(i))
-                f_next(x, y, i) = f_next_val
-            end do
-        end subroutine stream_collide_outer_cell_PF
-    end subroutine fuzed_pull_streaming_collision_outer_PF
+        f_boundary = f_src + W(i) * (rho_boundary - rho_src) * pressure_factor
+    end function pressure_periodic_distribution
+
 
 end module poiseuille_flow

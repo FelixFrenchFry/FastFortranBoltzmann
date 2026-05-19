@@ -5,7 +5,6 @@ module simulation
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
         USE_UNROLLED_KERNELS, USE_PULL_SHIFT_KERNELS, &
         shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t
-    use poiseuille_flow, only: fuzed_pull_streaming_collision_outer_PF
     use sliding_lid, only: fuzed_pull_streaming_collision_outer_SL
     implicit none
 
@@ -49,18 +48,12 @@ contains
             end if
         case (SIM_POISEUILLE_FLOW) ! poiseuille flow
             if (USE_PULL_SHIFT_KERNELS) then
-                error stop "error: pull-shift poiseuille flow is not implemented yet"
+                error stop "error: serial full-domain pull-shift poiseuille flow is not implemented yet"
             else if (USE_UNROLLED_KERNELS) then
-                call fuzed_unrolled_pull_streaming_collision_inner_universal( &
-                    write_macro_fields, poiseuille_flow_params%omega, f, f_next, rho, u_x, u_y)
+                error stop "error: serial full-domain unrolled poiseuille flow is legacy only"
             else
-                call fuzed_pull_streaming_collision_inner_universal( &
-                    write_macro_fields, poiseuille_flow_params%omega, f, f_next, rho, u_x, u_y)
+                error stop "error: serial full-domain regular poiseuille flow is legacy only"
             end if
-            call fuzed_pull_streaming_collision_outer_PF( &
-                write_macro_fields, poiseuille_flow_params%omega, &
-                poiseuille_flow_params%rho_in, poiseuille_flow_params%rho_out, &
-                f, f_next, rho, u_x, u_y)
         case (SIM_SLIDING_LID) ! sliding lid
             if (USE_PULL_SHIFT_KERNELS) then
                 error stop "error: pull-shift sliding lid is not implemented yet"

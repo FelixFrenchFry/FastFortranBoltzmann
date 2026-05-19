@@ -6,7 +6,7 @@ program main
     use export, only: should_export_step, export_selected_data, export_selected_data_distributed, export_metadata
     use hardware_info, only: hardware_info_t, collect_hardware_info, print_hardware_summary
     use initialization, only: initialize_sim_condition, apply_condition_shear_wave_local, &
-        apply_condition_couette_flow_local
+        apply_condition_couette_flow_local, apply_condition_poiseuille_flow_local
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
         USE_UNROLLED_KERNELS, USE_PULL_SHIFT_KERNELS, &
@@ -14,6 +14,8 @@ program main
     use shear_wave, only: fuzed_pull_streaming_collision_local_SW, fuzed_pull_shift_streaming_collision_local_SW, &
         fuzed_pull_shift_streaming_collision_local_unrolled_SW, fuzed_pull_streaming_collision_local_unrolled_SW
     use couette_flow, only: fuzed_pull_streaming_collision_local_CF, fuzed_pull_streaming_collision_local_unrolled_CF
+    use poiseuille_flow, only: fuzed_pull_streaming_collision_local_PF, &
+        fuzed_pull_streaming_collision_local_unrolled_PF
     use simulation, only: execute_full_sim_step, swap_distribution_function_buffers
     implicit none
 
@@ -117,16 +119,16 @@ program main
     call initialize_domain(domain_info)
 
     use_distributed_domain = SIM_MODE == SIM_SHEAR_WAVE .or. &
-        SIM_MODE == SIM_COUETTE_FLOW
+        SIM_MODE == SIM_COUETTE_FLOW .or. &
+        SIM_MODE == SIM_POISEUILLE_FLOW
 
     if (domain_info%n_images > 1 .and. .not. use_distributed_domain) then
-        error stop "error: distributed coarray execution is only implemented for shear wave and couette flow yet"
+        error stop "error: distributed coarray execution is only implemented for shear wave, couette flow and poiseuille flow yet"
     end if
 
-    if (SIM_MODE == SIM_COUETTE_FLOW .and. USE_PULL_SHIFT_KERNELS) then
+    if ((SIM_MODE == SIM_COUETTE_FLOW .or. SIM_MODE == SIM_POISEUILLE_FLOW) .and. USE_PULL_SHIFT_KERNELS) then
         error stop "error: distributed pull-shift is not implemented for this simulation mode yet"
     end if
-
 
     if (this_image() == 1) then
         call collect_hardware_info(machine_info)
@@ -165,9 +167,30 @@ program main
     else if (SIM_MODE == SIM_COUETTE_FLOW) then
         call apply_condition_couette_flow_local( &
             couette_flow_params%rho_0, domain_info%n_x_local, domain_info%n_y_local, f, rho, u_x, u_y)
+    else if (SIM_MODE == SIM_POISEUILLE_FLOW) then
+        call apply_condition_poiseuille_flow_local( &
+            poiseuille_flow_params%rho_0, domain_info%n_x_local, domain_info%n_y_local, f, rho, u_x, u_y)
     else
         call initialize_sim_condition(shear_wave_params, couette_flow_params, poiseuille_flow_params, &
             sliding_lid_params, f, rho, u_x, u_y)
+    end if
+
+    if (use_distributed_domain .and. SIM_MODE == SIM_POISEUILLE_FLOW) then
+        halo_buffers%send_macro_left(:, 1) = poiseuille_flow_params%rho_0
+        halo_buffers%send_macro_left(:, 2) = 0.0_FP
+        halo_buffers%send_macro_left(:, 3) = 0.0_FP
+
+        halo_buffers%send_macro_right(:, 1) = poiseuille_flow_params%rho_0
+        halo_buffers%send_macro_right(:, 2) = 0.0_FP
+        halo_buffers%send_macro_right(:, 3) = 0.0_FP
+
+        halo_buffers%recv_macro_left(:, 1) = poiseuille_flow_params%rho_0
+        halo_buffers%recv_macro_left(:, 2) = 0.0_FP
+        halo_buffers%recv_macro_left(:, 3) = 0.0_FP
+
+        halo_buffers%recv_macro_right(:, 1) = poiseuille_flow_params%rho_0
+        halo_buffers%recv_macro_right(:, 2) = 0.0_FP
+        halo_buffers%recv_macro_right(:, 3) = 0.0_FP
     end if
 
     ! print sim info
@@ -280,13 +303,14 @@ program main
     do step = 1, N_STEPS
 
         ! decide if density and velocity fields need to be stored in this step
-        write_macro_fields = SIM_MODE == SIM_POISEUILLE_FLOW .or. &
-            should_export_step(step, export_interval, export_initial_state, export_final_state) .and. &
+        write_macro_fields = should_export_step(step, export_interval, export_initial_state, export_final_state) .and. &
             (export_rho .or. export_u_x .or. export_u_y .or. export_u_mag)
 
         if (use_distributed_domain) then
             call system_clock(clock_section_start)
-            call exchange_halos(domain_info, halo_buffers, domain_info%n_x_local, domain_info%n_y_local, f)
+            call exchange_halos( &
+                domain_info, halo_buffers, domain_info%n_x_local, domain_info%n_y_local, f, &
+                SIM_MODE == SIM_POISEUILLE_FLOW)
             call system_clock(clock_section_end)
             halo_exchange_seconds = halo_exchange_seconds + &
                 real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
@@ -326,6 +350,28 @@ program main
                         domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
                         write_macro_fields, couette_flow_params%rho_0, couette_flow_params%omega, couette_flow_params%u_wall, &
                         f, f_next, rho, u_x, u_y)
+                end if
+            case (SIM_POISEUILLE_FLOW)
+                if (USE_UNROLLED_KERNELS) then
+                    call fuzed_pull_streaming_collision_local_unrolled_PF( &
+                        domain_info%n_x_local, domain_info%n_y_local, &
+                        domain_info%at_left_boundary, domain_info%at_right_boundary, &
+                        domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
+                        write_macro_fields, poiseuille_flow_params%omega, &
+                        poiseuille_flow_params%rho_in, poiseuille_flow_params%rho_out, &
+                        f, f_next, rho, u_x, u_y, &
+                        halo_buffers%recv_macro_left, halo_buffers%recv_macro_right, &
+                        halo_buffers%send_macro_left, halo_buffers%send_macro_right)
+                else
+                    call fuzed_pull_streaming_collision_local_PF( &
+                        domain_info%n_x_local, domain_info%n_y_local, &
+                        domain_info%at_left_boundary, domain_info%at_right_boundary, &
+                        domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
+                        write_macro_fields, poiseuille_flow_params%omega, &
+                        poiseuille_flow_params%rho_in, poiseuille_flow_params%rho_out, &
+                        f, f_next, rho, u_x, u_y, &
+                        halo_buffers%recv_macro_left, halo_buffers%recv_macro_right, &
+                        halo_buffers%send_macro_left, halo_buffers%send_macro_right)
                 end if
             case default
                 error stop "error: unknown distributed sim mode in main simulation loop"
