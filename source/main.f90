@@ -10,7 +10,8 @@ program main
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
         USE_UNROLLED_KERNELS, USE_PULL_SHIFT_KERNELS, &
         shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
-    use shear_wave, only: fuzed_unrolled_pull_streaming_collision_local_SW
+    use shear_wave, only: fuzed_pull_streaming_collision_local_SW, fuzed_pull_shift_streaming_collision_local_SW, &
+        fuzed_pull_shift_streaming_collision_local_unrolled_SW, fuzed_pull_streaming_collision_local_unrolled_SW
     use simulation, only: execute_full_sim_step, swap_distribution_function_buffers
     implicit none
 
@@ -119,13 +120,6 @@ program main
         error stop "error: distributed coarray execution is only implemented for shear wave yet"
     end if
 
-    if (use_distributed_shear_wave .and. USE_PULL_SHIFT_KERNELS) then
-        error stop "error: distributed pull-shift shear wave is not implemented yet"
-    end if
-
-    if (use_distributed_shear_wave .and. .not. USE_UNROLLED_KERNELS) then
-        error stop "error: distributed regular shear wave is not implemented yet"
-    end if
 
     if (this_image() == 1) then
         call collect_hardware_info(machine_info)
@@ -288,9 +282,25 @@ program main
                 real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
 
             call system_clock(clock_section_start)
-            call fuzed_unrolled_pull_streaming_collision_local_SW( &
-                domain_info%n_x_local, domain_info%n_y_local, &
-                write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
+            if (USE_PULL_SHIFT_KERNELS) then
+                if (USE_UNROLLED_KERNELS) then
+                    call fuzed_pull_shift_streaming_collision_local_unrolled_SW( &
+                        domain_info%n_x_local, domain_info%n_y_local, &
+                        write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
+                else
+                    call fuzed_pull_shift_streaming_collision_local_SW( &
+                        domain_info%n_x_local, domain_info%n_y_local, &
+                        write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
+                end if
+            else if (USE_UNROLLED_KERNELS) then
+                call fuzed_pull_streaming_collision_local_unrolled_SW( &
+                    domain_info%n_x_local, domain_info%n_y_local, &
+                    write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
+            else
+                call fuzed_pull_streaming_collision_local_SW( &
+                    domain_info%n_x_local, domain_info%n_y_local, &
+                    write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
+            end if
             call system_clock(clock_section_end)
             kernel_compute_seconds = kernel_compute_seconds + &
                 real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
