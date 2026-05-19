@@ -1,22 +1,24 @@
 program main
     ! imports
-    use iso_fortran_env, only: int32, int64, real64, output_unit
-    use domain, only: domain_t, initialize_domain, print_domain_summary
+    use iso_fortran_env, only: int32, int64, real64
+    use domain, only: domain_t, initialize_domain
     use exchange, only: halo_buffers_t, allocate_halo_buffers, exchange_halos
     use export, only: should_export_step, export_selected_data, export_selected_data_distributed, export_metadata
-    use hardware_info, only: hardware_info_t, collect_hardware_info, print_hardware_summary
+    use hardware_info, only: hardware_info_t, collect_hardware_info
     use initialization, only: initialize_sim_condition, apply_condition_shear_wave_local, &
         apply_condition_couette_flow_local, apply_condition_poiseuille_flow_local, apply_condition_sliding_lid_local
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
         USE_UNROLLED_KERNELS, USE_PULL_SHIFT_KERNELS, &
-        shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
+        shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t
     use shear_wave, only: fuzed_pull_streaming_collision_local_SW, fuzed_pull_shift_streaming_collision_local_SW, &
         fuzed_pull_shift_streaming_collision_local_unrolled_SW, fuzed_pull_streaming_collision_local_unrolled_SW
     use couette_flow, only: fuzed_pull_streaming_collision_local_CF, fuzed_pull_streaming_collision_local_unrolled_CF
     use poiseuille_flow, only: fuzed_pull_streaming_collision_local_PF, &
         fuzed_pull_streaming_collision_local_unrolled_PF
     use sliding_lid, only: fuzed_pull_streaming_collision_local_SL, fuzed_pull_streaming_collision_local_unrolled_SL
+    use reporting, only: print_run_summary, print_launch_timestamp, print_progress_status, print_finish_timestamp, &
+        print_execution_summary
     use simulation, only: execute_full_sim_step, swap_distribution_function_buffers
     implicit none
 
@@ -77,25 +79,15 @@ program main
     integer(int64) :: clock_start
     integer(int64) :: clock_end
     integer(int64) :: clock_rate
-    integer(int64) :: clock_now
     integer(int64) :: clock_section_start
     integer(int64) :: clock_section_end
-    integer(int64) :: eta_total_seconds
-    integer(int64) :: eta_hours
-    integer(int64) :: eta_minutes
-    integer(int64) :: eta_seconds_int
     integer(int64) :: bytes_fp
     integer(int64) :: dist_function_buffers_bytes
     integer(int64) :: macro_field_buffers_bytes
     integer(int64) :: total_buffer_bytes
     real(real64) :: elapsed_seconds
     real(real64) :: seconds_per_step
-    real(real64) :: avg_millisec_per_step
-    real(real64) :: elapsed_now
-    real(real64) :: eta_seconds
-    real(real64) :: sim_percent
     real(real64) :: mlups
-    real(real64) :: gb_per_byte
     real(real64) :: total_bytes_per_cell
     real(real64) :: kernel_compute_seconds
     real(real64) :: halo_exchange_seconds
@@ -105,7 +97,6 @@ program main
     real(real64) :: measured_seconds
     real(real64) :: other_seconds
     real(real64) :: execution_time_values(7)[*]
-    character(len=10) :: current_time
     integer(int32) :: image_id
     integer(int32) :: timing_image_id
 
@@ -160,7 +151,6 @@ program main
         int(domain_info%n_images, int64)
     total_buffer_bytes = dist_function_buffers_bytes + macro_field_buffers_bytes
     total_bytes_per_cell = real(total_buffer_bytes, real64) / real(N_CELLS, real64)
-    gb_per_byte = 1.0e-9_real64
 
     ! inital condition
     if (SIM_MODE == SIM_SHEAR_WAVE) then
@@ -201,70 +191,11 @@ program main
 
     ! print sim info
     if (this_image() == 1) then
-        print '(A)', ""
-        call print_hardware_summary(machine_info)
-
-        print '(A)', ""
-        print '(A)', "--- [ simulation parameters ] ---------------------------------------------"
-        print '(A,T27,A,A)',     "SIM_MODE", "= ", trim(sim_mode_to_string(SIM_MODE))
-
-        select case (SIM_MODE)
-        case (SIM_SHEAR_WAVE)
-            print '(A,T27,A,F8.6)', "rho_0", "= ", shear_wave_params%rho_0
-            print '(A,T27,A,F8.6)', "omega", "= ", shear_wave_params%omega
-            print '(A,T27,A,F8.6)', "u_max", "= ", shear_wave_params%u_max
-            print '(A,T27,A,F8.6)', "n_sin", "= ", shear_wave_params%n_sin
-        case (SIM_COUETTE_FLOW)
-            print '(A,T27,A,F8.6)', "rho_0", "= ", couette_flow_params%rho_0
-            print '(A,T27,A,F8.6)', "omega", "= ", couette_flow_params%omega
-            print '(A,T27,A,F8.6)', "u_wall", "= ", couette_flow_params%u_wall
-        case (SIM_POISEUILLE_FLOW)
-            print '(A,T27,A,F8.6)', "rho_0", "= ", poiseuille_flow_params%rho_0
-            print '(A,T27,A,F8.6)', "omega", "= ", poiseuille_flow_params%omega
-            print '(A,T27,A,F8.6)', "rho_in", "= ", poiseuille_flow_params%rho_in
-            print '(A,T27,A,F8.6)', "rho_out", "= ", poiseuille_flow_params%rho_out
-        case (SIM_SLIDING_LID)
-            print '(A,T27,A,F8.6)', "rho_0", "= ", sliding_lid_params%rho_0
-            print '(A,T27,A,F8.6)', "omega", "= ", sliding_lid_params%omega
-            print '(A,T27,A,F8.6)', "u_wall", "= ", sliding_lid_params%u_wall
-        case default
-            error stop "error: unknown sim mode in main print block"
-        end select
-
-        ! parameter info
-        print '(A)', ""
-        print '(A)', "--- [ other parameters ] --------------------------------------------------"
-        print '(A,T27,A,I0)',    "N_X_TOTAL", "= ", N_X
-        print '(A,T27,A,I0)',    "N_Y_TOTAL", "= ", N_Y
-        print '(A,T27,A,I0)',    "N_STEPS", "= ", N_STEPS
-        print '(A,T27,A,L1)',    "use_unrolled_kernels", "= ", USE_UNROLLED_KERNELS
-        print '(A,T27,A,L1)',    "use_pull_shift_kernels", "= ", USE_PULL_SHIFT_KERNELS
-        print '(A,T27,A,L1)',    "distributed_coarrays", "= ", .true.
-        print '(A,T27,A,L1)',    "export_rho", "= ", export_rho
-        print '(A,T27,A,L1)',    "export_u_x", "= ", export_u_x
-        print '(A,T27,A,L1)',    "export_u_y", "= ", export_u_y
-        print '(A,T27,A,L1)',    "export_u_mag", "= ", export_u_mag
-        print '(A,T27,A,I0)',    "export_interval", "= ", export_interval
-        print '(A,T27,A,L1)',    "export_initial_state", "= ", export_initial_state
-        print '(A,T27,A,L1)',    "export_final_state", "= ", export_final_state
-        print '(A,T27,A,A)',     "output_dir_name", "= ", output_dir_name
-        print '(A,T27,A,A)',     "export_num", "= ", export_num
-
-        call print_domain_summary(domain_info)
-        print '(A)', ""
-
-        ! memory info
-        print '(A,T42,A,T45,A,T59,A,T62,A)', "memory usage", "|", "per cell [B]", "|", "all cells [GB]"
-        print '(A)', "---------------------------------------------------------------------------"
-        print '(A,T42,A,T45,I12,T59,A,T62,F14.3)', "dist function buffers", "|", &
-            nint(real(dist_function_buffers_bytes, real64) / real(N_CELLS, real64), int64), "|", &
-            real(dist_function_buffers_bytes, real64) * gb_per_byte
-        print '(A,T42,A,T45,I12,T59,A,T62,F14.3)', "macro field buffers", "|", &
-            nint(real(macro_field_buffers_bytes, real64) / real(N_CELLS, real64), int64), "|", &
-            real(macro_field_buffers_bytes, real64) * gb_per_byte
-        print '(A,T42,A,T45,I12,T59,A,T62,F14.3)', "total", "|", &
-            nint(total_bytes_per_cell, int64), "|", real(total_buffer_bytes, real64) * gb_per_byte
-        print *
+        call print_run_summary( &
+            machine_info, domain_info, SIM_MODE, shear_wave_params, couette_flow_params, poiseuille_flow_params, &
+            sliding_lid_params, export_rho, export_u_x, export_u_y, export_u_mag, export_interval, export_initial_state, &
+            export_final_state, output_dir_name, export_num, dist_function_buffers_bytes, macro_field_buffers_bytes, &
+            total_buffer_bytes, total_bytes_per_cell)
     end if
 
     ! export metadata
@@ -288,9 +219,7 @@ program main
 
     ! print sim launch timestamp
     if (this_image() == 1) then
-        call date_and_time(time=current_time)
-        print '(A)', "[" // current_time(1:2) // ":" // current_time(3:4) // ":" // current_time(5:6) // "] &
-            launched -------------------------------------------------------"
+        call print_launch_timestamp()
     end if
 
     if (use_distributed_domain) then
@@ -436,40 +365,12 @@ program main
                     real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
             end if
         end if
-        
+
         ! print sim progress info
         if (this_image() == 1) then
             if (mod(step, progress_interval) == 0 .or. step == N_STEPS) then
                 call system_clock(clock_section_start)
-                call system_clock(clock_now)
-                call date_and_time(time=current_time)
-
-                elapsed_now = real(clock_now - clock_start, real64) / real(clock_rate, real64)
-                avg_millisec_per_step = 1000.0_real64 * elapsed_now / real(step, real64)
-                eta_seconds = elapsed_now * real(N_STEPS - step, real64) / real(step, real64)
-                sim_percent = 100.0_real64 * real(step, real64) / real(N_STEPS, real64)
-
-                eta_total_seconds = int(eta_seconds + 0.999_real64, int64)
-                eta_hours = eta_total_seconds / 3600_int64
-                eta_minutes = modulo(eta_total_seconds, 3600_int64) / 60_int64
-                eta_seconds_int = modulo(eta_total_seconds, 60_int64)
-
-                if (interactive_progress) then ! progress output with carriage return to overwrite previous line
-                    write(output_unit,'(A,3A,F6.2,A,I2.2,A,I2.2,A,I2.2,A,I0,A,I0,A,F0.3,A)', advance='no') &
-                        achar(13), "[", current_time(1:2)//":"//current_time(3:4)//":"//current_time(5:6), "] ", &
-                        sim_percent, " %  (T-", &
-                        eta_hours, ":", eta_minutes, ":", eta_seconds_int, ")  ", &
-                        step, "/", N_STEPS, " steps  |  avg step: ", avg_millisec_per_step, " ms   "
-
-                    flush(output_unit)
-                else ! fallback to non-interactive progress output
-                    print '(3A,F6.2,A,I2.2,A,I2.2,A,I2.2,A,I0,A,I0,A,F0.3,A)', &
-                        "[", current_time(1:2)//":"//current_time(3:4)//":"//current_time(5:6), "] ", &
-                        sim_percent, " %  (T-", &
-                        eta_hours, ":", eta_minutes, ":", eta_seconds_int, ")  ", &
-                        step, "/", N_STEPS, " steps  |  avg step: ", avg_millisec_per_step, " ms   "
-                end if
-
+                call print_progress_status(step, clock_start, clock_rate, interactive_progress)
                 call system_clock(clock_section_end)
                 progress_seconds = progress_seconds + &
                     real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
@@ -481,15 +382,10 @@ program main
     if (use_distributed_domain) then
         sync all
     end if
-    
+
     ! print sim finish timestamp
-    if (this_image() == 1 .and. interactive_progress) then
-        print *
-    end if
     if (this_image() == 1) then
-        call date_and_time(time=current_time)
-        print '(A)', "[" // current_time(1:2) // ":" // current_time(3:4) // ":" // current_time(5:6) // "] &
-            finished -------------------------------------------------------"
+        call print_finish_timestamp(interactive_progress)
     end if
 
     ! finalize timing and print metrics
@@ -520,60 +416,13 @@ program main
             end if
         end do
 
-        print '(A)', ""
-        print '(A,T42,A,T46,A,T59,A,T67,A)', "execution time", "|", "total [sec]", "|", "share [%]"
-        print '(A)', "---------------------------------------------------------------------------"
-
-        if (use_distributed_domain) then
-            call print_execution_time_row("kernel compute", &
-                execution_time_values(1)[timing_image_id], execution_time_values(7)[timing_image_id])
-            call print_execution_time_row("halo exchange", &
-                execution_time_values(2)[timing_image_id], execution_time_values(7)[timing_image_id])
-        else
-            call print_execution_time_row("kernel compute", &
-                execution_time_values(1)[timing_image_id], execution_time_values(7)[timing_image_id])
-        end if
-
-        call print_execution_time_row("buffer swap", &
-            execution_time_values(3)[timing_image_id], execution_time_values(7)[timing_image_id])
-        call print_execution_time_row("data export", &
-            execution_time_values(4)[timing_image_id], execution_time_values(7)[timing_image_id])
-        call print_execution_time_row("progress display", &
-            execution_time_values(5)[timing_image_id], execution_time_values(7)[timing_image_id])
-        call print_execution_time_row("other", &
-            execution_time_values(6)[timing_image_id], execution_time_values(7)[timing_image_id])
-        call print_execution_time_row("total", &
-            execution_time_values(7)[timing_image_id], execution_time_values(7)[timing_image_id])
-
-        print '(A)', ""
-        print '(A)', "--- [ perf metrics ] ------------------------------------------------------"
-        print '(A,I0,A,I0,A,I0,A)', "sim size [X/Y/N]:      [ ", N_X, " / ", N_Y, " / ", N_STEPS, " ]"
-        print '(A,F12.3,A)',        "total time:     ", elapsed_seconds, " sec"
-        print '(A,F12.3,A)',        "step time:      ", seconds_per_step * 1000.0_real64, " ms"
-        print '(A,F12.3)',          "MLUPS:          ", mlups
+        call print_execution_summary( &
+            use_distributed_domain, &
+            execution_time_values(1)[timing_image_id], execution_time_values(2)[timing_image_id], &
+            execution_time_values(3)[timing_image_id], execution_time_values(4)[timing_image_id], &
+            execution_time_values(5)[timing_image_id], execution_time_values(6)[timing_image_id], &
+            execution_time_values(7)[timing_image_id], seconds_per_step, mlups)
     end if
 
-contains
-
-    subroutine print_execution_time_row( &
-        row_name, total_seconds, total_loop_seconds &
-        )
-        ! inputs
-        character(len=*), intent(in) :: row_name
-        real(real64), intent(in) :: total_seconds
-        real(real64), intent(in) :: total_loop_seconds
-
-        ! temp
-        real(real64) :: time_share
-
-        if (total_loop_seconds > 0.0_real64) then
-            time_share = 100.0_real64 * total_seconds / total_loop_seconds
-        else
-            time_share = 0.0_real64
-        end if
-
-        print '(A,T42,A,T45,F12.3,T59,A,T64,F10.3,A)', &
-            row_name, "|", total_seconds, "|", time_share, " %"
-    end subroutine print_execution_time_row
 
 end program main
