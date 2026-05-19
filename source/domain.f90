@@ -57,28 +57,54 @@ contains
 
         ! locals
         integer(int32) :: n_images_sqrt
+        integer(int32) :: n_images_x_override
+        integer(int32) :: n_images_y_override
         integer(int32) :: bottom_y
         integer(int32) :: top_y
         integer(int32) :: left_x
         integer(int32) :: right_x
+        logical :: has_n_images_x_override
+        logical :: has_n_images_y_override
 
         domain_info%n_images = int(num_images(), int32)
         domain_info%image_id = int(this_image(), int32)
 
-        n_images_sqrt = int(sqrt(real(domain_info%n_images, real64)), int32)
-
-        ! check image count and domain size constraints
-        if (n_images_sqrt * n_images_sqrt /= domain_info%n_images) then
-            error stop "error: number of coarray images must be a square number"
-        else if (mod(N_X, n_images_sqrt) /= 0) then
-            error stop "error: N_X must be divisible by sqrt(num_images)"
-        else if (mod(N_Y, n_images_sqrt) /= 0) then
-            error stop "error: N_Y must be divisible by sqrt(num_images)"
-        end if
+        call read_image_grid_override( &
+            "IMAGES_X", n_images_x_override, has_n_images_x_override)
+        call read_image_grid_override( &
+            "IMAGES_Y", n_images_y_override, has_n_images_y_override)
 
         ! derive all domain decomposition infos
-        domain_info%n_images_x = n_images_sqrt
-        domain_info%n_images_y = n_images_sqrt
+        if (has_n_images_x_override .neqv. has_n_images_y_override) then
+            error stop "error: IMAGES_X and IMAGES_Y must be set together"
+        else if (has_n_images_x_override) then
+            if (n_images_x_override <= 0 .or. n_images_y_override <= 0) then
+                error stop "error: IMAGES_X and IMAGES_Y must be positive"
+            else if (n_images_x_override * n_images_y_override /= domain_info%n_images) then
+                error stop "error: IMAGES_X * IMAGES_Y must match coarray images"
+            else if (mod(N_X, n_images_x_override) /= 0) then
+                error stop "error: N_X must be divisible by IMAGES_X"
+            else if (mod(N_Y, n_images_y_override) /= 0) then
+                error stop "error: N_Y must be divisible by IMAGES_Y"
+            end if
+
+            domain_info%n_images_x = n_images_x_override
+            domain_info%n_images_y = n_images_y_override
+        else
+            n_images_sqrt = int(sqrt(real(domain_info%n_images, real64)), int32)
+
+            ! check image count and domain size constraints
+            if (n_images_sqrt * n_images_sqrt /= domain_info%n_images) then
+                error stop "error: number of coarray images must be a square number"
+            else if (mod(N_X, n_images_sqrt) /= 0) then
+                error stop "error: N_X must be divisible by sqrt(num_images)"
+            else if (mod(N_Y, n_images_sqrt) /= 0) then
+                error stop "error: N_Y must be divisible by sqrt(num_images)"
+            end if
+
+            domain_info%n_images_x = n_images_sqrt
+            domain_info%n_images_y = n_images_sqrt
+        end if
 
         domain_info%image_x = modulo(domain_info%image_id - 1, domain_info%n_images_x) + 1
         domain_info%image_y = (domain_info%image_id - 1) / domain_info%n_images_x + 1
@@ -140,6 +166,41 @@ contains
             domain_info%n_x_local, " / ", domain_info%n_y_local, " ]"
         print '(A,T24,F8.3,A)',   "halo cells:", halo_cell_percent, " %"
     end subroutine print_domain_summary
+
+
+    subroutine read_image_grid_override( &
+        env_name, n_images_override, has_override &
+        )
+        ! inputs
+        character(len=*), intent(in) :: env_name
+
+        ! output
+        integer(int32), intent(out) :: n_images_override
+        logical, intent(out) :: has_override
+
+        ! locals
+        character(len=32) :: env_value
+        integer :: env_status
+        integer :: read_status
+
+        call get_environment_variable(env_name, env_value, status=env_status)
+
+        n_images_override = 0
+
+        if (env_status > 0) then
+            has_override = .false.
+            return
+        else if (env_status < 0) then
+            error stop "error: invalid image grid override"
+        end if
+
+        has_override = .true.
+
+        read(env_value, *, iostat=read_status) n_images_override
+        if (read_status /= 0) then
+            error stop "error: invalid image grid override"
+        end if
+    end subroutine read_image_grid_override
 
 
     pure function wrap_image_coordinate( &
