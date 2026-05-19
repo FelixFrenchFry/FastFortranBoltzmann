@@ -5,8 +5,6 @@ module simulation
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
         USE_UNROLLED_KERNELS, USE_PULL_SHIFT_KERNELS, &
         shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t
-    use shear_wave, only: fuzed_pull_streaming_collision_outer_SW, fuzed_unrolled_pull_streaming_collision_outer_SW, &
-        fuzed_pull_shift_streaming_collision_full_SW, fuzed_unrolled_pull_shift_streaming_collision_full_SW
     use couette_flow, only: fuzed_pull_streaming_collision_outer_CF
     use poiseuille_flow, only: fuzed_pull_streaming_collision_outer_PF
     use sliding_lid, only: fuzed_pull_streaming_collision_outer_SL
@@ -36,23 +34,11 @@ contains
         select case (SIM_MODE)
         case (SIM_SHEAR_WAVE) ! shear wave
             if (USE_PULL_SHIFT_KERNELS) then
-                if (USE_UNROLLED_KERNELS) then
-                    call fuzed_unrolled_pull_shift_streaming_collision_full_SW( &
-                        write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
-                else
-                    call fuzed_pull_shift_streaming_collision_full_SW( &
-                        write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
-                end if
+                error stop "error: serial full-domain pull-shift shear wave is legacy only"
             else if (USE_UNROLLED_KERNELS) then
-                call fuzed_unrolled_pull_streaming_collision_inner_universal( &
-                    write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
-                call fuzed_unrolled_pull_streaming_collision_outer_SW( &
-                    write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
+                error stop "error: serial full-domain unrolled shear wave is legacy only"
             else
-                call fuzed_pull_streaming_collision_inner_universal( &
-                    write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
-                call fuzed_pull_streaming_collision_outer_SW( &
-                    write_macro_fields, shear_wave_params%omega, f, f_next, rho, u_x, u_y)
+                error stop "error: serial full-domain regular shear wave is legacy only"
             end if
         case (SIM_COUETTE_FLOW) ! couette flow
             if (USE_PULL_SHIFT_KERNELS) then
