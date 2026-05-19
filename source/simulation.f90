@@ -10,7 +10,8 @@ module simulation
     use shear_wave, only: prepare_shear_wave_halos_SW, fuzed_pull_streaming_collision_local_SW, &
         fuzed_pull_streaming_collision_local_unrolled_SW, fuzed_pull_shift_streaming_collision_local_SW, &
         fuzed_pull_shift_streaming_collision_local_unrolled_SW
-    use couette_flow, only: fuzed_pull_streaming_collision_local_CF, fuzed_pull_streaming_collision_local_unrolled_CF
+    use couette_flow, only: prepare_couette_flow_halos_CF, fuzed_pull_streaming_collision_local_CF, &
+        fuzed_pull_streaming_collision_local_unrolled_CF
     use poiseuille_flow, only: fuzed_pull_streaming_collision_local_PF, &
         fuzed_pull_streaming_collision_local_unrolled_PF
     use sliding_lid, only: fuzed_pull_streaming_collision_local_SL, fuzed_pull_streaming_collision_local_unrolled_SL
@@ -79,7 +80,19 @@ contains
             if (USE_PULL_SHIFT_KERNELS) then
                 error stop "error: distributed pull-shift is not implemented for this simulation mode yet"
             else if (USE_UNIVERSAL_KERNELS) then
-                error stop "error: universal kernel path is not implemented for couette flow yet"
+                call prepare_couette_flow_halos_CF( &
+                    domain_info%n_images_x, n_x_local, n_y_local, &
+                    domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
+                    couette_flow_params%rho_0, couette_flow_params%u_wall, f)
+                if (USE_UNROLLED_KERNELS) then
+                    call fuzed_pull_streaming_collision_local_unrolled_universal( &
+                        n_x_local, n_y_local, &
+                        write_macro_fields, couette_flow_params%omega, f, f_next, rho, u_x, u_y)
+                else
+                    call fuzed_pull_streaming_collision_local_universal( &
+                        n_x_local, n_y_local, &
+                        write_macro_fields, couette_flow_params%omega, f, f_next, rho, u_x, u_y)
+                end if
             else if (USE_UNROLLED_KERNELS) then
                 call fuzed_pull_streaming_collision_local_unrolled_CF( &
                     n_x_local, n_y_local, &
