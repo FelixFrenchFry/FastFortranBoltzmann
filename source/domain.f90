@@ -56,55 +56,33 @@ contains
         type(domain_t), intent(out) :: domain_info
 
         ! locals
-        integer(int32) :: n_images_sqrt
-        integer(int32) :: n_images_x_override
-        integer(int32) :: n_images_y_override
+        integer(int32) :: n_images_x_env
+        integer(int32) :: n_images_y_env
         integer(int32) :: bottom_y
         integer(int32) :: top_y
         integer(int32) :: left_x
         integer(int32) :: right_x
-        logical :: has_n_images_x_override
-        logical :: has_n_images_y_override
+        logical :: has_n_images_x_env
+        logical :: has_n_images_y_env
+
+        call validate_coarray_image_count_source()
 
         domain_info%n_images = int(num_images(), int32)
         domain_info%image_id = int(this_image(), int32)
 
         call read_image_grid_override( &
-            "IMAGES_X", n_images_x_override, has_n_images_x_override)
+            "I_X", n_images_x_env, has_n_images_x_env)
         call read_image_grid_override( &
-            "IMAGES_Y", n_images_y_override, has_n_images_y_override)
+            "I_Y", n_images_y_env, has_n_images_y_env)
 
-        ! derive all domain decomposition infos
-        if (has_n_images_x_override .neqv. has_n_images_y_override) then
-            error stop "error: IMAGES_X and IMAGES_Y must be set together"
-        else if (has_n_images_x_override) then
-            if (n_images_x_override <= 0 .or. n_images_y_override <= 0) then
-                error stop "error: IMAGES_X and IMAGES_Y must be positive"
-            else if (n_images_x_override * n_images_y_override /= domain_info%n_images) then
-                error stop "error: IMAGES_X * IMAGES_Y must match coarray images"
-            else if (mod(N_X, n_images_x_override) /= 0) then
-                error stop "error: N_X must be divisible by IMAGES_X"
-            else if (mod(N_Y, n_images_y_override) /= 0) then
-                error stop "error: N_Y must be divisible by IMAGES_Y"
-            end if
-
-            domain_info%n_images_x = n_images_x_override
-            domain_info%n_images_y = n_images_y_override
-        else
-            n_images_sqrt = int(sqrt(real(domain_info%n_images, real64)), int32)
-
-            ! check image count and domain size constraints
-            if (n_images_sqrt * n_images_sqrt /= domain_info%n_images) then
-                error stop "error: number of coarray images must be a square number"
-            else if (mod(N_X, n_images_sqrt) /= 0) then
-                error stop "error: N_X must be divisible by sqrt(num_images)"
-            else if (mod(N_Y, n_images_sqrt) /= 0) then
-                error stop "error: N_Y must be divisible by sqrt(num_images)"
-            end if
-
-            domain_info%n_images_x = n_images_sqrt
-            domain_info%n_images_y = n_images_sqrt
+        ! derive image grid
+        if (.not. has_n_images_x_env .or. .not. has_n_images_y_env) then
+            error stop "error: I_X and I_Y must be set"
         end if
+
+        call validate_image_grid(domain_info%n_images, n_images_x_env, n_images_y_env)
+        domain_info%n_images_x = n_images_x_env
+        domain_info%n_images_y = n_images_y_env
 
         domain_info%image_x = modulo(domain_info%image_id - 1, domain_info%n_images_x) + 1
         domain_info%image_y = (domain_info%image_id - 1) / domain_info%n_images_x + 1
@@ -166,6 +144,53 @@ contains
             domain_info%n_x_local, " / ", domain_info%n_y_local, " ]"
         print '(A,T24,F8.3,A)',   "halo cells:", halo_cell_percent, " %"
     end subroutine print_domain_summary
+
+
+    subroutine validate_coarray_image_count_source()
+        ! locals
+        integer :: n_images_env_length
+        integer :: n_images_env_status
+        integer :: config_env_length
+        integer :: config_env_status
+        logical :: has_n_images_env
+        logical :: has_config_env
+
+        call get_environment_variable( &
+            "FOR_COARRAY_NUM_IMAGES", length=n_images_env_length, status=n_images_env_status)
+        call get_environment_variable( &
+            "FOR_COARRAY_CONFIG_FILE", length=config_env_length, status=config_env_status)
+
+        if (n_images_env_status < 0 .or. config_env_status < 0) then
+            error stop "error: invalid coarray image count configuration"
+        end if
+
+        has_n_images_env = n_images_env_status == 0 .and. n_images_env_length > 0
+        has_config_env = config_env_status == 0 .and. config_env_length > 0
+
+        if (.not. has_n_images_env .and. .not. has_config_env) then
+            error stop "error: FOR_COARRAY_NUM_IMAGES or FOR_COARRAY_CONFIG_FILE must be set"
+        end if
+    end subroutine validate_coarray_image_count_source
+
+
+    subroutine validate_image_grid( &
+        n_images, n_images_x, n_images_y &
+        )
+        ! inputs
+        integer(int32), intent(in) :: n_images
+        integer(int32), intent(in) :: n_images_x
+        integer(int32), intent(in) :: n_images_y
+
+        if (n_images_x <= 0 .or. n_images_y <= 0) then
+            error stop "error: I_X and I_Y must be positive"
+        else if (n_images_x * n_images_y /= n_images) then
+            error stop "error: I_X * I_Y must match coarray images"
+        else if (mod(N_X, n_images_x) /= 0) then
+            error stop "error: N_X must be divisible by I_X"
+        else if (mod(N_Y, n_images_y) /= 0) then
+            error stop "error: N_Y must be divisible by I_Y"
+        end if
+    end subroutine validate_image_grid
 
 
     subroutine read_image_grid_override( &
