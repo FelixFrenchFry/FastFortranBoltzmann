@@ -57,7 +57,7 @@ module settings
     integer(int32), parameter :: SIM_MODE = 1 ! selected sim mode
 
     ! kernel selection
-    logical, parameter :: USE_UNROLLED_KERNELS = .false.
+    logical, parameter :: USE_UNROLLED_KERNELS = .true.
     logical, parameter :: USE_PULL_SHIFT_KERNELS = .false.
 
     ! misc
