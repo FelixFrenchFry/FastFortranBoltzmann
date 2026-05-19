@@ -5,7 +5,6 @@ module simulation
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
         USE_UNROLLED_KERNELS, USE_PULL_SHIFT_KERNELS, &
         shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t
-    use sliding_lid, only: fuzed_pull_streaming_collision_outer_SL
     implicit none
 
 contains
@@ -23,7 +22,7 @@ contains
         real(FP), intent(in) :: f(N_X, N_Y, N_DIRS)
 
         ! write destinations
-        real(FP), intent(out) :: f_next(N_X, N_Y, N_DIRS)
+        real(FP), intent(inout) :: f_next(N_X, N_Y, N_DIRS)
         real(FP), intent(inout) :: rho(N_X, N_Y)
         real(FP), intent(inout) :: u_x(N_X, N_Y)
         real(FP), intent(inout) :: u_y(N_X, N_Y)
@@ -56,17 +55,12 @@ contains
             end if
         case (SIM_SLIDING_LID) ! sliding lid
             if (USE_PULL_SHIFT_KERNELS) then
-                error stop "error: pull-shift sliding lid is not implemented yet"
+                error stop "error: serial full-domain pull-shift sliding lid is not implemented yet"
             else if (USE_UNROLLED_KERNELS) then
-                call fuzed_unrolled_pull_streaming_collision_inner_universal( &
-                    write_macro_fields, sliding_lid_params%omega, f, f_next, rho, u_x, u_y)
+                error stop "error: serial full-domain unrolled sliding lid is legacy only"
             else
-                call fuzed_pull_streaming_collision_inner_universal( &
-                    write_macro_fields, sliding_lid_params%omega, f, f_next, rho, u_x, u_y)
+                error stop "error: serial full-domain regular sliding lid is legacy only"
             end if
-            call fuzed_pull_streaming_collision_outer_SL( &
-                write_macro_fields, sliding_lid_params%rho_0, sliding_lid_params%omega, sliding_lid_params%u_wall, &
-                f, f_next, rho, u_x, u_y)
         case default
             error stop "error: unknown sim mode in execute_full_sim_step()"
         end select
