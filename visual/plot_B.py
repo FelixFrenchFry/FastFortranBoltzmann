@@ -11,7 +11,7 @@ import numpy as np
 # --- [ plot velocity magnitude scalar field as heatmap ] ---
 
 # run config
-RUN_NAME = "run_002"
+RUN_NAME = "run_002d"
 DATA_NAME = "velocity_mag"
 
 # step config
