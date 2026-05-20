@@ -19,6 +19,33 @@ module settings
     integer(int64), parameter :: N_CELLS = int(N_X, int64) * int(N_Y, int64)
     integer(int32), parameter :: N_DIRS = 9
 
+    ! constants for sim modes
+    integer(int32), parameter :: SIM_SHEAR_WAVE = 1
+    integer(int32), parameter :: SIM_COUETTE_FLOW = 2
+    integer(int32), parameter :: SIM_POISEUILLE_FLOW = 3
+    integer(int32), parameter :: SIM_SLIDING_LID = 4
+    integer(int32), parameter :: SIM_MODE = 4 ! selected sim mode
+
+    ! kernel selection
+    logical, parameter :: USE_UNROLLED_KERNELS = .true.
+    logical, parameter :: USE_UNIVERSAL_KERNELS = .false.
+    logical, parameter :: USE_PULL_SHIFT_KERNELS = .false.
+
+    ! export settings
+    logical, parameter :: EXPORT_RHO = .true.
+    logical, parameter :: EXPORT_U_X = .true.
+    logical, parameter :: EXPORT_U_Y = .true.
+    logical, parameter :: EXPORT_U_MAG = .true.
+    integer(int32), parameter :: EXPORT_INTERVAL = 100000
+    logical, parameter :: EXPORT_INITIAL_STATE = .true.
+    logical, parameter :: EXPORT_FINAL_STATE = .true.
+    character(len=*), parameter :: OUTPUT_DIR_NAME = "output"
+    character(len=*), parameter :: EXPORT_NUM = "run_000"
+
+    ! progress display settings
+    logical, parameter :: INTERACTIVE_PROGRESS = .true.
+    integer(int32), parameter :: PROGRESS_INTERVAL = 1
+
     ! D2Q9 lattice velocities and weights
     integer(int32), parameter :: C_X(N_DIRS) = [ 0,  1,  0, -1,  0,  1, -1, -1,  1 ]
     integer(int32), parameter :: C_Y(N_DIRS) = [ 0,  0,  1,  0, -1,  1,  1, -1, -1 ]
@@ -49,18 +76,6 @@ module settings
         1.0_FP/36.0_FP, &
         1.0_FP/36.0_FP]
 
-    ! constants for sim modes
-    integer(int32), parameter :: SIM_SHEAR_WAVE = 1
-    integer(int32), parameter :: SIM_COUETTE_FLOW = 2
-    integer(int32), parameter :: SIM_POISEUILLE_FLOW = 3
-    integer(int32), parameter :: SIM_SLIDING_LID = 4
-    integer(int32), parameter :: SIM_MODE = 4 ! selected sim mode
-
-    ! kernel selection
-    logical, parameter :: USE_UNROLLED_KERNELS = .true.
-    logical, parameter :: USE_UNIVERSAL_KERNELS = .false.
-    logical, parameter :: USE_PULL_SHIFT_KERNELS = .false.
-
     ! misc
     real(FP), parameter :: PI = 3.141592653589793238462643383279502884197_FP
 
@@ -90,6 +105,36 @@ module settings
         real(FP) :: omega ! relaxation factor
         real(FP) :: u_wall ! top wall velocity
     end type sliding_lid_params_t
+
+    ! parameter set for shear wave
+    type(shear_wave_params_t), parameter :: SW_PARAMS = shear_wave_params_t( &
+        rho_0 = 1.0_FP, &
+        omega = 1.5_FP, &
+        u_max = 0.1_FP, &
+        n_sin = 2.0_FP &
+    )
+
+    ! parameter set for couette flow
+    type(couette_flow_params_t), parameter :: CF_PARAMS = couette_flow_params_t( &
+        rho_0 = 1.0_FP, &
+        omega = 1.5_FP, &
+        u_wall = 0.1_FP &
+    )
+
+    ! parameter set for poiseuille flow
+    type(poiseuille_flow_params_t), parameter :: PF_PARAMS = poiseuille_flow_params_t( &
+        rho_0 = 1.0_FP, &
+        omega = 1.5_FP, &
+        rho_in = 1.001_FP, &
+        rho_out = 0.999_FP &
+    )
+
+    ! parameter set for sliding lid
+    type(sliding_lid_params_t), parameter :: SL_PARAMS = sliding_lid_params_t( &
+        rho_0 = 1.0_FP, &
+        omega = 1.5_FP, &
+        u_wall = 0.1_FP &
+    )
 
 contains
 
