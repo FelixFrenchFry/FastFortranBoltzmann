@@ -10,8 +10,8 @@ program main
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
         USE_PULL_SHIFT_KERNELS, EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, EXPORT_INTERVAL, &
-        EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE, OUTPUT_DIR_NAME, EXPORT_NUM, INTERACTIVE_PROGRESS, &
-        PROGRESS_INTERVAL, SW_PARAMS, CF_PARAMS, PF_PARAMS, SL_PARAMS
+        EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE, EXPORT_NUM, INTERACTIVE_PROGRESS, &
+        PROGRESS_INTERVAL, RHO_0, U_MAX, N_SIN
     use reporting, only: print_run_summary, print_launch_timestamp, print_progress_status, print_finish_timestamp, &
         print_execution_summary
     use simulation, only: execute_local_sim_step, swap_distribution_function_buffers
@@ -105,35 +105,35 @@ program main
     ! inital condition
     if (SIM_MODE == SIM_SHEAR_WAVE) then
         call apply_condition_shear_wave_local( &
-            SW_PARAMS%rho_0, SW_PARAMS%u_max, SW_PARAMS%n_sin, &
+            RHO_0, U_MAX, N_SIN, &
             domain_info%n_x_local, domain_info%n_y_local, domain_info%y_global_start, f, rho, u_x, u_y)
     else if (SIM_MODE == SIM_COUETTE_FLOW) then
         call apply_condition_couette_flow_local( &
-            CF_PARAMS%rho_0, domain_info%n_x_local, domain_info%n_y_local, f, rho, u_x, u_y)
+            RHO_0, domain_info%n_x_local, domain_info%n_y_local, f, rho, u_x, u_y)
     else if (SIM_MODE == SIM_POISEUILLE_FLOW) then
         call apply_condition_poiseuille_flow_local( &
-            PF_PARAMS%rho_0, domain_info%n_x_local, domain_info%n_y_local, f, rho, u_x, u_y)
+            RHO_0, domain_info%n_x_local, domain_info%n_y_local, f, rho, u_x, u_y)
     else if (SIM_MODE == SIM_SLIDING_LID) then
         call apply_condition_sliding_lid_local( &
-            SL_PARAMS%rho_0, domain_info%n_x_local, domain_info%n_y_local, f, rho, u_x, u_y)
+            RHO_0, domain_info%n_x_local, domain_info%n_y_local, f, rho, u_x, u_y)
     else
-        call initialize_sim_condition(SW_PARAMS, CF_PARAMS, PF_PARAMS, SL_PARAMS, f, rho, u_x, u_y)
+        call initialize_sim_condition(f, rho, u_x, u_y)
     end if
 
     if (use_distributed_domain .and. SIM_MODE == SIM_POISEUILLE_FLOW) then
-        halo_buffers%send_macro_left(:, 1) = PF_PARAMS%rho_0
+        halo_buffers%send_macro_left(:, 1) = RHO_0
         halo_buffers%send_macro_left(:, 2) = 0.0_FP
         halo_buffers%send_macro_left(:, 3) = 0.0_FP
 
-        halo_buffers%send_macro_right(:, 1) = PF_PARAMS%rho_0
+        halo_buffers%send_macro_right(:, 1) = RHO_0
         halo_buffers%send_macro_right(:, 2) = 0.0_FP
         halo_buffers%send_macro_right(:, 3) = 0.0_FP
 
-        halo_buffers%recv_macro_left(:, 1) = PF_PARAMS%rho_0
+        halo_buffers%recv_macro_left(:, 1) = RHO_0
         halo_buffers%recv_macro_left(:, 2) = 0.0_FP
         halo_buffers%recv_macro_left(:, 3) = 0.0_FP
 
-        halo_buffers%recv_macro_right(:, 1) = PF_PARAMS%rho_0
+        halo_buffers%recv_macro_right(:, 1) = RHO_0
         halo_buffers%recv_macro_right(:, 2) = 0.0_FP
         halo_buffers%recv_macro_right(:, 3) = 0.0_FP
     end if
@@ -141,17 +141,17 @@ program main
     ! print sim info
     if (this_image() == 1) then
         call print_run_summary( &
-            machine_info, domain_info, SIM_MODE, SW_PARAMS, CF_PARAMS, PF_PARAMS, &
-            SL_PARAMS, EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, EXPORT_INTERVAL, EXPORT_INITIAL_STATE, &
-            EXPORT_FINAL_STATE, OUTPUT_DIR_NAME, EXPORT_NUM, dist_function_buffers_bytes, macro_field_buffers_bytes, &
+            machine_info, domain_info, SIM_MODE, &
+            EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, EXPORT_INTERVAL, EXPORT_INITIAL_STATE, &
+            EXPORT_FINAL_STATE, EXPORT_NUM, dist_function_buffers_bytes, macro_field_buffers_bytes, &
             total_buffer_bytes, total_bytes_per_cell)
     end if
 
     ! export metadata
     if (this_image() == 1) then
-        call export_metadata(machine_info, domain_info, SIM_MODE, SW_PARAMS, CF_PARAMS, PF_PARAMS, &
-            SL_PARAMS, EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, EXPORT_INTERVAL, &
-            OUTPUT_DIR_NAME, EXPORT_NUM, EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE, dist_function_buffers_bytes, &
+        call export_metadata(machine_info, domain_info, SIM_MODE, &
+            EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, EXPORT_INTERVAL, &
+            EXPORT_NUM, EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE, dist_function_buffers_bytes, &
             macro_field_buffers_bytes, total_buffer_bytes, total_bytes_per_cell)
     end if
 
@@ -160,10 +160,10 @@ program main
         EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE)) then
         if (use_distributed_domain) then
             call export_selected_data_distributed(domain_info, EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, &
-                OUTPUT_DIR_NAME, EXPORT_NUM, 0_int32, rho, u_x, u_y)
+                EXPORT_NUM, 0_int32, rho, u_x, u_y)
         else if (this_image() == 1) then
             call export_selected_data(EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, &
-                OUTPUT_DIR_NAME, EXPORT_NUM, 0_int32, rho, u_x, u_y)
+                EXPORT_NUM, 0_int32, rho, u_x, u_y)
         end if
     end if
 
@@ -203,7 +203,6 @@ program main
             call system_clock(clock_section_start)
             call execute_local_sim_step( &
                 domain_info, halo_buffers, domain_info%n_x_local, domain_info%n_y_local, &
-                SW_PARAMS, CF_PARAMS, PF_PARAMS, SL_PARAMS, &
                 write_macro_fields, f, f_next, rho, u_x, u_y)
             call system_clock(clock_section_end)
             kernel_compute_seconds = kernel_compute_seconds + &
@@ -224,14 +223,14 @@ program main
             if (use_distributed_domain) then
                 call system_clock(clock_section_start)
                 call export_selected_data_distributed(domain_info, EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, &
-                    OUTPUT_DIR_NAME, EXPORT_NUM, step, rho, u_x, u_y)
+                    EXPORT_NUM, step, rho, u_x, u_y)
                 call system_clock(clock_section_end)
                 export_seconds = export_seconds + &
                     real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
             else if (this_image() == 1) then
                 call system_clock(clock_section_start)
                 call export_selected_data(EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, &
-                    OUTPUT_DIR_NAME, EXPORT_NUM, step, rho, u_x, u_y)
+                    EXPORT_NUM, step, rho, u_x, u_y)
                 call system_clock(clock_section_end)
                 export_seconds = export_seconds + &
                     real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)

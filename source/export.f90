@@ -6,7 +6,7 @@ module export
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, C_X, C_Y, C_X_FP, C_Y_FP, W, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, FP, FP_DTYPE, &
         USE_UNROLLED_KERNELS, USE_UNIVERSAL_KERNELS, USE_PULL_SHIFT_KERNELS, &
-        shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
+        RHO_0, OMEGA, U_MAX, N_SIN, U_WALL, U_LID, RHO_IN, RHO_OUT, sim_mode_to_string
     implicit none
 
     private
@@ -48,14 +48,13 @@ contains
 
     subroutine export_selected_data( &
         export_rho, export_u_x, export_u_y, export_u_mag, &
-        output_dir_name, export_num, suffix_num, rho, u_x, u_y &
+        export_num, suffix_num, rho, u_x, u_y &
         )
         ! read-only inputs
         logical, intent(in) :: export_rho
         logical, intent(in) :: export_u_x
         logical, intent(in) :: export_u_y
         logical, intent(in) :: export_u_mag
-        character(len=*), intent(in) :: output_dir_name
         character(len=*), intent(in) :: export_num
         integer(int32), intent(in) :: suffix_num
         real(FP), intent(in) :: rho(:,:)
@@ -67,28 +66,28 @@ contains
 
         ! export selected scalar fields
         if (export_rho) then
-            call export_scalar_field(rho, "density", output_dir_name, export_num, suffix_num)
+            call export_scalar_field(rho, "density", export_num, suffix_num)
         end if
 
         if (export_u_x) then
-            call export_scalar_field(u_x, "velocity_x", output_dir_name, export_num, suffix_num)
+            call export_scalar_field(u_x, "velocity_x", export_num, suffix_num)
         end if
 
         if (export_u_y) then
-            call export_scalar_field(u_y, "velocity_y", output_dir_name, export_num, suffix_num)
+            call export_scalar_field(u_y, "velocity_y", export_num, suffix_num)
         end if
 
         if (export_u_mag) then
             allocate(velocity_mag(size(u_x, 1), size(u_x, 2)))
             velocity_mag = sqrt(u_x * u_x + u_y * u_y) ! element-wise sqrt of velocity magnitude
-            call export_scalar_field(velocity_mag, "velocity_mag", output_dir_name, export_num, suffix_num)
+            call export_scalar_field(velocity_mag, "velocity_mag", export_num, suffix_num)
         end if
     end subroutine export_selected_data
 
 
     subroutine export_selected_data_distributed( &
         domain_info, export_rho, export_u_x, export_u_y, export_u_mag, &
-        output_dir_name, export_num, suffix_num, rho, u_x, u_y &
+        export_num, suffix_num, rho, u_x, u_y &
         )
         ! read-only inputs
         type(domain_t), intent(in) :: domain_info
@@ -96,7 +95,6 @@ contains
         logical, intent(in) :: export_u_x
         logical, intent(in) :: export_u_y
         logical, intent(in) :: export_u_mag
-        character(len=*), intent(in) :: output_dir_name
         character(len=*), intent(in) :: export_num
         integer(int32), intent(in) :: suffix_num
         real(FP), intent(in) :: rho(:,:)
@@ -109,31 +107,31 @@ contains
         ! export selected scalar fields
         if (export_rho) then
             call export_scalar_field_distributed( &
-                domain_info, rho, "density", output_dir_name, export_num, suffix_num)
+                domain_info, rho, "density", export_num, suffix_num)
         end if
 
         if (export_u_x) then
             call export_scalar_field_distributed( &
-                domain_info, u_x, "velocity_x", output_dir_name, export_num, suffix_num)
+                domain_info, u_x, "velocity_x", export_num, suffix_num)
         end if
 
         if (export_u_y) then
             call export_scalar_field_distributed( &
-                domain_info, u_y, "velocity_y", output_dir_name, export_num, suffix_num)
+                domain_info, u_y, "velocity_y", export_num, suffix_num)
         end if
 
         if (export_u_mag) then
             allocate(velocity_mag(size(u_x, 1), size(u_x, 2)))
             velocity_mag = sqrt(u_x * u_x + u_y * u_y) ! element-wise sqrt of velocity magnitude
             call export_scalar_field_distributed( &
-                domain_info, velocity_mag, "velocity_mag", output_dir_name, export_num, suffix_num)
+                domain_info, velocity_mag, "velocity_mag", export_num, suffix_num)
         end if
     end subroutine export_selected_data_distributed
 
 
     subroutine export_metadata( &
-        machine_info, domain_info, sim_mode, shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
-        export_rho, export_u_x, export_u_y, export_u_mag, export_interval, output_dir_name, export_num, &
+        machine_info, domain_info, sim_mode, &
+        export_rho, export_u_x, export_u_y, export_u_mag, export_interval, export_num, &
         export_initial_state, export_final_state, dist_function_buffers_bytes, macro_field_buffers_bytes, &
         total_buffer_bytes, total_bytes_per_cell &
         )
@@ -141,16 +139,11 @@ contains
         type(hardware_info_t), intent(in) :: machine_info
         type(domain_t), intent(in) :: domain_info
         integer(int32), intent(in) :: sim_mode
-        type(shear_wave_params_t), intent(in) :: shear_wave_params
-        type(couette_flow_params_t), intent(in) :: couette_flow_params
-        type(poiseuille_flow_params_t), intent(in) :: poiseuille_flow_params
-        type(sliding_lid_params_t), intent(in) :: sliding_lid_params
         logical, intent(in) :: export_rho
         logical, intent(in) :: export_u_x
         logical, intent(in) :: export_u_y
         logical, intent(in) :: export_u_mag
         integer(int32), intent(in) :: export_interval
-        character(len=*), intent(in) :: output_dir_name
         character(len=*), intent(in) :: export_num
         logical, intent(in) :: export_initial_state
         logical, intent(in) :: export_final_state
@@ -168,7 +161,7 @@ contains
         real(real64) :: halo_cell_percent
 
         ! assemble output path and metadata filename
-        output_path = trim(output_dir_name) // "/" // trim(export_num)
+        output_path = "output/" // trim(export_num)
         file_path = output_path // "/config.json"
         gb_per_byte = 1.0e-9_real64
         halo_cell_percent = 100.0_real64 * &
@@ -192,27 +185,27 @@ contains
 
         select case (sim_mode)
         case (SIM_SHEAR_WAVE)
-            write(unit, '(A,A,A)') '  "rho_0": ', trim(real_to_json(shear_wave_params%rho_0)), ','
-            write(unit, '(A,A,A)') '  "omega": ', trim(real_to_json(shear_wave_params%omega)), ','
-            write(unit, '(A,A,A)') '  "u_max": ', trim(real_to_json(shear_wave_params%u_max)), ','
-            write(unit, '(A,A,A)') '  "n_sin": ', trim(real_to_json(shear_wave_params%n_sin)), ','
+            write(unit, '(A,A,A)') '  "rho_0": ', trim(real_to_json(RHO_0)), ','
+            write(unit, '(A,A,A)') '  "omega": ', trim(real_to_json(OMEGA)), ','
+            write(unit, '(A,A,A)') '  "u_max": ', trim(real_to_json(U_MAX)), ','
+            write(unit, '(A,A,A)') '  "n_sin": ', trim(real_to_json(N_SIN)), ','
 
         case (SIM_COUETTE_FLOW)
-            write(unit, '(A,A,A)') '  "rho_0": ', trim(real_to_json(couette_flow_params%rho_0)), ','
-            write(unit, '(A,A,A)') '  "omega": ', trim(real_to_json(couette_flow_params%omega)), ','
-            write(unit, '(A,A,A)') '  "u_wall": ', trim(real_to_json(couette_flow_params%u_wall)), ','
+            write(unit, '(A,A,A)') '  "rho_0": ', trim(real_to_json(RHO_0)), ','
+            write(unit, '(A,A,A)') '  "omega": ', trim(real_to_json(OMEGA)), ','
+            write(unit, '(A,A,A)') '  "u_wall": ', trim(real_to_json(U_WALL)), ','
 
         case (SIM_POISEUILLE_FLOW)
-            write(unit, '(A,A,A)') '  "rho_0": ', trim(real_to_json(poiseuille_flow_params%rho_0)), ','
-            write(unit, '(A,A,A)') '  "omega": ', trim(real_to_json(poiseuille_flow_params%omega)), ','
-            write(unit, '(A,A,A)') '  "rho_in": ', trim(real_to_json(poiseuille_flow_params%rho_in)), ','
-            write(unit, '(A,A,A)') '  "rho_out": ', trim(real_to_json(poiseuille_flow_params%rho_out)), ','
+            write(unit, '(A,A,A)') '  "rho_0": ', trim(real_to_json(RHO_0)), ','
+            write(unit, '(A,A,A)') '  "omega": ', trim(real_to_json(OMEGA)), ','
+            write(unit, '(A,A,A)') '  "rho_in": ', trim(real_to_json(RHO_IN)), ','
+            write(unit, '(A,A,A)') '  "rho_out": ', trim(real_to_json(RHO_OUT)), ','
             continue
 
         case (SIM_SLIDING_LID)
-            write(unit, '(A,A,A)') '  "rho_0": ', trim(real_to_json(sliding_lid_params%rho_0)), ','
-            write(unit, '(A,A,A)') '  "omega": ', trim(real_to_json(sliding_lid_params%omega)), ','
-            write(unit, '(A,A,A)') '  "u_wall": ', trim(real_to_json(sliding_lid_params%u_wall)), ','
+            write(unit, '(A,A,A)') '  "rho_0": ', trim(real_to_json(RHO_0)), ','
+            write(unit, '(A,A,A)') '  "omega": ', trim(real_to_json(OMEGA)), ','
+            write(unit, '(A,A,A)') '  "u_lid": ', trim(real_to_json(U_LID)), ','
 
         case default
             error stop "error: unknown sim mode in export_metadata()"
@@ -276,7 +269,7 @@ contains
         write(unit, '(A,A)') '    "total_GB": ', trim(real64_to_json(real(total_buffer_bytes, real64) * gb_per_byte))
         write(unit, '(A)') '  },'
         write(unit, '(A)') ""
-        write(unit, '(A,A,A)') '  "output_dir_name": "', trim(output_dir_name), '",'
+        write(unit, '(A)') '  "output_dir_name": "output",'
         write(unit, '(A,A,A)') '  "export_num": "', trim(export_num), '",'
         write(unit, '(A,A,A)') '  "file_dtype": "', FP_DTYPE, '"'
         write(unit, '(A)') "}"
@@ -286,12 +279,11 @@ contains
 
 
     subroutine export_scalar_field( &
-        field, field_name, output_dir_name, export_num, suffix_num &
+        field, field_name, export_num, suffix_num &
         )
         ! read-only inputs
         real(FP), intent(in) :: field(:,:)
         character(len=*), intent(in) :: field_name
-        character(len=*), intent(in) :: output_dir_name
         character(len=*), intent(in) :: export_num
         integer(int32), intent(in) :: suffix_num
 
@@ -300,7 +292,7 @@ contains
         character(len=:), allocatable :: file_path
 
         ! assemble output path and filename with its data type and step suffix
-        output_path = trim(output_dir_name) // "/" // trim(export_num)
+        output_path = "output/" // trim(export_num)
         file_path = output_path // "/" // trim(field_name) // format_step_suffix(suffix_num) // ".bin"
 
         call ensure_output_directory(output_path)
@@ -309,13 +301,12 @@ contains
 
 
     subroutine export_scalar_field_distributed( &
-        domain_info, local_field, field_name, output_dir_name, export_num, suffix_num &
+        domain_info, local_field, field_name, export_num, suffix_num &
         )
         ! read-only inputs
         type(domain_t), intent(in) :: domain_info
         real(FP), intent(in) :: local_field(:,:)
         character(len=*), intent(in) :: field_name
-        character(len=*), intent(in) :: output_dir_name
         character(len=*), intent(in) :: export_num
         integer(int32), intent(in) :: suffix_num
 
@@ -358,7 +349,7 @@ contains
                     export_buffer(:, :)[image_id]
             end do
 
-            output_path = trim(output_dir_name) // "/" // trim(export_num)
+            output_path = "output/" // trim(export_num)
             file_path = output_path // "/" // trim(field_name) // format_step_suffix(suffix_num) // ".bin"
 
             call ensure_output_directory(output_path)
@@ -430,7 +421,7 @@ contains
         ! output
         character(len=32) :: text
 
-        write(text, '(F0.6)') value
+        write(text, '(F32.6)') value
         text = adjustl(text)
     end function real64_to_json
 

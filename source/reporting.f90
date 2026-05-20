@@ -6,7 +6,7 @@ module reporting
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, &
         USE_UNROLLED_KERNELS, USE_UNIVERSAL_KERNELS, USE_PULL_SHIFT_KERNELS, &
-        shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t, sim_mode_to_string
+        RHO_0, OMEGA, U_MAX, N_SIN, U_WALL, U_LID, RHO_IN, RHO_OUT, sim_mode_to_string
     implicit none
     private
 
@@ -19,19 +19,15 @@ module reporting
 contains
 
     subroutine print_run_summary( &
-        machine_info, domain_info, sim_mode, shear_wave_params, couette_flow_params, poiseuille_flow_params, &
-        sliding_lid_params, export_rho, export_u_x, export_u_y, export_u_mag, export_interval, export_initial_state, &
-        export_final_state, output_dir_name, export_num, dist_function_buffers_bytes, macro_field_buffers_bytes, &
+        machine_info, domain_info, sim_mode, &
+        export_rho, export_u_x, export_u_y, export_u_mag, export_interval, export_initial_state, &
+        export_final_state, export_num, dist_function_buffers_bytes, macro_field_buffers_bytes, &
         total_buffer_bytes, total_bytes_per_cell &
         )
         ! inputs
         type(hardware_info_t), intent(in) :: machine_info
         type(domain_t), intent(in) :: domain_info
         integer(int32), intent(in) :: sim_mode
-        type(shear_wave_params_t), intent(in) :: shear_wave_params
-        type(couette_flow_params_t), intent(in) :: couette_flow_params
-        type(poiseuille_flow_params_t), intent(in) :: poiseuille_flow_params
-        type(sliding_lid_params_t), intent(in) :: sliding_lid_params
         logical, intent(in) :: export_rho
         logical, intent(in) :: export_u_x
         logical, intent(in) :: export_u_y
@@ -39,7 +35,6 @@ contains
         integer(int32), intent(in) :: export_interval
         logical, intent(in) :: export_initial_state
         logical, intent(in) :: export_final_state
-        character(len=*), intent(in) :: output_dir_name
         character(len=*), intent(in) :: export_num
         integer(int64), intent(in) :: dist_function_buffers_bytes
         integer(int64), intent(in) :: macro_field_buffers_bytes
@@ -60,23 +55,23 @@ contains
 
         select case (sim_mode)
         case (SIM_SHEAR_WAVE)
-            print '(A,T27,A,F8.6)', "rho_0", "= ", shear_wave_params%rho_0
-            print '(A,T27,A,F8.6)', "omega", "= ", shear_wave_params%omega
-            print '(A,T27,A,F8.6)', "u_max", "= ", shear_wave_params%u_max
-            print '(A,T27,A,F8.6)', "n_sin", "= ", shear_wave_params%n_sin
+            print '(A,T27,A,F8.6)', "rho_0", "= ", RHO_0
+            print '(A,T27,A,F8.6)', "omega", "= ", OMEGA
+            print '(A,T27,A,F8.6)', "u_max", "= ", U_MAX
+            print '(A,T27,A,F8.6)', "n_sin", "= ", N_SIN
         case (SIM_COUETTE_FLOW)
-            print '(A,T27,A,F8.6)', "rho_0", "= ", couette_flow_params%rho_0
-            print '(A,T27,A,F8.6)', "omega", "= ", couette_flow_params%omega
-            print '(A,T27,A,F8.6)', "u_wall", "= ", couette_flow_params%u_wall
+            print '(A,T27,A,F8.6)', "rho_0", "= ", RHO_0
+            print '(A,T27,A,F8.6)', "omega", "= ", OMEGA
+            print '(A,T27,A,F8.6)', "u_wall", "= ", U_WALL
         case (SIM_POISEUILLE_FLOW)
-            print '(A,T27,A,F8.6)', "rho_0", "= ", poiseuille_flow_params%rho_0
-            print '(A,T27,A,F8.6)', "omega", "= ", poiseuille_flow_params%omega
-            print '(A,T27,A,F8.6)', "rho_in", "= ", poiseuille_flow_params%rho_in
-            print '(A,T27,A,F8.6)', "rho_out", "= ", poiseuille_flow_params%rho_out
+            print '(A,T27,A,F8.6)', "rho_0", "= ", RHO_0
+            print '(A,T27,A,F8.6)', "omega", "= ", OMEGA
+            print '(A,T27,A,F8.6)', "rho_in", "= ", RHO_IN
+            print '(A,T27,A,F8.6)', "rho_out", "= ", RHO_OUT
         case (SIM_SLIDING_LID)
-            print '(A,T27,A,F8.6)', "rho_0", "= ", sliding_lid_params%rho_0
-            print '(A,T27,A,F8.6)', "omega", "= ", sliding_lid_params%omega
-            print '(A,T27,A,F8.6)', "u_wall", "= ", sliding_lid_params%u_wall
+            print '(A,T27,A,F8.6)', "rho_0", "= ", RHO_0
+            print '(A,T27,A,F8.6)', "omega", "= ", OMEGA
+            print '(A,T27,A,F8.6)', "u_lid", "= ", U_LID
         case default
             error stop "error: unknown sim mode in print_run_summary()"
         end select
@@ -98,7 +93,7 @@ contains
         print '(A,T27,A,I0)',    "export_interval", "= ", export_interval
         print '(A,T27,A,L1)',    "export_initial_state", "= ", export_initial_state
         print '(A,T27,A,L1)',    "export_final_state", "= ", export_final_state
-        print '(A,T27,A,A)',     "output_dir_name", "= ", output_dir_name
+        print '(A,T27,A,A)',     "output_dir_name", "= ", "output"
         print '(A,T27,A,A)',     "export_num", "= ", export_num
 
         call print_domain_summary(domain_info)
