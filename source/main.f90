@@ -9,8 +9,9 @@ program main
         apply_condition_couette_flow_local, apply_condition_poiseuille_flow_local, apply_condition_sliding_lid_local
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
-        USE_PULL_SHIFT_KERNELS, &
-        shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t
+        USE_PULL_SHIFT_KERNELS, EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, EXPORT_INTERVAL, &
+        EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE, OUTPUT_DIR_NAME, EXPORT_NUM, INTERACTIVE_PROGRESS, &
+        PROGRESS_INTERVAL, SW_PARAMS, CF_PARAMS, PF_PARAMS, SL_PARAMS
     use reporting, only: print_run_summary, print_launch_timestamp, print_progress_status, print_finish_timestamp, &
         print_execution_summary
     use simulation, only: execute_local_sim_step, swap_distribution_function_buffers
@@ -23,51 +24,6 @@ program main
     type(domain_t) :: domain_info
     type(halo_buffers_t) :: halo_buffers
     type(hardware_info_t) :: machine_info
-
-    ! parameter set for shear wave
-    type(shear_wave_params_t), parameter :: shear_wave_params = shear_wave_params_t( &
-        rho_0 = 1.0_FP, &
-        omega = 1.5_FP, &
-        u_max = 0.1_FP, &
-        n_sin = 2.0_FP &
-    )
-
-    ! parameter set for couette flow
-    type(couette_flow_params_t), parameter :: couette_flow_params = couette_flow_params_t( &
-        rho_0 = 1.0_FP, &
-        omega = 1.5_FP, &
-        u_wall = 0.1_FP &
-    )
-
-    ! parameter set for poiseuille flow
-    type(poiseuille_flow_params_t), parameter :: poiseuille_flow_params = poiseuille_flow_params_t( &
-        rho_0 = 1.0_FP, &
-        omega = 1.5_FP, &
-        rho_in = 1.001_FP, &
-        rho_out = 0.999_FP &
-    )
-
-    ! parameter set for sliding lid
-    type(sliding_lid_params_t), parameter :: sliding_lid_params = sliding_lid_params_t( &
-        rho_0 = 1.0_FP, &
-        omega = 1.5_FP, &
-        u_wall = 0.1_FP &
-    )
-
-    ! export settings
-    logical, parameter :: export_rho = .true.
-    logical, parameter :: export_u_x = .true.
-    logical, parameter :: export_u_y = .true.
-    logical, parameter :: export_u_mag = .true.
-    integer(int32), parameter :: export_interval = 100000
-    logical, parameter :: export_initial_state = .true.
-    logical, parameter :: export_final_state = .true.
-    character(len=*), parameter :: output_dir_name = "output"
-    character(len=*), parameter :: export_num = "run_000"
-
-    ! progress display settings
-    logical, parameter :: interactive_progress = .true.
-    integer(int32), parameter :: progress_interval = 1
 
     ! metrics
     integer(int64) :: clock_start
@@ -149,36 +105,35 @@ program main
     ! inital condition
     if (SIM_MODE == SIM_SHEAR_WAVE) then
         call apply_condition_shear_wave_local( &
-            shear_wave_params%rho_0, shear_wave_params%u_max, shear_wave_params%n_sin, &
+            SW_PARAMS%rho_0, SW_PARAMS%u_max, SW_PARAMS%n_sin, &
             domain_info%n_x_local, domain_info%n_y_local, domain_info%y_global_start, f, rho, u_x, u_y)
     else if (SIM_MODE == SIM_COUETTE_FLOW) then
         call apply_condition_couette_flow_local( &
-            couette_flow_params%rho_0, domain_info%n_x_local, domain_info%n_y_local, f, rho, u_x, u_y)
+            CF_PARAMS%rho_0, domain_info%n_x_local, domain_info%n_y_local, f, rho, u_x, u_y)
     else if (SIM_MODE == SIM_POISEUILLE_FLOW) then
         call apply_condition_poiseuille_flow_local( &
-            poiseuille_flow_params%rho_0, domain_info%n_x_local, domain_info%n_y_local, f, rho, u_x, u_y)
+            PF_PARAMS%rho_0, domain_info%n_x_local, domain_info%n_y_local, f, rho, u_x, u_y)
     else if (SIM_MODE == SIM_SLIDING_LID) then
         call apply_condition_sliding_lid_local( &
-            sliding_lid_params%rho_0, domain_info%n_x_local, domain_info%n_y_local, f, rho, u_x, u_y)
+            SL_PARAMS%rho_0, domain_info%n_x_local, domain_info%n_y_local, f, rho, u_x, u_y)
     else
-        call initialize_sim_condition(shear_wave_params, couette_flow_params, poiseuille_flow_params, &
-            sliding_lid_params, f, rho, u_x, u_y)
+        call initialize_sim_condition(SW_PARAMS, CF_PARAMS, PF_PARAMS, SL_PARAMS, f, rho, u_x, u_y)
     end if
 
     if (use_distributed_domain .and. SIM_MODE == SIM_POISEUILLE_FLOW) then
-        halo_buffers%send_macro_left(:, 1) = poiseuille_flow_params%rho_0
+        halo_buffers%send_macro_left(:, 1) = PF_PARAMS%rho_0
         halo_buffers%send_macro_left(:, 2) = 0.0_FP
         halo_buffers%send_macro_left(:, 3) = 0.0_FP
 
-        halo_buffers%send_macro_right(:, 1) = poiseuille_flow_params%rho_0
+        halo_buffers%send_macro_right(:, 1) = PF_PARAMS%rho_0
         halo_buffers%send_macro_right(:, 2) = 0.0_FP
         halo_buffers%send_macro_right(:, 3) = 0.0_FP
 
-        halo_buffers%recv_macro_left(:, 1) = poiseuille_flow_params%rho_0
+        halo_buffers%recv_macro_left(:, 1) = PF_PARAMS%rho_0
         halo_buffers%recv_macro_left(:, 2) = 0.0_FP
         halo_buffers%recv_macro_left(:, 3) = 0.0_FP
 
-        halo_buffers%recv_macro_right(:, 1) = poiseuille_flow_params%rho_0
+        halo_buffers%recv_macro_right(:, 1) = PF_PARAMS%rho_0
         halo_buffers%recv_macro_right(:, 2) = 0.0_FP
         halo_buffers%recv_macro_right(:, 3) = 0.0_FP
     end if
@@ -186,29 +141,29 @@ program main
     ! print sim info
     if (this_image() == 1) then
         call print_run_summary( &
-            machine_info, domain_info, SIM_MODE, shear_wave_params, couette_flow_params, poiseuille_flow_params, &
-            sliding_lid_params, export_rho, export_u_x, export_u_y, export_u_mag, export_interval, export_initial_state, &
-            export_final_state, output_dir_name, export_num, dist_function_buffers_bytes, macro_field_buffers_bytes, &
+            machine_info, domain_info, SIM_MODE, SW_PARAMS, CF_PARAMS, PF_PARAMS, &
+            SL_PARAMS, EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, EXPORT_INTERVAL, EXPORT_INITIAL_STATE, &
+            EXPORT_FINAL_STATE, OUTPUT_DIR_NAME, EXPORT_NUM, dist_function_buffers_bytes, macro_field_buffers_bytes, &
             total_buffer_bytes, total_bytes_per_cell)
     end if
 
     ! export metadata
     if (this_image() == 1) then
-        call export_metadata(machine_info, domain_info, SIM_MODE, shear_wave_params, couette_flow_params, poiseuille_flow_params, &
-            sliding_lid_params, export_rho, export_u_x, export_u_y, export_u_mag, export_interval, &
-            output_dir_name, export_num, export_initial_state, export_final_state, dist_function_buffers_bytes, &
+        call export_metadata(machine_info, domain_info, SIM_MODE, SW_PARAMS, CF_PARAMS, PF_PARAMS, &
+            SL_PARAMS, EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, EXPORT_INTERVAL, &
+            OUTPUT_DIR_NAME, EXPORT_NUM, EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE, dist_function_buffers_bytes, &
             macro_field_buffers_bytes, total_buffer_bytes, total_bytes_per_cell)
     end if
 
     ! export initial condition
-    if (should_export_step(0_int32, export_interval, &
-        export_initial_state, export_final_state)) then
+    if (should_export_step(0_int32, EXPORT_INTERVAL, &
+        EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE)) then
         if (use_distributed_domain) then
-            call export_selected_data_distributed(domain_info, export_rho, export_u_x, export_u_y, export_u_mag, &
-                output_dir_name, export_num, 0_int32, rho, u_x, u_y)
+            call export_selected_data_distributed(domain_info, EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, &
+                OUTPUT_DIR_NAME, EXPORT_NUM, 0_int32, rho, u_x, u_y)
         else if (this_image() == 1) then
-            call export_selected_data(export_rho, export_u_x, export_u_y, export_u_mag, &
-                output_dir_name, export_num, 0_int32, rho, u_x, u_y)
+            call export_selected_data(EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, &
+                OUTPUT_DIR_NAME, EXPORT_NUM, 0_int32, rho, u_x, u_y)
         end if
     end if
 
@@ -233,8 +188,8 @@ program main
     do step = 1, N_STEPS
 
         ! decide if density and velocity fields need to be stored in this step
-        write_macro_fields = should_export_step(step, export_interval, export_initial_state, export_final_state) .and. &
-            (export_rho .or. export_u_x .or. export_u_y .or. export_u_mag)
+        write_macro_fields = should_export_step(step, EXPORT_INTERVAL, EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE) .and. &
+            (EXPORT_RHO .or. EXPORT_U_X .or. EXPORT_U_Y .or. EXPORT_U_MAG)
 
         if (use_distributed_domain) then
             call system_clock(clock_section_start)
@@ -248,7 +203,7 @@ program main
             call system_clock(clock_section_start)
             call execute_local_sim_step( &
                 domain_info, halo_buffers, domain_info%n_x_local, domain_info%n_y_local, &
-                shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
+                SW_PARAMS, CF_PARAMS, PF_PARAMS, SL_PARAMS, &
                 write_macro_fields, f, f_next, rho, u_x, u_y)
             call system_clock(clock_section_end)
             kernel_compute_seconds = kernel_compute_seconds + &
@@ -264,19 +219,19 @@ program main
             real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
 
         ! export selected field
-        if (should_export_step(step, export_interval, &
-            export_initial_state, export_final_state)) then
+        if (should_export_step(step, EXPORT_INTERVAL, &
+            EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE)) then
             if (use_distributed_domain) then
                 call system_clock(clock_section_start)
-                call export_selected_data_distributed(domain_info, export_rho, export_u_x, export_u_y, export_u_mag, &
-                    output_dir_name, export_num, step, rho, u_x, u_y)
+                call export_selected_data_distributed(domain_info, EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, &
+                    OUTPUT_DIR_NAME, EXPORT_NUM, step, rho, u_x, u_y)
                 call system_clock(clock_section_end)
                 export_seconds = export_seconds + &
                     real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
             else if (this_image() == 1) then
                 call system_clock(clock_section_start)
-                call export_selected_data(export_rho, export_u_x, export_u_y, export_u_mag, &
-                    output_dir_name, export_num, step, rho, u_x, u_y)
+                call export_selected_data(EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, &
+                    OUTPUT_DIR_NAME, EXPORT_NUM, step, rho, u_x, u_y)
                 call system_clock(clock_section_end)
                 export_seconds = export_seconds + &
                     real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
@@ -285,9 +240,9 @@ program main
 
         ! print sim progress info
         if (this_image() == 1) then
-            if (mod(step, progress_interval) == 0 .or. step == N_STEPS) then
+            if (mod(step, PROGRESS_INTERVAL) == 0 .or. step == N_STEPS) then
                 call system_clock(clock_section_start)
-                call print_progress_status(step, clock_start, clock_rate, interactive_progress)
+                call print_progress_status(step, clock_start, clock_rate, INTERACTIVE_PROGRESS)
                 call system_clock(clock_section_end)
                 progress_seconds = progress_seconds + &
                     real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
@@ -302,7 +257,7 @@ program main
 
     ! print sim finish timestamp
     if (this_image() == 1) then
-        call print_finish_timestamp(interactive_progress)
+        call print_finish_timestamp(INTERACTIVE_PROGRESS)
     end if
 
     ! finalize timing and print metrics
