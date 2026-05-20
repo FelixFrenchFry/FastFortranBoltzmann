@@ -13,9 +13,9 @@ module settings
 #endif
 
     ! sim size and duration
-    integer(int32), parameter :: N_X = 14400
-    integer(int32), parameter :: N_Y = 14400
-    integer(int32), parameter :: N_STEPS = 300
+    integer(int32), parameter :: N_X = 500
+    integer(int32), parameter :: N_Y = 500
+    integer(int32), parameter :: N_STEPS = 120000
     integer(int64), parameter :: N_CELLS = int(N_X, int64) * int(N_Y, int64)
     integer(int32), parameter :: N_DIRS = 9
 
@@ -54,7 +54,7 @@ module settings
     integer(int32), parameter :: SIM_COUETTE_FLOW = 2
     integer(int32), parameter :: SIM_POISEUILLE_FLOW = 3
     integer(int32), parameter :: SIM_SLIDING_LID = 4
-    integer(int32), parameter :: SIM_MODE = 1 ! selected sim mode
+    integer(int32), parameter :: SIM_MODE = 4 ! selected sim mode
 
     ! kernel selection
     logical, parameter :: USE_UNROLLED_KERNELS = .true.

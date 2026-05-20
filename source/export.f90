@@ -1,6 +1,6 @@
 module export
     ! imports
-    use iso_fortran_env, only: int32
+    use iso_fortran_env, only: int32, int64, real64
     use domain, only: domain_t
     use hardware_info, only: hardware_info_t, write_hardware_metadata
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, C_X, C_Y, C_X_FP, C_Y_FP, W, &
@@ -132,12 +132,14 @@ contains
 
 
     subroutine export_metadata( &
-        machine_info, sim_mode, shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
+        machine_info, domain_info, sim_mode, shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
         export_rho, export_u_x, export_u_y, export_u_mag, export_interval, output_dir_name, export_num, &
-        export_initial_state, export_final_state &
+        export_initial_state, export_final_state, dist_function_buffers_bytes, macro_field_buffers_bytes, &
+        total_buffer_bytes, total_bytes_per_cell &
         )
         ! read-only inputs
         type(hardware_info_t), intent(in) :: machine_info
+        type(domain_t), intent(in) :: domain_info
         integer(int32), intent(in) :: sim_mode
         type(shear_wave_params_t), intent(in) :: shear_wave_params
         type(couette_flow_params_t), intent(in) :: couette_flow_params
@@ -152,16 +154,27 @@ contains
         character(len=*), intent(in) :: export_num
         logical, intent(in) :: export_initial_state
         logical, intent(in) :: export_final_state
+        integer(int64), intent(in) :: dist_function_buffers_bytes
+        integer(int64), intent(in) :: macro_field_buffers_bytes
+        integer(int64), intent(in) :: total_buffer_bytes
+        real(real64), intent(in) :: total_bytes_per_cell
 
         ! temp
         character(len=:), allocatable :: output_path
         character(len=:), allocatable :: file_path
         integer :: unit
         integer :: io_stat
+        real(real64) :: gb_per_byte
+        real(real64) :: halo_cell_percent
 
         ! assemble output path and metadata filename
         output_path = trim(output_dir_name) // "/" // trim(export_num)
         file_path = output_path // "/config.json"
+        gb_per_byte = 1.0e-9_real64
+        halo_cell_percent = 100.0_real64 * &
+            real((domain_info%n_x_local + 2) * (domain_info%n_y_local + 2) - &
+            domain_info%n_x_local * domain_info%n_y_local, real64) / &
+            real(domain_info%n_x_local * domain_info%n_y_local, real64)
 
         call ensure_output_directory(output_path)
 
@@ -240,6 +253,28 @@ contains
         write(unit, '(A,I0,A)') '  "export_interval": ', export_interval, ','
         write(unit, '(A,A,A)') '  "export_initial_state": ', trim(logical_to_json(export_initial_state)), ','
         write(unit, '(A,A,A)') '  "export_final_state": ', trim(logical_to_json(export_final_state)), ','
+        write(unit, '(A)') ""
+        write(unit, '(A)') '  "domain_decomposition": {'
+        write(unit, '(A,I0,A)') '    "coarray_images": ', domain_info%n_images, ','
+        write(unit, '(A,I0,A)') '    "image_grid_x": ', domain_info%n_images_x, ','
+        write(unit, '(A,I0,A)') '    "image_grid_y": ', domain_info%n_images_y, ','
+        write(unit, '(A,I0,A)') '    "local_n_x": ', domain_info%n_x_local, ','
+        write(unit, '(A,I0,A)') '    "local_n_y": ', domain_info%n_y_local, ','
+        write(unit, '(A,A)') '    "halo_cells_percent": ', trim(real64_to_json(halo_cell_percent))
+        write(unit, '(A)') '  },'
+        write(unit, '(A)') ""
+        write(unit, '(A)') '  "memory_usage": {'
+        write(unit, '(A,I0,A)') '    "dist_function_buffers_per_cell_B": ', &
+            nint(real(dist_function_buffers_bytes, real64) / real(N_CELLS, real64), int64), ','
+        write(unit, '(A,A,A)') '    "dist_function_buffers_total_GB": ', &
+            trim(real64_to_json(real(dist_function_buffers_bytes, real64) * gb_per_byte)), ','
+        write(unit, '(A,I0,A)') '    "macro_field_buffers_per_cell_B": ', &
+            nint(real(macro_field_buffers_bytes, real64) / real(N_CELLS, real64), int64), ','
+        write(unit, '(A,A,A)') '    "macro_field_buffers_total_GB": ', &
+            trim(real64_to_json(real(macro_field_buffers_bytes, real64) * gb_per_byte)), ','
+        write(unit, '(A,I0,A)') '    "total_per_cell_B": ', nint(total_bytes_per_cell, int64), ','
+        write(unit, '(A,A)') '    "total_GB": ', trim(real64_to_json(real(total_buffer_bytes, real64) * gb_per_byte))
+        write(unit, '(A)') '  },'
         write(unit, '(A)') ""
         write(unit, '(A,A,A)') '  "output_dir_name": "', trim(output_dir_name), '",'
         write(unit, '(A,A,A)') '  "export_num": "', trim(export_num), '",'
@@ -384,6 +419,20 @@ contains
 #endif
         text = adjustl(text)
     end function real_to_json
+
+
+    function real64_to_json( &
+        value &
+        ) result(text)
+        ! read-only inputs
+        real(real64), intent(in) :: value
+
+        ! output
+        character(len=32) :: text
+
+        write(text, '(F0.6)') value
+        text = adjustl(text)
+    end function real64_to_json
 
 
     subroutine ensure_output_directory( &
