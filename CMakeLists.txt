@@ -17,10 +17,12 @@ set(CMAKE_Fortran_STANDARD 2018)
 set(CMAKE_Fortran_STANDARD_REQUIRED ON)
 set(CMAKE_Fortran_EXTENSIONS OFF)
 
-# compiler flags for different features
+# build feature options
 option(FFB_FP64 "Usage of real64 for floating point values enabled" OFF)
 option(FFB_DENSITY_CHECKS "Run-time density checks enabled" OFF)
 option(FFB_BOUNDARY_CHECKS "Run-time boundary condition checks enabled" OFF)
+set(FFB_EXPORT_NUM "" CACHE STRING "Export run directory name")
+set(FFB_SETTINGS_DEFINITIONS "" CACHE STRING "Fortran preprocessor overrides for source/settings.f90")
 
 # executables in build/bin
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
@@ -61,7 +63,14 @@ target_compile_definitions(FFB PRIVATE
     "FFB_COMPILER_ID=\"${CMAKE_Fortran_COMPILER_ID}\""
     "FFB_COMPILER_VERSION=\"${CMAKE_Fortran_COMPILER_VERSION}\""
     "FFB_FORTRAN_FLAGS=\"${FFB_ACTIVE_FORTRAN_FLAGS}\""
+    ${FFB_SETTINGS_DEFINITIONS}
 )
+
+if(NOT FFB_EXPORT_NUM STREQUAL "")
+    target_compile_definitions(FFB PRIVATE
+        "FFB_EXPORT_NUM=\"${FFB_EXPORT_NUM}\""
+    )
+endif()
 
 if(FFB_FP64)
     target_compile_definitions(FFB PRIVATE FFB_FP64)

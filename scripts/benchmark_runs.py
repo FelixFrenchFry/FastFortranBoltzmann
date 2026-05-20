@@ -16,6 +16,7 @@ STEP_RE = re.compile(rf"step time:\s*({NUMBER})\s*ms", re.IGNORECASE)
 MLUPS_RE = re.compile(rf"MLUPS:\s*({NUMBER})", re.IGNORECASE)
 LAUNCHED_RE = re.compile(r"^\[[0-9:]+\]\s+launched", re.MULTILINE)
 SIM_SIZE_RE = re.compile(r"^\s*integer\(int32\), parameter :: (N_[XY])\s*=\s*([0-9]+)", re.MULTILINE)
+CMAKE_CACHE_RE = re.compile(r"^([^#/\n][^:=\n]*):[^=\n]*=(.*)$", re.MULTILINE)
 HEADER_WIDTH = 75
 MAX_RUNS = 999
 
@@ -46,7 +47,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def read_sim_size():
+def read_source_sim_size():
     settings_path = Path(__file__).resolve().parents[1] / "source" / "settings.f90"
     settings = settings_path.read_text()
     values = {name: int(value) for name, value in SIM_SIZE_RE.findall(settings)}
@@ -55,6 +56,49 @@ def read_sim_size():
         raise RuntimeError("could not parse N_X/N_Y from source/settings.f90")
 
     return values["N_X"], values["N_Y"]
+
+
+def read_cmake_cache(path):
+    cache = path.read_text()
+    return {name: value.strip() for name, value in CMAKE_CACHE_RE.findall(cache)}
+
+
+def read_cmake_settings_definitions(cache_values):
+    definitions = cache_values.get("FFB_SETTINGS_DEFINITIONS", "")
+    if not definitions:
+        return {}
+
+    values = {}
+    for definition in definitions.split(";"):
+        definition = definition.strip()
+        if not definition:
+            continue
+
+        if "=" not in definition:
+            values[definition] = ""
+            continue
+
+        name, value = definition.split("=", 1)
+        values[name] = value
+
+    return values
+
+
+def read_sim_size(exe):
+    exe_path = Path(exe).resolve()
+    build_dir = exe_path.parent.parent if exe_path.parent.name == "bin" else exe_path.parent
+    cache_path = build_dir / "CMakeCache.txt"
+
+    if cache_path.exists():
+        cache_values = read_cmake_cache(cache_path)
+        cmake_settings = read_cmake_settings_definitions(cache_values)
+
+        if "FFB_USE_CMAKE_SETTINGS" in cmake_settings:
+            if "FFB_N_X" not in cmake_settings or "FFB_N_Y" not in cmake_settings:
+                raise RuntimeError("could not parse FFB_N_X/FFB_N_Y from FFB_SETTINGS_DEFINITIONS")
+            return int(cmake_settings["FFB_N_X"]), int(cmake_settings["FFB_N_Y"])
+
+    return read_source_sim_size()
 
 
 def parse_last(pattern, text, name):
@@ -127,13 +171,13 @@ def main():
         sys.exit("error: --ix and --iy must be positive")
     if args.images != args.ix * args.iy:
         sys.exit("error: --images must match --ix * --iy")
-    n_x, n_y = read_sim_size()
+    if not os.path.exists(args.exe):
+        sys.exit(f"error: executable not found: {args.exe}")
+    n_x, n_y = read_sim_size(args.exe)
     if n_x % args.ix != 0:
         sys.exit("error: N_X must be divisible by --ix")
     if n_y % args.iy != 0:
         sys.exit("error: N_Y must be divisible by --iy")
-    if not os.path.exists(args.exe):
-        sys.exit(f"error: executable not found: {args.exe}")
 
     step_times = []
     mlups_values = []

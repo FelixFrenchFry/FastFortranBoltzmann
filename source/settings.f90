@@ -13,25 +13,72 @@ module settings
 #endif
 
     ! sim size and duration
+#ifdef FFB_USE_CMAKE_SETTINGS
+    integer(int32), parameter :: N_X = FFB_N_X
+    integer(int32), parameter :: N_Y = FFB_N_Y
+    integer(int32), parameter :: N_STEPS = FFB_N_STEPS
+#else
     integer(int32), parameter :: N_X = 14400
     integer(int32), parameter :: N_Y = 14400
     integer(int32), parameter :: N_STEPS = 300
+#endif
     integer(int64), parameter :: N_CELLS = int(N_X, int64) * int(N_Y, int64)
     integer(int32), parameter :: N_DIRS = 9
+
+    ! sim parameters
+#ifdef FFB_USE_CMAKE_SETTINGS
+    real(FP), parameter :: RHO_0 = FFB_RHO_0
+    real(FP), parameter :: OMEGA = FFB_OMEGA
+    real(FP), parameter :: U_MAX = FFB_U_MAX
+    real(FP), parameter :: N_SIN = FFB_N_SIN
+    real(FP), parameter :: U_WALL = FFB_U_WALL
+    real(FP), parameter :: U_LID = FFB_U_LID
+    real(FP), parameter :: RHO_IN = FFB_RHO_IN
+    real(FP), parameter :: RHO_OUT = FFB_RHO_OUT
+#else
+    real(FP), parameter :: RHO_0 = 1.0_FP
+    real(FP), parameter :: OMEGA = 1.5_FP
+    real(FP), parameter :: U_MAX = 0.1_FP
+    real(FP), parameter :: N_SIN = 2.0_FP
+    real(FP), parameter :: U_WALL = 0.1_FP
+    real(FP), parameter :: U_LID = 0.1_FP
+    real(FP), parameter :: RHO_IN = 1.001_FP
+    real(FP), parameter :: RHO_OUT = 0.999_FP
+#endif
 
     ! constants for sim modes
     integer(int32), parameter :: SIM_SHEAR_WAVE = 1
     integer(int32), parameter :: SIM_COUETTE_FLOW = 2
     integer(int32), parameter :: SIM_POISEUILLE_FLOW = 3
     integer(int32), parameter :: SIM_SLIDING_LID = 4
+#ifdef FFB_USE_CMAKE_SETTINGS
+    integer(int32), parameter :: SIM_MODE = FFB_SIM_MODE ! selected sim mode
+#else
     integer(int32), parameter :: SIM_MODE = 4 ! selected sim mode
+#endif
 
     ! kernel selection
+#ifdef FFB_USE_CMAKE_SETTINGS
+    logical, parameter :: USE_UNROLLED_KERNELS = FFB_USE_UNROLLED_KERNELS
+    logical, parameter :: USE_UNIVERSAL_KERNELS = FFB_USE_UNIVERSAL_KERNELS
+    logical, parameter :: USE_PULL_SHIFT_KERNELS = FFB_USE_PULL_SHIFT_KERNELS
+#else
     logical, parameter :: USE_UNROLLED_KERNELS = .true.
     logical, parameter :: USE_UNIVERSAL_KERNELS = .false.
     logical, parameter :: USE_PULL_SHIFT_KERNELS = .false.
+#endif
 
     ! export settings
+#ifdef FFB_USE_CMAKE_SETTINGS
+    logical, parameter :: EXPORT_RHO = FFB_EXPORT_RHO
+    logical, parameter :: EXPORT_U_X = FFB_EXPORT_U_X
+    logical, parameter :: EXPORT_U_Y = FFB_EXPORT_U_Y
+    logical, parameter :: EXPORT_U_MAG = FFB_EXPORT_U_MAG
+    integer(int32), parameter :: EXPORT_INTERVAL = FFB_EXPORT_INTERVAL
+    logical, parameter :: EXPORT_INITIAL_STATE = FFB_EXPORT_INITIAL_STATE
+    logical, parameter :: EXPORT_FINAL_STATE = FFB_EXPORT_FINAL_STATE
+    character(len=*), parameter :: EXPORT_NUM = FFB_EXPORT_NUM
+#else
     logical, parameter :: EXPORT_RHO = .true.
     logical, parameter :: EXPORT_U_X = .true.
     logical, parameter :: EXPORT_U_Y = .true.
@@ -39,12 +86,17 @@ module settings
     integer(int32), parameter :: EXPORT_INTERVAL = 100000
     logical, parameter :: EXPORT_INITIAL_STATE = .true.
     logical, parameter :: EXPORT_FINAL_STATE = .true.
-    character(len=*), parameter :: OUTPUT_DIR_NAME = "output"
     character(len=*), parameter :: EXPORT_NUM = "run_000"
+#endif
 
     ! progress display settings
+#ifdef FFB_USE_CMAKE_SETTINGS
+    logical, parameter :: INTERACTIVE_PROGRESS = FFB_INTERACTIVE_PROGRESS
+    integer(int32), parameter :: PROGRESS_INTERVAL = FFB_PROGRESS_INTERVAL
+#else
     logical, parameter :: INTERACTIVE_PROGRESS = .true.
     integer(int32), parameter :: PROGRESS_INTERVAL = 1
+#endif
 
     ! D2Q9 lattice velocities and weights
     integer(int32), parameter :: C_X(N_DIRS) = [ 0,  1,  0, -1,  0,  1, -1, -1,  1 ]
@@ -78,63 +130,6 @@ module settings
 
     ! misc
     real(FP), parameter :: PI = 3.141592653589793238462643383279502884197_FP
-
-    ! sim parameter sets for each sim mode
-    type :: shear_wave_params_t
-        real(FP) :: rho_0 ! rest density
-        real(FP) :: omega ! relaxation factor
-        real(FP) :: u_max ! initial velocity
-        real(FP) :: n_sin ! num sin periods
-    end type shear_wave_params_t
-
-    type :: couette_flow_params_t
-        real(FP) :: rho_0 ! rest density
-        real(FP) :: omega ! relaxation factor
-        real(FP) :: u_wall ! top wall velocity
-    end type couette_flow_params_t
-
-    type :: poiseuille_flow_params_t
-        real(FP) :: rho_0 ! rest density
-        real(FP) :: omega ! relaxation factor
-        real(FP) :: rho_in ! inlet density
-        real(FP) :: rho_out ! outlet density
-    end type poiseuille_flow_params_t
-
-    type :: sliding_lid_params_t
-        real(FP) :: rho_0 ! rest density
-        real(FP) :: omega ! relaxation factor
-        real(FP) :: u_wall ! top wall velocity
-    end type sliding_lid_params_t
-
-    ! parameter set for shear wave
-    type(shear_wave_params_t), parameter :: SW_PARAMS = shear_wave_params_t( &
-        rho_0 = 1.0_FP, &
-        omega = 1.5_FP, &
-        u_max = 0.1_FP, &
-        n_sin = 2.0_FP &
-    )
-
-    ! parameter set for couette flow
-    type(couette_flow_params_t), parameter :: CF_PARAMS = couette_flow_params_t( &
-        rho_0 = 1.0_FP, &
-        omega = 1.5_FP, &
-        u_wall = 0.1_FP &
-    )
-
-    ! parameter set for poiseuille flow
-    type(poiseuille_flow_params_t), parameter :: PF_PARAMS = poiseuille_flow_params_t( &
-        rho_0 = 1.0_FP, &
-        omega = 1.5_FP, &
-        rho_in = 1.001_FP, &
-        rho_out = 0.999_FP &
-    )
-
-    ! parameter set for sliding lid
-    type(sliding_lid_params_t), parameter :: SL_PARAMS = sliding_lid_params_t( &
-        rho_0 = 1.0_FP, &
-        omega = 1.5_FP, &
-        u_wall = 0.1_FP &
-    )
 
 contains
 

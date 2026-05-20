@@ -3,21 +3,14 @@ module initialization
     use iso_fortran_env, only: int32
     use settings, only: N_X, N_Y, N_DIRS, C_X_FP, C_Y_FP, W, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, PI, &
-        shear_wave_params_t, couette_flow_params_t, poiseuille_flow_params_t, sliding_lid_params_t
+        RHO_0, U_MAX, N_SIN
     implicit none
 
 contains
 
     subroutine initialize_sim_condition( &
-        shear_wave_params, couette_flow_params, poiseuille_flow_params, sliding_lid_params, &
         f, rho, u_x, u_y &
         )
-        ! read-only inputs
-        type(shear_wave_params_t), intent(in) :: shear_wave_params
-        type(couette_flow_params_t), intent(in) :: couette_flow_params
-        type(poiseuille_flow_params_t), intent(in) :: poiseuille_flow_params
-        type(sliding_lid_params_t), intent(in) :: sliding_lid_params
-
         ! write destinations
         real(FP), intent(out) :: f(N_X, N_Y, N_DIRS)
         real(FP), intent(out) :: rho(N_X, N_Y)
@@ -27,14 +20,13 @@ contains
         ! apply initial condition based on selected sim mode
         select case (SIM_MODE)
         case (SIM_SHEAR_WAVE)
-            call apply_condition_shear_wave(shear_wave_params%rho_0, &
-                shear_wave_params%u_max, shear_wave_params%n_sin, f, rho, u_x, u_y)
+            call apply_condition_shear_wave(RHO_0, U_MAX, N_SIN, f, rho, u_x, u_y)
         case (SIM_COUETTE_FLOW)
-            call apply_condition_couette_flow(couette_flow_params%rho_0, f, rho, u_x, u_y)
+            call apply_condition_couette_flow(RHO_0, f, rho, u_x, u_y)
         case (SIM_POISEUILLE_FLOW)
-            call apply_condition_poiseuille_flow(poiseuille_flow_params%rho_0, f, rho, u_x, u_y)
+            call apply_condition_poiseuille_flow(RHO_0, f, rho, u_x, u_y)
         case (SIM_SLIDING_LID)
-            call apply_condition_sliding_lid(sliding_lid_params%rho_0, f, rho, u_x, u_y)
+            call apply_condition_sliding_lid(RHO_0, f, rho, u_x, u_y)
         case default
             error stop "error: unknown sim mode in initialize_sim_condition()"
         end select
