@@ -8,10 +8,10 @@ import numpy as np
 
 
 
-# --- [ plot velocity magnitude as streamlines ] ---
+# --- [ plot shear wave velocity magnitude as streamlines ] ---
 
 # run config
-RUN_NAME = "run_004d"
+RUN_NAME = "run_005"
 DATA_NAME_X = "velocity_x"
 DATA_NAME_Y = "velocity_y"
 PLOT_NAME = "velocity_mag_streamlines"
@@ -22,14 +22,16 @@ STEP_END = None       # None -> uses N_STEPS from config.json
 STEP_STRIDE = None    # None -> uses export_interval from config.json
 COLOR_LIMIT = None    # None -> uses max(|u|) across all selected steps
 STREAM_STRIDE = 5
+STREAM_MAX_POINTS = 300
 STREAM_DENSITY = 2.5
 STREAM_LINEWIDTH = 1.5
 STREAM_ARROWSIZE = 1.5
 
 # path config
-ROOT_DIR = Path(__file__).resolve().parents[1]
+SCRIPT_DIR = Path(__file__).resolve().parent
+ROOT_DIR = Path(__file__).resolve().parents[2]
 RUN_DIR = ROOT_DIR / "output" / RUN_NAME
-PLOT_DIR = ROOT_DIR / "visual" / "plots" / RUN_NAME
+PLOT_DIR = SCRIPT_DIR / "plots" / RUN_NAME / "C"
 
 
 def format_step_suffix(step: int, width: int = 9) -> str:
@@ -42,13 +44,25 @@ def load_config() -> dict:
         return json.load(file)
 
 
+def validate_config(config: dict) -> None:
+    sim_mode = config.get("SIM_MODE")
+    if sim_mode != "shear_wave":
+        raise ValueError(f"expected SIM_MODE 'shear_wave', got {sim_mode!r}")
+
+
 def get_steps(config: dict) -> list[int]:
     step_start = STEP_START
     step_end = config["N_STEPS"] if STEP_END is None else STEP_END
     step_stride = config["export_interval"] if STEP_STRIDE is None else STEP_STRIDE
 
+    if step_stride <= 0:
+        return []
+
     steps = list(range(step_start, step_end + 1, step_stride))
-    if config["export_final_state"] and step_end not in steps:
+    if not config.get("export_initial_state", False):
+        steps = [step for step in steps if step != 0]
+
+    if config.get("export_final_state", False) and step_end not in steps:
         steps.append(step_end)
 
     return steps
@@ -76,6 +90,11 @@ def load_field(path: Path, config: dict) -> np.ndarray:
 
 def is_data_exported(config: dict) -> bool:
     return bool(config.get("export_u_x", False)) and bool(config.get("export_u_y", False))
+
+
+def get_stream_stride(config: dict) -> int:
+    adaptive_stride = max(config["N_X"], config["N_Y"]) // STREAM_MAX_POINTS
+    return max(1, STREAM_STRIDE, adaptive_stride)
 
 
 def get_color_limit(steps: list[int], config: dict) -> float:
@@ -107,11 +126,12 @@ def plot_step(step: int, config: dict, color_limit: float) -> None:
     u_y = load_field(u_y_path, config)
     velocity_mag = np.sqrt(u_x * u_x + u_y * u_y)
 
-    x_grid = np.arange(config["N_X"], dtype=get_file_dtype(config))[::STREAM_STRIDE]
-    y_grid = np.arange(config["N_Y"], dtype=get_file_dtype(config))[::STREAM_STRIDE]
-    u_x_plot = u_x[::STREAM_STRIDE, ::STREAM_STRIDE]
-    u_y_plot = u_y[::STREAM_STRIDE, ::STREAM_STRIDE]
-    velocity_mag_plot = velocity_mag[::STREAM_STRIDE, ::STREAM_STRIDE]
+    stream_stride = get_stream_stride(config)
+    x_grid = np.arange(config["N_X"], dtype=get_file_dtype(config))[::stream_stride]
+    y_grid = np.arange(config["N_Y"], dtype=get_file_dtype(config))[::stream_stride]
+    u_x_plot = u_x[::stream_stride, ::stream_stride]
+    u_y_plot = u_y[::stream_stride, ::stream_stride]
+    velocity_mag_plot = velocity_mag[::stream_stride, ::stream_stride]
 
     fig, ax = plt.subplots(figsize=(8, 5))
     stream = ax.streamplot(
@@ -144,8 +164,10 @@ def plot_step(step: int, config: dict, color_limit: float) -> None:
 
 if __name__ == "__main__":
     config = load_config()
+    validate_config(config)
     steps = get_steps(config)
     color_limit = get_color_limit(steps, config)
+    stream_stride = get_stream_stride(config)
     PLOT_DIR.mkdir(parents=True, exist_ok=True)
 
     print(f"run directory:  {RUN_DIR}")
@@ -153,6 +175,7 @@ if __name__ == "__main__":
     print(f"data field:     {PLOT_NAME}")
     print(f"steps:          {steps}")
     print(f"color bounds:   [0, {color_limit:.6g}]")
+    print(f"stream stride:  {stream_stride}")
 
     if not is_data_exported(config):
         print("warning: config does not mark velocity_x and velocity_y as exported")

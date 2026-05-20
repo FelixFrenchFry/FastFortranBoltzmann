@@ -59,11 +59,11 @@ program main
     logical, parameter :: export_u_x = .true.
     logical, parameter :: export_u_y = .true.
     logical, parameter :: export_u_mag = .true.
-    integer(int32), parameter :: export_interval = 10000
+    integer(int32), parameter :: export_interval = 100000
     logical, parameter :: export_initial_state = .true.
     logical, parameter :: export_final_state = .true.
     character(len=*), parameter :: output_dir_name = "output"
-    character(len=*), parameter :: export_num = "run_004d"
+    character(len=*), parameter :: export_num = "run_000"
 
     ! progress display settings
     logical, parameter :: interactive_progress = .true.

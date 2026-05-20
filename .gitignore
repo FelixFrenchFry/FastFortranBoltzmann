@@ -28,6 +28,7 @@ Makefile
 # output data
 /output/
 /visual/plots/
+/visual/*/plots/
 
 # python environments
 .venv/
