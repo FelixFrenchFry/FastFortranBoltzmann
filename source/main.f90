@@ -55,15 +55,15 @@ program main
     )
 
     ! export settings
-    logical, parameter :: export_rho = .false.
-    logical, parameter :: export_u_x = .false.
-    logical, parameter :: export_u_y = .false.
-    logical, parameter :: export_u_mag = .false.
+    logical, parameter :: export_rho = .true.
+    logical, parameter :: export_u_x = .true.
+    logical, parameter :: export_u_y = .true.
+    logical, parameter :: export_u_mag = .true.
     integer(int32), parameter :: export_interval = 10000
     logical, parameter :: export_initial_state = .true.
     logical, parameter :: export_final_state = .true.
     character(len=*), parameter :: output_dir_name = "output"
-    character(len=*), parameter :: export_num = "run_000"
+    character(len=*), parameter :: export_num = "run_004d"
 
     ! progress display settings
     logical, parameter :: interactive_progress = .true.
@@ -194,9 +194,10 @@ program main
 
     ! export metadata
     if (this_image() == 1) then
-        call export_metadata(machine_info, SIM_MODE, shear_wave_params, couette_flow_params, poiseuille_flow_params, &
+        call export_metadata(machine_info, domain_info, SIM_MODE, shear_wave_params, couette_flow_params, poiseuille_flow_params, &
             sliding_lid_params, export_rho, export_u_x, export_u_y, export_u_mag, export_interval, &
-            output_dir_name, export_num, export_initial_state, export_final_state)
+            output_dir_name, export_num, export_initial_state, export_final_state, dist_function_buffers_bytes, &
+            macro_field_buffers_bytes, total_buffer_bytes, total_bytes_per_cell)
     end if
 
     ! export initial condition
