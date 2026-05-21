@@ -5,7 +5,7 @@ module reporting
     use hardware_info, only: hardware_info_t, print_hardware_summary
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, &
-        USE_UNROLLED_KERNELS, USE_UNIVERSAL_KERNELS, USE_PULL_SHIFT_KERNELS, &
+        USE_UNROLLED_KERNELS, USE_UNIVERSAL_KERNELS, USE_PULL_SHIFT_KERNELS, USE_INNER_OUTER_KERNELS, &
         RHO_0, OMEGA, U_MAX, N_SIN, U_WALL, U_LID, RHO_IN, RHO_OUT, sim_mode_to_string
     implicit none
     private
@@ -85,6 +85,7 @@ contains
         print '(A,T27,A,L1)',    "use_unrolled_kernels", "= ", USE_UNROLLED_KERNELS
         print '(A,T27,A,L1)',    "use_universal_kernels", "= ", USE_UNIVERSAL_KERNELS
         print '(A,T27,A,L1)',    "use_pull_shift_kernels", "= ", USE_PULL_SHIFT_KERNELS
+        print '(A,T27,A,L1)',    "use_inner_outer_kernels", "= ", USE_INNER_OUTER_KERNELS
         print '(A,T27,A,L1)',    "distributed_coarrays", "= ", .true.
         print '(A,T27,A,L1)',    "export_rho", "= ", export_rho
         print '(A,T27,A,L1)',    "export_u_x", "= ", export_u_x
