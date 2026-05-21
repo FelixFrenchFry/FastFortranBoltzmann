@@ -79,11 +79,11 @@ module settings
     logical, parameter :: EXPORT_FINAL_STATE = FFB_EXPORT_FINAL_STATE
     character(len=*), parameter :: EXPORT_NUM = FFB_EXPORT_NUM
 #else
-    logical, parameter :: EXPORT_RHO = .true.
-    logical, parameter :: EXPORT_U_X = .true.
-    logical, parameter :: EXPORT_U_Y = .true.
-    logical, parameter :: EXPORT_U_MAG = .true.
-    integer(int32), parameter :: EXPORT_INTERVAL = 100000
+    logical, parameter :: EXPORT_RHO = .false.
+    logical, parameter :: EXPORT_U_X = .false.
+    logical, parameter :: EXPORT_U_Y = .false.
+    logical, parameter :: EXPORT_U_MAG = .false.
+    integer(int32), parameter :: EXPORT_INTERVAL = 10000
     logical, parameter :: EXPORT_INITIAL_STATE = .true.
     logical, parameter :: EXPORT_FINAL_STATE = .true.
     character(len=*), parameter :: EXPORT_NUM = "run_000"

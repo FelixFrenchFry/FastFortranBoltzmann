@@ -31,14 +31,14 @@ module domain
         ! | 8 5 9 |
         ! ---------
         ! neighbor info
-        integer(int32) :: bottom_image_id ! 5
-        integer(int32) :: top_image_id ! 3
         integer(int32) :: left_image_id ! 4
         integer(int32) :: right_image_id ! 2
-        integer(int32) :: bottom_left_image_id ! 8
-        integer(int32) :: bottom_right_image_id ! 9
+        integer(int32) :: bottom_image_id ! 5
+        integer(int32) :: top_image_id ! 3
         integer(int32) :: top_left_image_id ! 7
         integer(int32) :: top_right_image_id ! 6
+        integer(int32) :: bottom_left_image_id ! 8
+        integer(int32) :: bottom_right_image_id ! 9
 
         logical :: at_left_boundary
         logical :: at_right_boundary
@@ -255,5 +255,6 @@ contains
 
         image_id = image_x + (image_y - 1) * n_images_x
     end function image_id_from_coordinates
+
 
 end module domain
