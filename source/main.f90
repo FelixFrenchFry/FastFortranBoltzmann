@@ -2,7 +2,7 @@ program main
     ! imports
     use iso_fortran_env, only: int32, int64, real64
     use domain, only: domain_t, initialize_domain
-    use exchange, only: halo_buffers_t, allocate_halo_buffers, exchange_halos
+    use exchange, only: halo_buffers_t, exchange_plan_t, allocate_halo_buffers, build_exchange_plan, exchange_halos
     use export, only: should_export_step, export_selected_data_distributed, export_metadata
     use hardware_info, only: hardware_info_t, collect_hardware_info
     use initialization, only: apply_condition_shear_wave_local, &
@@ -23,6 +23,7 @@ program main
     logical :: write_macro_fields
     type(domain_t) :: domain_info
     type(halo_buffers_t) :: halo_buffers
+    type(exchange_plan_t) :: exchange_plan
     type(hardware_info_t) :: machine_info
 
     ! metrics
@@ -63,6 +64,7 @@ program main
     if (USE_INNER_OUTER_KERNELS .and. USE_UNIVERSAL_KERNELS) then
         error stop "error: choose either inner/outer kernels or universal kernels"
     end if
+    call build_exchange_plan(domain_info, SIM_MODE, exchange_plan)
 
     if (this_image() == 1) then
         call collect_hardware_info(machine_info)
@@ -168,8 +170,7 @@ program main
 
         call system_clock(clock_section_start)
         call exchange_halos( &
-            domain_info, halo_buffers, domain_info%n_x_local, domain_info%n_y_local, f, &
-            SIM_MODE == SIM_POISEUILLE_FLOW)
+            domain_info, halo_buffers, domain_info%n_x_local, domain_info%n_y_local, f, exchange_plan)
         call system_clock(clock_section_end)
         halo_exchange_seconds = halo_exchange_seconds + &
             real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
