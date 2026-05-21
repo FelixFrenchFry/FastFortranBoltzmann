@@ -12,7 +12,6 @@ module export
     private
 
     public :: should_export_step
-    public :: export_selected_data
     public :: export_selected_data_distributed
     public :: export_metadata
 
@@ -44,45 +43,6 @@ contains
                 (export_final_state .and. step == N_STEPS)
         end if
     end function should_export_step
-
-
-    subroutine export_selected_data( &
-        export_rho, export_u_x, export_u_y, export_u_mag, &
-        export_num, suffix_num, rho, u_x, u_y &
-        )
-        ! read-only inputs
-        logical, intent(in) :: export_rho
-        logical, intent(in) :: export_u_x
-        logical, intent(in) :: export_u_y
-        logical, intent(in) :: export_u_mag
-        character(len=*), intent(in) :: export_num
-        integer(int32), intent(in) :: suffix_num
-        real(FP), intent(in) :: rho(:,:)
-        real(FP), intent(in) :: u_x(:,:)
-        real(FP), intent(in) :: u_y(:,:)
-
-        ! temp
-        real(FP), allocatable :: velocity_mag(:,:)
-
-        ! export selected scalar fields
-        if (export_rho) then
-            call export_scalar_field(rho, "density", export_num, suffix_num)
-        end if
-
-        if (export_u_x) then
-            call export_scalar_field(u_x, "velocity_x", export_num, suffix_num)
-        end if
-
-        if (export_u_y) then
-            call export_scalar_field(u_y, "velocity_y", export_num, suffix_num)
-        end if
-
-        if (export_u_mag) then
-            allocate(velocity_mag(size(u_x, 1), size(u_x, 2)))
-            velocity_mag = sqrt(u_x * u_x + u_y * u_y) ! element-wise sqrt of velocity magnitude
-            call export_scalar_field(velocity_mag, "velocity_mag", export_num, suffix_num)
-        end if
-    end subroutine export_selected_data
 
 
     subroutine export_selected_data_distributed( &
@@ -276,28 +236,6 @@ contains
 
         close(unit)
     end subroutine export_metadata
-
-
-    subroutine export_scalar_field( &
-        field, field_name, export_num, suffix_num &
-        )
-        ! read-only inputs
-        real(FP), intent(in) :: field(:,:)
-        character(len=*), intent(in) :: field_name
-        character(len=*), intent(in) :: export_num
-        integer(int32), intent(in) :: suffix_num
-
-        ! temp
-        character(len=:), allocatable :: output_path
-        character(len=:), allocatable :: file_path
-
-        ! assemble output path and filename with its data type and step suffix
-        output_path = "output/" // trim(export_num)
-        file_path = output_path // "/" // trim(field_name) // format_step_suffix(suffix_num) // ".bin"
-
-        call ensure_output_directory(output_path)
-        call write_binary_field(field, file_path)
-    end subroutine export_scalar_field
 
 
     subroutine export_scalar_field_distributed( &
