@@ -54,7 +54,7 @@ module settings
 #ifdef FFB_USE_CMAKE_SETTINGS
     integer(int32), parameter :: SIM_MODE = FFB_SIM_MODE ! selected sim mode
 #else
-    integer(int32), parameter :: SIM_MODE = 4 ! selected sim mode
+    integer(int32), parameter :: SIM_MODE = 1 ! selected sim mode
 #endif
 
     ! kernel selection
@@ -64,7 +64,7 @@ module settings
     logical, parameter :: USE_PULL_SHIFT_KERNELS = FFB_USE_PULL_SHIFT_KERNELS
 #else
     logical, parameter :: USE_UNROLLED_KERNELS = .true.
-    logical, parameter :: USE_UNIVERSAL_KERNELS = .false.
+    logical, parameter :: USE_UNIVERSAL_KERNELS = .true.
     logical, parameter :: USE_PULL_SHIFT_KERNELS = .false.
 #endif
 
