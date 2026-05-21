@@ -62,10 +62,16 @@ module settings
     logical, parameter :: USE_UNROLLED_KERNELS = FFB_USE_UNROLLED_KERNELS
     logical, parameter :: USE_UNIVERSAL_KERNELS = FFB_USE_UNIVERSAL_KERNELS
     logical, parameter :: USE_PULL_SHIFT_KERNELS = FFB_USE_PULL_SHIFT_KERNELS
+#ifdef FFB_USE_INNER_OUTER_KERNELS
+    logical, parameter :: USE_INNER_OUTER_KERNELS = FFB_USE_INNER_OUTER_KERNELS
+#else
+    logical, parameter :: USE_INNER_OUTER_KERNELS = .false.
+#endif
 #else
     logical, parameter :: USE_UNROLLED_KERNELS = .true.
     logical, parameter :: USE_UNIVERSAL_KERNELS = .true.
     logical, parameter :: USE_PULL_SHIFT_KERNELS = .false.
+    logical, parameter :: USE_INNER_OUTER_KERNELS = .false.
 #endif
 
     ! export settings
