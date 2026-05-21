@@ -69,9 +69,9 @@ module settings
 #endif
 #else
     logical, parameter :: USE_UNROLLED_KERNELS = .true.
-    logical, parameter :: USE_UNIVERSAL_KERNELS = .true.
+    logical, parameter :: USE_UNIVERSAL_KERNELS = .false.
     logical, parameter :: USE_PULL_SHIFT_KERNELS = .false.
-    logical, parameter :: USE_INNER_OUTER_KERNELS = .false.
+    logical, parameter :: USE_INNER_OUTER_KERNELS = .true.
 #endif
 
     ! export settings
