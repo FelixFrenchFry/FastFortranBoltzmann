@@ -9,7 +9,7 @@ program main
         apply_condition_couette_flow_local, apply_condition_poiseuille_flow_local, apply_condition_sliding_lid_local
     use settings, only: N_STEPS, N_CELLS, N_DIRS, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
-        USE_PULL_SHIFT_KERNELS, USE_UNIVERSAL_KERNELS, USE_INNER_OUTER_KERNELS, &
+        USE_UNIVERSAL_KERNELS, USE_INNER_OUTER_KERNELS, &
         EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, EXPORT_INTERVAL, &
         EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE, EXPORT_NUM, INTERACTIVE_PROGRESS, &
         PROGRESS_INTERVAL, RHO_0, U_MAX, N_SIN
@@ -60,17 +60,8 @@ program main
     ! setup domain decomposition
     call initialize_domain(domain_info)
 
-    if ((SIM_MODE == SIM_COUETTE_FLOW .or. SIM_MODE == SIM_POISEUILLE_FLOW .or. &
-        SIM_MODE == SIM_SLIDING_LID) .and. USE_PULL_SHIFT_KERNELS) then
-        error stop "error: distributed pull-shift is not implemented for this simulation mode yet"
-    end if
-
     if (USE_INNER_OUTER_KERNELS .and. USE_UNIVERSAL_KERNELS) then
         error stop "error: choose either inner/outer kernels or universal kernels"
-    end if
-
-    if (USE_INNER_OUTER_KERNELS .and. USE_PULL_SHIFT_KERNELS) then
-        error stop "error: choose either inner/outer kernels or pull-shift kernels"
     end if
 
     if (this_image() == 1) then

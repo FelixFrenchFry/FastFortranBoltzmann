@@ -5,11 +5,10 @@ module simulation
     use exchange, only: halo_buffers_t
     use settings, only: N_DIRS, C_X, C_Y, C_X_FP, C_Y_FP, W, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
-        USE_UNROLLED_KERNELS, USE_UNIVERSAL_KERNELS, USE_PULL_SHIFT_KERNELS, USE_INNER_OUTER_KERNELS, &
+        USE_UNROLLED_KERNELS, USE_UNIVERSAL_KERNELS, USE_INNER_OUTER_KERNELS, &
         RHO_0, OMEGA, U_WALL, U_LID, RHO_IN, RHO_OUT
     use shear_wave, only: prepare_shear_wave_halos_SW, fuzed_pull_streaming_collision_local_SW, &
-        fuzed_pull_streaming_collision_local_unrolled_SW, fuzed_pull_shift_streaming_collision_local_SW, &
-        fuzed_pull_shift_streaming_collision_local_unrolled_SW, fuzed_pull_streaming_collision_outer_SW
+        fuzed_pull_streaming_collision_local_unrolled_SW, fuzed_pull_streaming_collision_outer_SW
     use couette_flow, only: prepare_couette_flow_halos_CF, fuzed_pull_streaming_collision_local_CF, &
         fuzed_pull_streaming_collision_local_unrolled_CF, fuzed_pull_streaming_collision_outer_CF
     use poiseuille_flow, only: prepare_poiseuille_flow_halos_PF, update_poiseuille_flow_macro_strips_PF, &
@@ -42,17 +41,7 @@ contains
         ! execute single local sim step based on selected sim mode
         select case (SIM_MODE)
         case (SIM_SHEAR_WAVE)
-            if (USE_PULL_SHIFT_KERNELS) then
-                if (USE_UNROLLED_KERNELS) then
-                    call fuzed_pull_shift_streaming_collision_local_unrolled_SW( &
-                        n_x_local, n_y_local, &
-                        write_macro_fields, OMEGA, f, f_next, rho, u_x, u_y)
-                else
-                    call fuzed_pull_shift_streaming_collision_local_SW( &
-                        n_x_local, n_y_local, &
-                        write_macro_fields, OMEGA, f, f_next, rho, u_x, u_y)
-                end if
-            else if (USE_INNER_OUTER_KERNELS) then
+            if (USE_INNER_OUTER_KERNELS) then
                 if (USE_UNROLLED_KERNELS) then
                     call fuzed_pull_streaming_collision_inner_unrolled_universal( &
                         n_x_local, n_y_local, &
@@ -88,9 +77,7 @@ contains
                     write_macro_fields, OMEGA, f, f_next, rho, u_x, u_y)
             end if
         case (SIM_COUETTE_FLOW)
-            if (USE_PULL_SHIFT_KERNELS) then
-                error stop "error: distributed pull-shift is not implemented for this simulation mode yet"
-            else if (USE_INNER_OUTER_KERNELS) then
+            if (USE_INNER_OUTER_KERNELS) then
                 if (USE_UNROLLED_KERNELS) then
                     call fuzed_pull_streaming_collision_inner_unrolled_universal( &
                         n_x_local, n_y_local, &
@@ -134,9 +121,7 @@ contains
                     f, f_next, rho, u_x, u_y)
             end if
         case (SIM_POISEUILLE_FLOW)
-            if (USE_PULL_SHIFT_KERNELS) then
-                error stop "error: distributed pull-shift is not implemented for this simulation mode yet"
-            else if (USE_INNER_OUTER_KERNELS) then
+            if (USE_INNER_OUTER_KERNELS) then
                 if (USE_UNROLLED_KERNELS) then
                     call fuzed_pull_streaming_collision_inner_unrolled_universal( &
                         n_x_local, n_y_local, &
@@ -198,9 +183,7 @@ contains
                     halo_buffers%send_macro_left, halo_buffers%send_macro_right)
             end if
         case (SIM_SLIDING_LID)
-            if (USE_PULL_SHIFT_KERNELS) then
-                error stop "error: distributed pull-shift is not implemented for this simulation mode yet"
-            else if (USE_INNER_OUTER_KERNELS) then
+            if (USE_INNER_OUTER_KERNELS) then
                 if (USE_UNROLLED_KERNELS) then
                     call fuzed_pull_streaming_collision_inner_unrolled_universal( &
                         n_x_local, n_y_local, &
