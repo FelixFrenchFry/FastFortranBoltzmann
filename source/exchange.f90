@@ -10,8 +10,6 @@ module exchange
     public :: allocate_halo_buffers
     public :: exchange_halos
 
-    integer(int32), parameter :: N_HALO_DIRS = 3_int32
-
     type :: halo_buffers_t
 
         ! x-direction send buffers
@@ -56,15 +54,15 @@ contains
         end if
 
         ! bottom/top buffers include corners
-        allocate(halo_buffers%send_left(domain_info%n_y_local, N_HALO_DIRS)[*])
-        allocate(halo_buffers%send_right(domain_info%n_y_local, N_HALO_DIRS)[*])
-        allocate(halo_buffers%send_bottom(0:domain_info%n_x_local+1, N_HALO_DIRS)[*])
-        allocate(halo_buffers%send_top(0:domain_info%n_x_local+1, N_HALO_DIRS)[*])
+        allocate(halo_buffers%send_left(domain_info%n_y_local, 3)[*])
+        allocate(halo_buffers%send_right(domain_info%n_y_local, 3)[*])
+        allocate(halo_buffers%send_bottom(0:domain_info%n_x_local+1, 3)[*])
+        allocate(halo_buffers%send_top(0:domain_info%n_x_local+1, 3)[*])
 
-        allocate(halo_buffers%recv_left(domain_info%n_y_local, N_HALO_DIRS))
-        allocate(halo_buffers%recv_right(domain_info%n_y_local, N_HALO_DIRS))
-        allocate(halo_buffers%recv_bottom(0:domain_info%n_x_local+1, N_HALO_DIRS))
-        allocate(halo_buffers%recv_top(0:domain_info%n_x_local+1, N_HALO_DIRS))
+        allocate(halo_buffers%recv_left(domain_info%n_y_local, 3))
+        allocate(halo_buffers%recv_right(domain_info%n_y_local, 3))
+        allocate(halo_buffers%recv_bottom(0:domain_info%n_x_local+1, 3))
+        allocate(halo_buffers%recv_top(0:domain_info%n_x_local+1, 3))
 
         allocate(halo_buffers%send_macro_left(domain_info%n_y_local, 3)[*])
         allocate(halo_buffers%send_macro_right(domain_info%n_y_local, 3)[*])
@@ -95,7 +93,7 @@ contains
         integer(int32) :: y
         logical :: do_exchange_pressure_macros
 
-        ! left/right or bottom/top can be the same image for 2-image axes
+        ! check if left/right images are the same
         x_neighbor_images(1) = domain_info%left_image_id
         if (domain_info%right_image_id == domain_info%left_image_id) then
             n_x_neighbor_images = 1
@@ -104,6 +102,7 @@ contains
             n_x_neighbor_images = 2
         end if
 
+        ! check if bottom/top images are the same
         y_neighbor_images(1) = domain_info%bottom_image_id
         if (domain_info%top_image_id == domain_info%bottom_image_id) then
             n_y_neighbor_images = 1
@@ -117,7 +116,13 @@ contains
             do_exchange_pressure_macros = exchange_pressure_macros
         end if
 
+        ! ---------
+        ! | 7 3 6 |
+        ! | 4 1 2 |
+        ! | 8 5 9 |
+        ! ---------
         ! pack owned left/right borders
+        ! TODO: instead of packing own send buffers, directly write into neighbor recv buffers?
         do y = 1, n_y_local
             halo_buffers%send_left(y, 1) = f(1, y, 4)
             halo_buffers%send_left(y, 2) = f(1, y, 7)
@@ -131,6 +136,7 @@ contains
         call sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
 
         ! unpack left/right halos from neighboring images
+        ! TODO: instead of unpacking into recv buffers, directly write into owned f array halos?
         halo_buffers%recv_left(:, :) = halo_buffers%send_right(:, :)[domain_info%left_image_id]
         halo_buffers%recv_right(:, :) = halo_buffers%send_left(:, :)[domain_info%right_image_id]
 
@@ -145,6 +151,7 @@ contains
             end if
         end if
 
+        ! write received values into left/right halos of owned f array
         do y = 1, n_y_local
             f(0, y, 2) = halo_buffers%recv_left(y, 1)
             f(0, y, 6) = halo_buffers%recv_left(y, 2)
@@ -157,7 +164,13 @@ contains
 
         call sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
 
+        ! ---------
+        ! | 7 3 6 |
+        ! | 4 1 2 |
+        ! | 8 5 9 |
+        ! ---------
         ! pack bottom/top borders, including updated x-halos carrying corner halo values
+        ! TODO: instead of packing own send buffers, directly write into neighbor recv buffers?
         do x = 0, n_x_local + 1
             halo_buffers%send_bottom(x, 1) = f(x, 1, 5)
             halo_buffers%send_bottom(x, 2) = f(x, 1, 8)
@@ -171,9 +184,11 @@ contains
         call sync_neighbor_images(y_neighbor_images, n_y_neighbor_images)
 
         ! unpack bottom/top halos from neighboring images
+        ! TODO: instead of unpacking into recv buffers, directly write into owned f array halos?
         halo_buffers%recv_bottom(:, :) = halo_buffers%send_top(:, :)[domain_info%bottom_image_id]
         halo_buffers%recv_top(:, :) = halo_buffers%send_bottom(:, :)[domain_info%top_image_id]
  
+        ! write received values into bottom/top halos of owned f array
         do x = 0, n_x_local + 1
             f(x, 0, 3) = halo_buffers%recv_bottom(x, 1)
             f(x, 0, 6) = halo_buffers%recv_bottom(x, 2)

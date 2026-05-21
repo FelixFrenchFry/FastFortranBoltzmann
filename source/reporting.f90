@@ -196,11 +196,10 @@ contains
 
 
     subroutine print_execution_summary( &
-        use_distributed_domain, kernel_compute_seconds, halo_exchange_seconds, buffer_swap_seconds, export_seconds, &
+        kernel_compute_seconds, halo_exchange_seconds, buffer_swap_seconds, export_seconds, &
         progress_seconds, other_seconds, elapsed_seconds, seconds_per_step, mlups &
         )
         ! inputs
-        logical, intent(in) :: use_distributed_domain
         real(real64), intent(in) :: kernel_compute_seconds
         real(real64), intent(in) :: halo_exchange_seconds
         real(real64), intent(in) :: buffer_swap_seconds
@@ -216,9 +215,7 @@ contains
         print '(A)', "---------------------------------------------------------------------------"
 
         call print_execution_time_row("kernel compute", kernel_compute_seconds, elapsed_seconds)
-        if (use_distributed_domain) then
-            call print_execution_time_row("halo exchange", halo_exchange_seconds, elapsed_seconds)
-        end if
+        call print_execution_time_row("halo exchange", halo_exchange_seconds, elapsed_seconds)
 
         call print_execution_time_row("buffer swap", buffer_swap_seconds, elapsed_seconds)
         call print_execution_time_row("data export", export_seconds, elapsed_seconds)

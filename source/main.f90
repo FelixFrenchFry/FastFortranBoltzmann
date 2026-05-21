@@ -3,11 +3,11 @@ program main
     use iso_fortran_env, only: int32, int64, real64
     use domain, only: domain_t, initialize_domain
     use exchange, only: halo_buffers_t, allocate_halo_buffers, exchange_halos
-    use export, only: should_export_step, export_selected_data, export_selected_data_distributed, export_metadata
+    use export, only: should_export_step, export_selected_data_distributed, export_metadata
     use hardware_info, only: hardware_info_t, collect_hardware_info
-    use initialization, only: initialize_sim_condition, apply_condition_shear_wave_local, &
+    use initialization, only: apply_condition_shear_wave_local, &
         apply_condition_couette_flow_local, apply_condition_poiseuille_flow_local, apply_condition_sliding_lid_local
-    use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, &
+    use settings, only: N_STEPS, N_CELLS, N_DIRS, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
         USE_PULL_SHIFT_KERNELS, EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, EXPORT_INTERVAL, &
         EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE, EXPORT_NUM, INTERACTIVE_PROGRESS, &
@@ -20,7 +20,6 @@ program main
     ! misc
     integer(int32) :: step
     logical :: write_macro_fields
-    logical :: use_distributed_domain
     type(domain_t) :: domain_info
     type(halo_buffers_t) :: halo_buffers
     type(hardware_info_t) :: machine_info
@@ -60,15 +59,6 @@ program main
     ! setup domain decomposition
     call initialize_domain(domain_info)
 
-    use_distributed_domain = SIM_MODE == SIM_SHEAR_WAVE .or. &
-        SIM_MODE == SIM_COUETTE_FLOW .or. &
-        SIM_MODE == SIM_POISEUILLE_FLOW .or. &
-        SIM_MODE == SIM_SLIDING_LID
-
-    if (domain_info%n_images > 1 .and. .not. use_distributed_domain) then
-        error stop "error: distributed coarray execution is only implemented for known simulation modes yet"
-    end if
-
     if ((SIM_MODE == SIM_COUETTE_FLOW .or. SIM_MODE == SIM_POISEUILLE_FLOW .or. &
         SIM_MODE == SIM_SLIDING_LID) .and. USE_PULL_SHIFT_KERNELS) then
         error stop "error: distributed pull-shift is not implemented for this simulation mode yet"
@@ -78,20 +68,12 @@ program main
         call collect_hardware_info(machine_info)
     end if
 
-    if (use_distributed_domain) then
-        allocate(f(0:domain_info%n_x_local+1, 0:domain_info%n_y_local+1, N_DIRS))
-        allocate(f_next(0:domain_info%n_x_local+1, 0:domain_info%n_y_local+1, N_DIRS))
-        allocate(rho(domain_info%n_x_local, domain_info%n_y_local))
-        allocate(u_x(domain_info%n_x_local, domain_info%n_y_local))
-        allocate(u_y(domain_info%n_x_local, domain_info%n_y_local))
-        call allocate_halo_buffers(domain_info, halo_buffers)
-    else
-        allocate(f(N_X, N_Y, N_DIRS))
-        allocate(f_next(N_X, N_Y, N_DIRS))
-        allocate(rho(N_X, N_Y))
-        allocate(u_x(N_X, N_Y))
-        allocate(u_y(N_X, N_Y))
-    end if
+    allocate(f(0:domain_info%n_x_local+1, 0:domain_info%n_y_local+1, N_DIRS))
+    allocate(f_next(0:domain_info%n_x_local+1, 0:domain_info%n_y_local+1, N_DIRS))
+    allocate(rho(domain_info%n_x_local, domain_info%n_y_local))
+    allocate(u_x(domain_info%n_x_local, domain_info%n_y_local))
+    allocate(u_y(domain_info%n_x_local, domain_info%n_y_local))
+    call allocate_halo_buffers(domain_info, halo_buffers)
 
     ! compute memory metrics for persistent main sim buffers
     bytes_fp = int(storage_size(0.0_FP), int64) / 8_int64
@@ -117,10 +99,10 @@ program main
         call apply_condition_sliding_lid_local( &
             RHO_0, domain_info%n_x_local, domain_info%n_y_local, f, rho, u_x, u_y)
     else
-        call initialize_sim_condition(f, rho, u_x, u_y)
+        error stop "error: unknown sim mode in main initial condition"
     end if
 
-    if (use_distributed_domain .and. SIM_MODE == SIM_POISEUILLE_FLOW) then
+    if (SIM_MODE == SIM_POISEUILLE_FLOW) then
         halo_buffers%send_macro_left(:, 1) = RHO_0
         halo_buffers%send_macro_left(:, 2) = 0.0_FP
         halo_buffers%send_macro_left(:, 3) = 0.0_FP
@@ -158,13 +140,8 @@ program main
     ! export initial condition
     if (should_export_step(0_int32, EXPORT_INTERVAL, &
         EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE)) then
-        if (use_distributed_domain) then
-            call export_selected_data_distributed(domain_info, EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, &
-                EXPORT_NUM, 0_int32, rho, u_x, u_y)
-        else if (this_image() == 1) then
-            call export_selected_data(EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, &
-                EXPORT_NUM, 0_int32, rho, u_x, u_y)
-        end if
+        call export_selected_data_distributed(domain_info, EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, &
+            EXPORT_NUM, 0_int32, rho, u_x, u_y)
     end if
 
     ! print sim launch timestamp
@@ -172,9 +149,7 @@ program main
         call print_launch_timestamp()
     end if
 
-    if (use_distributed_domain) then
-        sync all
-    end if
+    sync all
 
     kernel_compute_seconds = 0.0_real64
     halo_exchange_seconds = 0.0_real64
@@ -191,25 +166,21 @@ program main
         write_macro_fields = should_export_step(step, EXPORT_INTERVAL, EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE) .and. &
             (EXPORT_RHO .or. EXPORT_U_X .or. EXPORT_U_Y .or. EXPORT_U_MAG)
 
-        if (use_distributed_domain) then
-            call system_clock(clock_section_start)
-            call exchange_halos( &
-                domain_info, halo_buffers, domain_info%n_x_local, domain_info%n_y_local, f, &
-                SIM_MODE == SIM_POISEUILLE_FLOW)
-            call system_clock(clock_section_end)
-            halo_exchange_seconds = halo_exchange_seconds + &
-                real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
+        call system_clock(clock_section_start)
+        call exchange_halos( &
+            domain_info, halo_buffers, domain_info%n_x_local, domain_info%n_y_local, f, &
+            SIM_MODE == SIM_POISEUILLE_FLOW)
+        call system_clock(clock_section_end)
+        halo_exchange_seconds = halo_exchange_seconds + &
+            real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
 
-            call system_clock(clock_section_start)
-            call execute_local_sim_step( &
-                domain_info, halo_buffers, domain_info%n_x_local, domain_info%n_y_local, &
-                write_macro_fields, f, f_next, rho, u_x, u_y)
-            call system_clock(clock_section_end)
-            kernel_compute_seconds = kernel_compute_seconds + &
-                real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
-        else
-            error stop "error: selected sim mode is not implemented for distributed local execution"
-        end if
+        call system_clock(clock_section_start)
+        call execute_local_sim_step( &
+            domain_info, halo_buffers, domain_info%n_x_local, domain_info%n_y_local, &
+            write_macro_fields, f, f_next, rho, u_x, u_y)
+        call system_clock(clock_section_end)
+        kernel_compute_seconds = kernel_compute_seconds + &
+            real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
 
         call system_clock(clock_section_start)
         call swap_distribution_function_buffers(f, f_next)
@@ -220,21 +191,12 @@ program main
         ! export selected field
         if (should_export_step(step, EXPORT_INTERVAL, &
             EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE)) then
-            if (use_distributed_domain) then
-                call system_clock(clock_section_start)
-                call export_selected_data_distributed(domain_info, EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, &
-                    EXPORT_NUM, step, rho, u_x, u_y)
-                call system_clock(clock_section_end)
-                export_seconds = export_seconds + &
-                    real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
-            else if (this_image() == 1) then
-                call system_clock(clock_section_start)
-                call export_selected_data(EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, &
-                    EXPORT_NUM, step, rho, u_x, u_y)
-                call system_clock(clock_section_end)
-                export_seconds = export_seconds + &
-                    real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
-            end if
+            call system_clock(clock_section_start)
+            call export_selected_data_distributed(domain_info, EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, &
+                EXPORT_NUM, step, rho, u_x, u_y)
+            call system_clock(clock_section_end)
+            export_seconds = export_seconds + &
+                real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
         end if
 
         ! print sim progress info
@@ -250,9 +212,7 @@ program main
 
     end do
 
-    if (use_distributed_domain) then
-        sync all
-    end if
+    sync all
 
     ! print sim finish timestamp
     if (this_image() == 1) then
@@ -288,7 +248,6 @@ program main
         end do
 
         call print_execution_summary( &
-            use_distributed_domain, &
             execution_time_values(1)[timing_image_id], execution_time_values(2)[timing_image_id], &
             execution_time_values(3)[timing_image_id], execution_time_values(4)[timing_image_id], &
             execution_time_values(5)[timing_image_id], execution_time_values(6)[timing_image_id], &
