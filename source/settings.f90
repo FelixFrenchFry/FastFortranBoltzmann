@@ -57,19 +57,17 @@ module settings
     integer(int32), parameter :: SIM_MODE = 1 ! selected sim mode
 #endif
 
-    ! kernel selection
+    ! algorithm selection
 #ifdef FFB_USE_CMAKE_SETTINGS
     logical, parameter :: USE_UNROLLED_KERNELS = FFB_USE_UNROLLED_KERNELS
     logical, parameter :: USE_UNIVERSAL_KERNELS = FFB_USE_UNIVERSAL_KERNELS
-#ifdef FFB_USE_INNER_OUTER_KERNELS
     logical, parameter :: USE_INNER_OUTER_KERNELS = FFB_USE_INNER_OUTER_KERNELS
-#else
-    logical, parameter :: USE_INNER_OUTER_KERNELS = .false.
-#endif
+    logical, parameter :: USE_STAGED_HALO_EXCHANGE = FFB_USE_STAGED_HALO_EXCHANGE
 #else
     logical, parameter :: USE_UNROLLED_KERNELS = .true.
     logical, parameter :: USE_UNIVERSAL_KERNELS = .false.
     logical, parameter :: USE_INNER_OUTER_KERNELS = .true.
+    logical, parameter :: USE_STAGED_HALO_EXCHANGE = .false.
 #endif
 
     ! export settings
