@@ -134,6 +134,11 @@ contains
             f_eq(i) = W(i) * rho_0
         end do
 
+        ! init pressure halo values
+        do i = 1, N_DIRS
+            f(:, :, i) = f_eq(i)
+        end do
+
         ! loop over rows and cols
         do y = 1, n_y_local
             do x = 1, n_x_local
