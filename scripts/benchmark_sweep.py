@@ -30,6 +30,7 @@ TIMING_CATEGORIES = (
 # settings
 DEFAULT_EXE = "build/release/bin/FFB"
 DEFAULT_RUNS = 5
+SKIP = 0
 
 # domain decompositions (images, ix, iy)
 CASE_CUSTOM = [
@@ -272,6 +273,7 @@ def parse_args():
     parser.add_argument("--exe", default=DEFAULT_EXE)
     parser.add_argument("--runs", type=int, default=DEFAULT_RUNS)
     parser.add_argument("--case", choices=DOMAIN_DECOMP_CASE_SETS.keys(), default="custom")
+    parser.add_argument("--skip", type=int, default=SKIP)
     return parser.parse_args()
 
 
@@ -486,15 +488,19 @@ def main():
         sys.exit("error: --runs must be positive")
     if args.runs > MAX_RUNS:
         sys.exit(f"error: --runs must be <= {MAX_RUNS}")
+    if args.skip < 0:
+        sys.exit("error: --skip must not be negative")
     domain_decomp_cases = DOMAIN_DECOMP_CASE_SETS[args.case]
     if not domain_decomp_cases:
         sys.exit(f"error: case list '{args.case}' must not be empty")
+    if args.skip >= len(domain_decomp_cases):
+        sys.exit("error: --skip must be smaller than the selected case list length")
     if not os.path.exists(args.exe):
         sys.exit(f"error: executable not found: {args.exe}")
 
     n_x, n_y = read_sim_size(args.exe)
 
-    for case_num, (images, ix, iy) in enumerate(domain_decomp_cases, start=1):
+    for case_num, (images, ix, iy) in enumerate(domain_decomp_cases[args.skip:], start=args.skip + 1):
         run_case(
             args.exe, args.runs, n_x, n_y, case_num, len(domain_decomp_cases), images, ix, iy)
 
