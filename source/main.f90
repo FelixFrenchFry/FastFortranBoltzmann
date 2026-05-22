@@ -9,7 +9,6 @@ program main
         apply_condition_couette_flow_local, apply_condition_poiseuille_flow_local, apply_condition_sliding_lid_local
     use settings, only: N_STEPS, N_CELLS, N_DIRS, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
-        USE_UNIVERSAL_KERNELS, USE_INNER_OUTER_KERNELS, &
         EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, EXPORT_INTERVAL, &
         EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE, EXPORT_NUM, INTERACTIVE_PROGRESS, &
         PROGRESS_INTERVAL, RHO_0, U_MAX, N_SIN
@@ -61,9 +60,6 @@ program main
     ! setup domain decomposition
     call initialize_domain(domain_info)
 
-    if (USE_INNER_OUTER_KERNELS .and. USE_UNIVERSAL_KERNELS) then
-        error stop "error: choose either inner/outer kernels or universal kernels"
-    end if
     call build_exchange_plan(domain_info, SIM_MODE, exchange_plan)
 
     if (this_image() == 1) then
