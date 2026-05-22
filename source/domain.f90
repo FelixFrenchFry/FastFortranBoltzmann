@@ -22,8 +22,8 @@ module domain
         integer(int32) :: image_id
         integer(int32) :: image_x
         integer(int32) :: image_y
-        integer(int32) :: n_x_local
-        integer(int32) :: n_y_local
+        integer(int32) :: n_x
+        integer(int32) :: n_y
 
         ! ---------
         ! | 7 3 6 |
@@ -87,13 +87,13 @@ contains
         domain_info%image_x = modulo(domain_info%image_id - 1, domain_info%n_images_x) + 1
         domain_info%image_y = (domain_info%image_id - 1) / domain_info%n_images_x + 1
 
-        domain_info%n_x_local = N_X / domain_info%n_images_x
-        domain_info%n_y_local = N_Y / domain_info%n_images_y
+        domain_info%n_x = N_X / domain_info%n_images_x
+        domain_info%n_y = N_Y / domain_info%n_images_y
 
-        domain_info%x_global_start = (domain_info%image_x - 1) * domain_info%n_x_local + 1
-        domain_info%x_global_end = domain_info%image_x * domain_info%n_x_local
-        domain_info%y_global_start = (domain_info%image_y - 1) * domain_info%n_y_local + 1
-        domain_info%y_global_end = domain_info%image_y * domain_info%n_y_local
+        domain_info%x_global_start = (domain_info%image_x - 1) * domain_info%n_x + 1
+        domain_info%x_global_end = domain_info%image_x * domain_info%n_x
+        domain_info%y_global_start = (domain_info%image_y - 1) * domain_info%n_y + 1
+        domain_info%y_global_end = domain_info%image_y * domain_info%n_y
 
         domain_info%at_left_boundary = domain_info%image_x == 1
         domain_info%at_right_boundary = domain_info%image_x == domain_info%n_images_x
@@ -131,9 +131,9 @@ contains
         end if
 
         halo_cell_percent = 100.0_real64 * &
-            real((domain_info%n_x_local + 2) * (domain_info%n_y_local + 2) - &
-            domain_info%n_x_local * domain_info%n_y_local, real64) / &
-            real(domain_info%n_x_local * domain_info%n_y_local, real64)
+            real((domain_info%n_x + 2) * (domain_info%n_y + 2) - &
+            domain_info%n_x * domain_info%n_y, real64) / &
+            real(domain_info%n_x * domain_info%n_y, real64)
 
         print '(A)', ""
         print '(A)', "--- [ domain decomposition ] ----------------------------------------------"
@@ -141,7 +141,7 @@ contains
         print '(A,T27,A,I0,A,I0,A)', "image grid [X/Y]:", "[ ", &
             domain_info%n_images_x, " / ", domain_info%n_images_y, " ]"
         print '(A,T27,A,I0,A,I0,A)', "local domain [X/Y]:", "[ ", &
-            domain_info%n_x_local, " / ", domain_info%n_y_local, " ]"
+            domain_info%n_x, " / ", domain_info%n_y, " ]"
         print '(A,T24,F8.3,A)',   "halo cells:", halo_cell_percent, " %"
     end subroutine print_domain_summary
 

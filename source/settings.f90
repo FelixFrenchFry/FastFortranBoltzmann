@@ -67,11 +67,6 @@ module settings
     logical, parameter :: USE_UNIVERSAL_KERNELS = .false.
     logical, parameter :: USE_STAGED_HALO_EXCHANGE = .false.
 #endif
-#ifdef FFB_USE_COARRAY_DF
-    logical, parameter :: USE_COARRAY_DF = .true.
-#else
-    logical, parameter :: USE_COARRAY_DF = .false.
-#endif
 
     ! export settings
 #ifdef FFB_USE_CMAKE_SETTINGS

@@ -5,8 +5,7 @@ module export
     use hardware_info, only: hardware_info_t, write_hardware_metadata
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, C_X, C_Y, C_X_FP, C_Y_FP, W, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, FP, FP_DTYPE, &
-        USE_UNROLLED_KERNELS, USE_UNIVERSAL_KERNELS, USE_COARRAY_DF, &
-        USE_STAGED_HALO_EXCHANGE, &
+        USE_UNROLLED_KERNELS, USE_UNIVERSAL_KERNELS, USE_STAGED_HALO_EXCHANGE, &
         RHO_0, OMEGA, U_MAX, N_SIN, U_WALL, U_LID, RHO_IN, RHO_OUT, sim_mode_to_string
     implicit none
 
@@ -126,9 +125,9 @@ contains
         file_path = output_path // "/config.json"
         gb_per_byte = 1.0e-9_real64
         halo_cell_percent = 100.0_real64 * &
-            real((domain_info%n_x_local + 2) * (domain_info%n_y_local + 2) - &
-            domain_info%n_x_local * domain_info%n_y_local, real64) / &
-            real(domain_info%n_x_local * domain_info%n_y_local, real64)
+            real((domain_info%n_x + 2) * (domain_info%n_y + 2) - &
+            domain_info%n_x * domain_info%n_y, real64) / &
+            real(domain_info%n_x * domain_info%n_y, real64)
 
         call ensure_output_directory(output_path)
 
@@ -181,8 +180,6 @@ contains
         write(unit, '(A)') ""
         write(unit, '(A,A,A)') '  "use_unrolled_kernels": ', trim(logical_to_json(USE_UNROLLED_KERNELS)), ','
         write(unit, '(A,A,A)') '  "use_universal_kernels": ', trim(logical_to_json(USE_UNIVERSAL_KERNELS)), ','
-        write(unit, '(A,A,A)') '  "use_coarray_df": ', &
-            trim(logical_to_json(USE_COARRAY_DF)), ','
         write(unit, '(A,A,A)') '  "use_staged_halo_exchange": ', trim(logical_to_json(USE_STAGED_HALO_EXCHANGE)), ','
         write(unit, '(A)') ""
 #ifdef FFB_FP64
@@ -214,8 +211,8 @@ contains
         write(unit, '(A,I0,A)') '    "coarray_images": ', domain_info%n_images, ','
         write(unit, '(A,I0,A)') '    "image_grid_x": ', domain_info%n_images_x, ','
         write(unit, '(A,I0,A)') '    "image_grid_y": ', domain_info%n_images_y, ','
-        write(unit, '(A,I0,A)') '    "local_n_x": ', domain_info%n_x_local, ','
-        write(unit, '(A,I0,A)') '    "local_n_y": ', domain_info%n_y_local, ','
+        write(unit, '(A,I0,A)') '    "local_n_x": ', domain_info%n_x, ','
+        write(unit, '(A,I0,A)') '    "local_n_y": ', domain_info%n_y, ','
         write(unit, '(A,A)') '    "halo_cells_percent": ', trim(real64_to_json(halo_cell_percent))
         write(unit, '(A)') '  },'
         write(unit, '(A)') ""
@@ -264,12 +261,12 @@ contains
         real(FP), allocatable :: global_field(:,:)
         real(FP), allocatable :: export_buffer(:,:)[:]
 
-        if (size(local_field, 1) /= domain_info%n_x_local .or. &
-            size(local_field, 2) /= domain_info%n_y_local) then
+        if (size(local_field, 1) /= domain_info%n_x .or. &
+            size(local_field, 2) /= domain_info%n_y) then
             error stop "error: local distributed export field has wrong shape"
         end if
 
-        allocate(export_buffer(domain_info%n_x_local, domain_info%n_y_local)[*])
+        allocate(export_buffer(domain_info%n_x, domain_info%n_y)[*])
         export_buffer(:, :) = local_field(:, :)
 
         sync all
@@ -281,10 +278,10 @@ contains
                 image_x = modulo(image_id - 1, domain_info%n_images_x) + 1
                 image_y = (image_id - 1) / domain_info%n_images_x + 1
 
-                x_global_start = (image_x - 1) * domain_info%n_x_local + 1
-                x_global_end = image_x * domain_info%n_x_local
-                y_global_start = (image_y - 1) * domain_info%n_y_local + 1
-                y_global_end = image_y * domain_info%n_y_local
+                x_global_start = (image_x - 1) * domain_info%n_x + 1
+                x_global_end = image_x * domain_info%n_x
+                y_global_start = (image_y - 1) * domain_info%n_y + 1
+                y_global_end = image_y * domain_info%n_y
 
                 global_field(x_global_start:x_global_end, y_global_start:y_global_end) = &
                     export_buffer(:, :)[image_id]

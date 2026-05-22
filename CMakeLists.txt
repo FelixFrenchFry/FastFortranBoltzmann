@@ -21,7 +21,6 @@ set(CMAKE_Fortran_EXTENSIONS OFF)
 option(FFB_FP64 "Usage of real64 for floating point values enabled" OFF)
 option(FFB_DENSITY_CHECKS "Run-time density checks enabled" OFF)
 option(FFB_BOUNDARY_CHECKS "Run-time boundary condition checks enabled" OFF)
-option(FFB_USE_COARRAY_DF "Use coarray DF buffers for halo exchange" OFF)
 set(FFB_EXPORT_NUM "" CACHE STRING "Export run directory name")
 set(FFB_SETTINGS_DEFINITIONS "" CACHE STRING "Fortran preprocessor overrides for source/settings.f90")
 
@@ -50,7 +49,7 @@ string(STRIP "${FFB_ACTIVE_FORTRAN_FLAGS}" FFB_ACTIVE_FORTRAN_FLAGS)
 
 # debug flags for ifx
 target_compile_options(FFB PRIVATE
-    -coarray=distributed # TODO: use coarray=distributed?
+    -coarray=distributed
     -fpp
     -warn all
     -standard-semantics
@@ -82,10 +81,7 @@ endif()
 if(FFB_BOUNDARY_CHECKS)
     target_compile_definitions(FFB PRIVATE FFB_BOUNDARY_CHECKS)
 endif()
-if(FFB_USE_COARRAY_DF)
-    target_compile_definitions(FFB PRIVATE FFB_USE_COARRAY_DF)
-endif()
 
 target_link_options(FFB PRIVATE
-    -coarray=distributed # TODO: use coarray=distributed?
+    -coarray=distributed
 )
