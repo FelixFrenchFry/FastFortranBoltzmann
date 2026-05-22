@@ -411,18 +411,4 @@ contains
     end subroutine fuzed_pull_streaming_collision_local_unrolled_universal
 
 
-    subroutine swap_distribution_function_buffers( &
-        f, f_next &
-        )
-        ! read/write inputs
-        real(FP), allocatable, intent(inout) :: f(:, :, :)
-        real(FP), allocatable, intent(inout) :: f_next(:, :, :)
-        real(FP), allocatable :: temp(:, :, :)
-
-        ! swap ownership
-        call move_alloc(f, temp)
-        call move_alloc(f_next, f)
-        call move_alloc(temp, f_next)
-    end subroutine swap_distribution_function_buffers
-
 end module simulation
