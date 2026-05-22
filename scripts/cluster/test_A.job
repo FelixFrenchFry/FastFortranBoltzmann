@@ -60,6 +60,7 @@ cmake -S . -B "$BUILD_DIR" -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_Fortran_FLAGS= \
     -DCMAKE_Fortran_FLAGS_RELEASE="-O3 -march=native" \
+    -DFFB_USE_COARRAY_DF=OFF \
     -DFFB_EXPORT_NUM="run_${SLURM_JOB_ID}" \
     -DFFB_SETTINGS_DEFINITIONS="$FFB_SETTINGS_DEFINITIONS"
 cmake --build "$BUILD_DIR"

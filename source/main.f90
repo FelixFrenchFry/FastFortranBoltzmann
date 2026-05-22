@@ -2,7 +2,12 @@ program main
     ! imports
     use iso_fortran_env, only: int32, int64, real64
     use domain, only: domain_t, initialize_domain
-    use exchange, only: halo_buffers_t, exchange_plan_t, allocate_halo_buffers, build_exchange_plan, exchange_halos
+    use exchange, only: halo_buffers_t, exchange_plan_t, allocate_halo_buffers, build_exchange_plan
+#ifdef FFB_USE_COARRAY_DF
+    use exchange, only: exchange_halos_from_coarray_df
+#else
+    use exchange, only: exchange_halos
+#endif
     use export, only: should_export_step, export_selected_data_distributed, export_metadata
     use hardware_info, only: hardware_info_t, collect_hardware_info
     use initialization, only: apply_condition_shear_wave_local, &
@@ -14,7 +19,11 @@ program main
         PROGRESS_INTERVAL, RHO_0, U_MAX, N_SIN
     use reporting, only: print_run_summary, print_launch_timestamp, print_progress_status, print_finish_timestamp, &
         print_execution_summary
+#ifdef FFB_USE_COARRAY_DF
+    use simulation, only: execute_local_sim_step
+#else
     use simulation, only: execute_local_sim_step, swap_distribution_function_buffers
+#endif
     implicit none
 
     ! misc
@@ -51,8 +60,14 @@ program main
     integer(int32) :: timing_image_id
 
     ! allocate sim data structures (double-buffered distribution functions)
+#ifdef FFB_USE_COARRAY_DF
+    real(FP), allocatable :: f_a(:, :, :)[:] ! distribution function buffer A
+    real(FP), allocatable :: f_b(:, :, :)[:] ! distribution function buffer B
+    logical :: read_from_a
+#else
     real(FP), allocatable :: f(:, :, :) ! read-version of distribution functions f(x, y, dir)
     real(FP), allocatable :: f_next(:, :, :) ! write-version version of f(x, y, dir)
+#endif
     real(FP), allocatable :: rho(:,:)
     real(FP), allocatable :: u_x(:,:)
     real(FP), allocatable :: u_y(:,:)
@@ -66,8 +81,14 @@ program main
         call collect_hardware_info(machine_info)
     end if
 
+#ifdef FFB_USE_COARRAY_DF
+    allocate(f_a(0:domain_info%n_x_local+1, 0:domain_info%n_y_local+1, N_DIRS)[*])
+    allocate(f_b(0:domain_info%n_x_local+1, 0:domain_info%n_y_local+1, N_DIRS)[*])
+    read_from_a = .true.
+#else
     allocate(f(0:domain_info%n_x_local+1, 0:domain_info%n_y_local+1, N_DIRS))
     allocate(f_next(0:domain_info%n_x_local+1, 0:domain_info%n_y_local+1, N_DIRS))
+#endif
     allocate(rho(domain_info%n_x_local, domain_info%n_y_local))
     allocate(u_x(domain_info%n_x_local, domain_info%n_y_local))
     allocate(u_y(domain_info%n_x_local, domain_info%n_y_local))
@@ -75,8 +96,13 @@ program main
 
     ! compute memory metrics for persistent main sim buffers
     bytes_fp = int(storage_size(0.0_FP), int64) / 8_int64
+#ifdef FFB_USE_COARRAY_DF
+    dist_function_buffers_bytes = (size(f_a, kind=int64) + size(f_b, kind=int64)) * bytes_fp * &
+        int(domain_info%n_images, int64)
+#else
     dist_function_buffers_bytes = (size(f, kind=int64) + size(f_next, kind=int64)) * bytes_fp * &
         int(domain_info%n_images, int64)
+#endif
     macro_field_buffers_bytes = (size(rho, kind=int64) + size(u_x, kind=int64) + size(u_y, kind=int64)) * bytes_fp * &
         int(domain_info%n_images, int64)
     total_buffer_bytes = dist_function_buffers_bytes + macro_field_buffers_bytes
@@ -85,17 +111,34 @@ program main
     ! inital condition
     if (SIM_MODE == SIM_SHEAR_WAVE) then
         call apply_condition_shear_wave_local( &
+#ifdef FFB_USE_COARRAY_DF
+            RHO_0, U_MAX, N_SIN, &
+            domain_info%n_x_local, domain_info%n_y_local, domain_info%y_global_start, f_a, rho, u_x, u_y)
+#else
             RHO_0, U_MAX, N_SIN, &
             domain_info%n_x_local, domain_info%n_y_local, domain_info%y_global_start, f, rho, u_x, u_y)
+#endif
     else if (SIM_MODE == SIM_COUETTE_FLOW) then
         call apply_condition_couette_flow_local( &
+#ifdef FFB_USE_COARRAY_DF
+            RHO_0, domain_info%n_x_local, domain_info%n_y_local, f_a, rho, u_x, u_y)
+#else
             RHO_0, domain_info%n_x_local, domain_info%n_y_local, f, rho, u_x, u_y)
+#endif
     else if (SIM_MODE == SIM_POISEUILLE_FLOW) then
         call apply_condition_poiseuille_flow_local( &
+#ifdef FFB_USE_COARRAY_DF
+            RHO_0, domain_info%n_x_local, domain_info%n_y_local, f_a, rho, u_x, u_y)
+#else
             RHO_0, domain_info%n_x_local, domain_info%n_y_local, f, rho, u_x, u_y)
+#endif
     else if (SIM_MODE == SIM_SLIDING_LID) then
         call apply_condition_sliding_lid_local( &
+#ifdef FFB_USE_COARRAY_DF
+            RHO_0, domain_info%n_x_local, domain_info%n_y_local, f_a, rho, u_x, u_y)
+#else
             RHO_0, domain_info%n_x_local, domain_info%n_y_local, f, rho, u_x, u_y)
+#endif
     else
         error stop "error: unknown sim mode in main initial condition"
     end if
@@ -165,22 +208,48 @@ program main
             (EXPORT_RHO .or. EXPORT_U_X .or. EXPORT_U_Y .or. EXPORT_U_MAG)
 
         call system_clock(clock_section_start)
+#ifdef FFB_USE_COARRAY_DF
+        if (read_from_a) then
+            call exchange_halos_from_coarray_df( &
+                domain_info, halo_buffers, domain_info%n_x_local, domain_info%n_y_local, f_a, exchange_plan)
+        else
+            call exchange_halos_from_coarray_df( &
+                domain_info, halo_buffers, domain_info%n_x_local, domain_info%n_y_local, f_b, exchange_plan)
+        end if
+#else
         call exchange_halos( &
             domain_info, halo_buffers, domain_info%n_x_local, domain_info%n_y_local, f, exchange_plan)
+#endif
         call system_clock(clock_section_end)
         halo_exchange_seconds = halo_exchange_seconds + &
             real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
 
         call system_clock(clock_section_start)
+#ifdef FFB_USE_COARRAY_DF
+        if (read_from_a) then
+            call execute_local_sim_step( &
+                domain_info, halo_buffers, domain_info%n_x_local, domain_info%n_y_local, &
+                write_macro_fields, f_a, f_b, rho, u_x, u_y)
+        else
+            call execute_local_sim_step( &
+                domain_info, halo_buffers, domain_info%n_x_local, domain_info%n_y_local, &
+                write_macro_fields, f_b, f_a, rho, u_x, u_y)
+        end if
+#else
         call execute_local_sim_step( &
             domain_info, halo_buffers, domain_info%n_x_local, domain_info%n_y_local, &
             write_macro_fields, f, f_next, rho, u_x, u_y)
+#endif
         call system_clock(clock_section_end)
         kernel_compute_seconds = kernel_compute_seconds + &
             real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
 
         call system_clock(clock_section_start)
+#ifdef FFB_USE_COARRAY_DF
+        read_from_a = .not. read_from_a
+#else
         call swap_distribution_function_buffers(f, f_next)
+#endif
         call system_clock(clock_section_end)
         buffer_swap_seconds = buffer_swap_seconds + &
             real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)

@@ -2,7 +2,7 @@ module exchange
     ! imports
     use iso_fortran_env, only: int32
     use domain, only: domain_t
-    use settings, only: N_DIRS, FP, USE_STAGED_HALO_EXCHANGE, &
+    use settings, only: N_DIRS, FP, USE_COARRAY_DF, USE_STAGED_HALO_EXCHANGE, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID
     implicit none
     private
@@ -12,6 +12,7 @@ module exchange
     public :: allocate_halo_buffers
     public :: build_exchange_plan
     public :: exchange_halos
+    public :: exchange_halos_from_coarray_df
 
     type :: halo_buffers_t
 
@@ -114,15 +115,17 @@ contains
         ! read/write inputs
         type(halo_buffers_t), intent(inout) :: halo_buffers
 
-        if (allocated(halo_buffers%send_left)) then
+        if (allocated(halo_buffers%recv_macro_left)) then
             error stop "error: halo buffers are already allocated"
         end if
 
-        ! bottom/top buffers include corners
-        allocate(halo_buffers%send_left(domain_info%n_y_local, 3)[*])
-        allocate(halo_buffers%send_right(domain_info%n_y_local, 3)[*])
-        allocate(halo_buffers%send_bottom(0:domain_info%n_x_local+1, 3)[*])
-        allocate(halo_buffers%send_top(0:domain_info%n_x_local+1, 3)[*])
+        if (.not. USE_COARRAY_DF) then
+            ! bottom/top buffers include corners
+            allocate(halo_buffers%send_left(domain_info%n_y_local, 3)[*])
+            allocate(halo_buffers%send_right(domain_info%n_y_local, 3)[*])
+            allocate(halo_buffers%send_bottom(0:domain_info%n_x_local+1, 3)[*])
+            allocate(halo_buffers%send_top(0:domain_info%n_x_local+1, 3)[*])
+        end if
 
         if (USE_STAGED_HALO_EXCHANGE) then
             allocate(halo_buffers%recv_left(domain_info%n_y_local, 3))
@@ -158,6 +161,10 @@ contains
         integer(int32) :: y_neighbor_images(2)
         integer(int32) :: x
         integer(int32) :: y
+
+        if (USE_COARRAY_DF) then
+            error stop "error: send-buffer halo exchange called with coarray DF buffers"
+        end if
 
         n_x_neighbor_images = 0
         n_y_neighbor_images = 0
@@ -346,6 +353,191 @@ contains
             end if
         end subroutine sync_neighbor_images
     end subroutine exchange_halos
+
+
+    subroutine exchange_halos_from_coarray_df( &
+        domain_info, halo_buffers, n_x_local, n_y_local, f, exchange_plan &
+        )
+        ! inputs
+        type(domain_t), intent(in) :: domain_info
+        integer(int32), intent(in) :: n_x_local
+        integer(int32), intent(in) :: n_y_local
+        type(exchange_plan_t), intent(in) :: exchange_plan
+
+        ! read/write inputs
+        type(halo_buffers_t), intent(inout) :: halo_buffers
+        real(FP), intent(inout) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS)[*]
+
+        ! locals
+        integer(int32) :: n_x_neighbor_images
+        integer(int32) :: n_y_neighbor_images
+        integer(int32) :: x_neighbor_images(4)
+        integer(int32) :: y_neighbor_images(2)
+
+        if (.not. USE_COARRAY_DF) then
+            error stop "error: coarray DF exchange called without coarray DF buffers"
+        end if
+
+        n_x_neighbor_images = 0
+        n_y_neighbor_images = 0
+
+        if (exchange_plan%left) then
+            call add_neighbor_image(x_neighbor_images, n_x_neighbor_images, domain_info%left_image_id)
+        end if
+        if (exchange_plan%right) then
+            call add_neighbor_image(x_neighbor_images, n_x_neighbor_images, domain_info%right_image_id)
+        end if
+        if (exchange_plan%macro_left) then
+            call add_neighbor_image(x_neighbor_images, n_x_neighbor_images, domain_info%left_image_id)
+        end if
+        if (exchange_plan%macro_right) then
+            call add_neighbor_image(x_neighbor_images, n_x_neighbor_images, domain_info%right_image_id)
+        end if
+
+        if (exchange_plan%bottom) then
+            call add_neighbor_image(y_neighbor_images, n_y_neighbor_images, domain_info%bottom_image_id)
+        end if
+        if (exchange_plan%top) then
+            call add_neighbor_image(y_neighbor_images, n_y_neighbor_images, domain_info%top_image_id)
+        end if
+
+        call sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
+
+        ! ---------
+        ! | 7 3 6 |
+        ! | 4 1 2 |
+        ! | 8 5 9 |
+        ! ---------
+        ! read left/right halos from neighboring coarray DF buffers
+        if (USE_STAGED_HALO_EXCHANGE) then
+            if (exchange_plan%left) then
+                halo_buffers%recv_left(:, 1) = f(n_x_local, 1:n_y_local, 2)[domain_info%left_image_id]
+                halo_buffers%recv_left(:, 2) = f(n_x_local, 1:n_y_local, 6)[domain_info%left_image_id]
+                halo_buffers%recv_left(:, 3) = f(n_x_local, 1:n_y_local, 9)[domain_info%left_image_id]
+                f(0, 1:n_y_local, 2) = halo_buffers%recv_left(:, 1)
+                f(0, 1:n_y_local, 6) = halo_buffers%recv_left(:, 2)
+                f(0, 1:n_y_local, 9) = halo_buffers%recv_left(:, 3)
+            end if
+
+            if (exchange_plan%right) then
+                halo_buffers%recv_right(:, 1) = f(1, 1:n_y_local, 4)[domain_info%right_image_id]
+                halo_buffers%recv_right(:, 2) = f(1, 1:n_y_local, 7)[domain_info%right_image_id]
+                halo_buffers%recv_right(:, 3) = f(1, 1:n_y_local, 8)[domain_info%right_image_id]
+                f(n_x_local+1, 1:n_y_local, 4) = halo_buffers%recv_right(:, 1)
+                f(n_x_local+1, 1:n_y_local, 7) = halo_buffers%recv_right(:, 2)
+                f(n_x_local+1, 1:n_y_local, 8) = halo_buffers%recv_right(:, 3)
+            end if
+        else ! direct unpacking into f()
+            if (exchange_plan%left) then
+                f(0, 1:n_y_local, 2) = f(n_x_local, 1:n_y_local, 2)[domain_info%left_image_id]
+                f(0, 1:n_y_local, 6) = f(n_x_local, 1:n_y_local, 6)[domain_info%left_image_id]
+                f(0, 1:n_y_local, 9) = f(n_x_local, 1:n_y_local, 9)[domain_info%left_image_id]
+            end if
+
+            if (exchange_plan%right) then
+                f(n_x_local+1, 1:n_y_local, 4) = f(1, 1:n_y_local, 4)[domain_info%right_image_id]
+                f(n_x_local+1, 1:n_y_local, 7) = f(1, 1:n_y_local, 7)[domain_info%right_image_id]
+                f(n_x_local+1, 1:n_y_local, 8) = f(1, 1:n_y_local, 8)[domain_info%right_image_id]
+            end if
+        end if
+
+        ! pressure-periodic macro strips are maintained by the poiseuille kernels
+        if (exchange_plan%macro_left) then
+            halo_buffers%recv_macro_left(:, :) = halo_buffers%send_macro_right(:, :)[domain_info%left_image_id]
+        end if
+
+        if (exchange_plan%macro_right) then
+            halo_buffers%recv_macro_right(:, :) = halo_buffers%send_macro_left(:, :)[domain_info%right_image_id]
+        end if
+
+        call sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
+        call sync_neighbor_images(y_neighbor_images, n_y_neighbor_images)
+
+        ! ---------
+        ! | 7 3 6 |
+        ! | 4 1 2 |
+        ! | 8 5 9 |
+        ! ---------
+        ! read bottom/top halos, including x-halos carrying corner halo values
+        if (USE_STAGED_HALO_EXCHANGE) then
+            if (exchange_plan%bottom) then
+                halo_buffers%recv_bottom(:, 1) = f(0:n_x_local+1, n_y_local, 3)[domain_info%bottom_image_id]
+                halo_buffers%recv_bottom(:, 2) = f(0:n_x_local+1, n_y_local, 6)[domain_info%bottom_image_id]
+                halo_buffers%recv_bottom(:, 3) = f(0:n_x_local+1, n_y_local, 7)[domain_info%bottom_image_id]
+                f(0:n_x_local+1, 0, 3) = halo_buffers%recv_bottom(:, 1)
+                f(0:n_x_local+1, 0, 6) = halo_buffers%recv_bottom(:, 2)
+                f(0:n_x_local+1, 0, 7) = halo_buffers%recv_bottom(:, 3)
+            end if
+
+            if (exchange_plan%top) then
+                halo_buffers%recv_top(:, 1) = f(0:n_x_local+1, 1, 5)[domain_info%top_image_id]
+                halo_buffers%recv_top(:, 2) = f(0:n_x_local+1, 1, 8)[domain_info%top_image_id]
+                halo_buffers%recv_top(:, 3) = f(0:n_x_local+1, 1, 9)[domain_info%top_image_id]
+                f(0:n_x_local+1, n_y_local+1, 5) = halo_buffers%recv_top(:, 1)
+                f(0:n_x_local+1, n_y_local+1, 8) = halo_buffers%recv_top(:, 2)
+                f(0:n_x_local+1, n_y_local+1, 9) = halo_buffers%recv_top(:, 3)
+            end if
+        else ! direct unpacking into f()
+            if (exchange_plan%bottom) then
+                f(0:n_x_local+1, 0, 3) = f(0:n_x_local+1, n_y_local, 3)[domain_info%bottom_image_id]
+                f(0:n_x_local+1, 0, 6) = f(0:n_x_local+1, n_y_local, 6)[domain_info%bottom_image_id]
+                f(0:n_x_local+1, 0, 7) = f(0:n_x_local+1, n_y_local, 7)[domain_info%bottom_image_id]
+            end if
+
+            if (exchange_plan%top) then
+                f(0:n_x_local+1, n_y_local+1, 5) = f(0:n_x_local+1, 1, 5)[domain_info%top_image_id]
+                f(0:n_x_local+1, n_y_local+1, 8) = f(0:n_x_local+1, 1, 8)[domain_info%top_image_id]
+                f(0:n_x_local+1, n_y_local+1, 9) = f(0:n_x_local+1, 1, 9)[domain_info%top_image_id]
+            end if
+        end if
+
+        call sync_neighbor_images(y_neighbor_images, n_y_neighbor_images)
+
+    contains
+
+        subroutine add_neighbor_image( &
+            neighbor_images, n_neighbor_images, neighbor_image &
+            )
+            ! inputs
+            integer(int32), intent(in) :: neighbor_image
+
+            ! read/write inputs
+            integer(int32), intent(inout) :: neighbor_images(:)
+            integer(int32), intent(inout) :: n_neighbor_images
+
+            ! locals
+            integer(int32) :: i
+
+            do i = 1, n_neighbor_images
+                if (neighbor_images(i) == neighbor_image) then
+                    return
+                end if
+            end do
+
+            n_neighbor_images = n_neighbor_images + 1
+            if (n_neighbor_images > size(neighbor_images)) then
+                error stop "error: exchange neighbor list is too small"
+            end if
+            neighbor_images(n_neighbor_images) = neighbor_image
+        end subroutine add_neighbor_image
+
+
+        subroutine sync_neighbor_images( &
+            neighbor_images, n_neighbor_images &
+            )
+            ! inputs
+            integer(int32), intent(in) :: neighbor_images(:)
+            integer(int32), intent(in) :: n_neighbor_images
+
+            if (n_neighbor_images == 0) then
+                return
+            else if (n_neighbor_images == 1) then
+                sync images(neighbor_images(1))
+            else
+                sync images(neighbor_images(1:n_neighbor_images))
+            end if
+        end subroutine sync_neighbor_images
+    end subroutine exchange_halos_from_coarray_df
 
 
 end module exchange
