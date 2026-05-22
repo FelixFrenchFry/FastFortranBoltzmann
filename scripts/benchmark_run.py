@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run an FFB executable multiple times and summarize step time / MLUPS."""
+"""Run a sim config multiple times and summarize performance metrics"""
 
 import argparse
 import os
