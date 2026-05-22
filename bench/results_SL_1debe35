@@ -1,0 +1,1077 @@
+--------------------------------------------------------------------------------
+--- [ Intel Xeon Platinum 8358 ] -----------------------------------------------
+--------------------------------------------------------------------------------
+
+
+
+[fr_fl184@uc2n601 FastFortranBoltzmann]$ I_X=1 I_Y=1 FOR_COARRAY_NUM_IMAGES=1 ./build/release-native/bin/FFB
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads           = 128
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+use_staged_halo_exchange  = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           1
+image grid [X/Y]:         [ 1 / 1 ]
+local domain [X/Y]:       [ 14400 / 14400 ]
+halo cells:               0.028 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          14.934
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.422
+ 
+[17:57:44] launched -------------------------------------------------------
+[18:07:18] 100.00 %  (T-00:00:00)  300/300 steps  |  avg step: 1913.525 ms    
+[18:07:18] finished -------------------------------------------------------
+
+execution time                           |   total [sec]  |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |       574.047  |        99.996 %
+halo exchange                            |         0.000  |         0.000 %
+buffer swap                              |         0.000  |         0.000 %
+data export                              |         0.000  |         0.000 %
+progress display                         |         0.007  |         0.001 %
+other                                    |         0.018  |         0.003 %
+total                                    |       574.072  |       100.000 %
+
+--- [ perf metrics ] ------------------------------------------------------
+sim size [X/Y/N]:      [ 14400 / 14400 / 300 ]
+total time:          574.072 sec
+step time:          1913.574 ms
+MLUPS:               108.363
+
+
+
+[fr_fl184@uc2n601 FastFortranBoltzmann]$ python3 scripts/benchmark_runs.py --exe build/release-native/bin/FFB --runs 3 --images 4 --ix 1 --iy 4
+
+--- [ benchmark script settings ] -----------------------------------------
+executable                = build/release-native/bin/FFB
+runs                      = 3
+images                    = 4
+image grid                = 1 x 4
+sim size                  = 14400 x 14400
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads           = 128
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+use_staged_halo_exchange  = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           4
+image grid [X/Y]:         [ 1 / 4 ]
+local domain [X/Y]:       [ 14400 / 3600 ]
+halo cells:               0.069 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          14.940
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.429
+
+--- [ benchmark runs ] ----------------------------------------------------
+001 | [2026-05-22 17:42:08] | avg step: 476.008 ms | MLUPS: 435.623
+002 | [2026-05-22 17:44:33] | avg step: 476.208 ms | MLUPS: 435.440
+003 | [2026-05-22 17:46:59] | avg step: 476.294 ms | MLUPS: 435.361
+
+--- [ avg step metrics ] --------------------------------------------------
+median                    = 476.208 ms
+best                      = 476.008 ms
+worst                     = 476.294 ms
+mean                      = 476.170 ms
+stddev                    = 0.031 %
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 435.440
+best                      = 435.623
+worst                     = 435.361
+mean                      = 435.475
+stddev                    = 0.031 %
+
+
+
+[fr_fl184@uc2n601 FastFortranBoltzmann]$ python3 scripts/benchmark_runs.py --exe build/release-native/bin/FFB --runs 3 --images 9 --ix 1 --iy 9
+
+--- [ benchmark script settings ] -----------------------------------------
+executable                = build/release-native/bin/FFB
+runs                      = 3
+images                    = 9
+image grid                = 1 x 9
+sim size                  = 14400 x 14400
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads           = 128
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+use_staged_halo_exchange  = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           9
+image grid [X/Y]:         [ 1 / 9 ]
+local domain [X/Y]:       [ 14400 / 1600 ]
+halo cells:               0.139 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          14.951
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.439
+
+--- [ benchmark runs ] ----------------------------------------------------
+001 | [2026-05-22 17:49:03] | avg step: 389.849 ms | MLUPS: 531.898
+002 | [2026-05-22 17:51:17] | avg step: 393.387 ms | MLUPS: 527.114
+003 | [2026-05-22 17:53:18] | avg step: 390.416 ms | MLUPS: 531.126
+
+--- [ avg step metrics ] --------------------------------------------------
+median                    = 390.416 ms
+best                      = 389.849 ms
+worst                     = 393.387 ms
+mean                      = 391.217 ms
+stddev                    = 0.486 %
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 531.126
+best                      = 531.898
+worst                     = 527.114
+mean                      = 530.046
+stddev                    = 0.485 %
+
+
+
+[fr_fl184@uc2n601 FastFortranBoltzmann]$ python3 scripts/benchmark_runs.py --exe build/release-native/bin/FFB --runs 3 --images 16 --ix 1 --iy 16
+
+--- [ benchmark script settings ] -----------------------------------------
+executable                = build/release-native/bin/FFB
+runs                      = 3
+images                    = 16
+image grid                = 1 x 16
+sim size                  = 14400 x 14400
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads           = 128
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+use_staged_halo_exchange  = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           16
+image grid [X/Y]:         [ 1 / 16 ]
+local domain [X/Y]:       [ 14400 / 900 ]
+halo cells:               0.236 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          14.965
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.453
+
+--- [ benchmark runs ] ----------------------------------------------------
+001 | [2026-05-22 17:54:34] | avg step: 213.347 ms | MLUPS: 971.938
+002 | [2026-05-22 17:55:42] | avg step: 214.041 ms | MLUPS: 968.786
+003 | [2026-05-22 17:56:49] | avg step: 211.445 ms | MLUPS: 980.678
+
+--- [ avg step metrics ] --------------------------------------------------
+median                    = 213.347 ms
+best                      = 211.445 ms
+worst                     = 214.041 ms
+mean                      = 212.944 ms
+stddev                    = 0.631 %
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 971.938
+best                      = 980.678
+worst                     = 968.786
+mean                      = 973.801
+stddev                    = 0.633 %
+
+
+
+[fr_fl184@uc2n603 FastFortranBoltzmann]$ python3 scripts/benchmark_runs.py --exe build/release-native/bin/FFB --runs 3 --images 25 --ix 1 --iy 25
+
+--- [ benchmark script settings ] -----------------------------------------
+executable                = build/release-native/bin/FFB
+runs                      = 3
+images                    = 25
+image grid                = 1 x 25
+sim size                  = 14400 x 14400
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads           = 128
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+use_staged_halo_exchange  = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           25
+image grid [X/Y]:         [ 1 / 25 ]
+local domain [X/Y]:       [ 14400 / 576 ]
+halo cells:               0.361 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          14.984
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.472
+
+--- [ benchmark runs ] ----------------------------------------------------
+001 | [2026-05-22 18:27:39] | avg step: 144.947 ms | MLUPS: 1430.591
+002 | [2026-05-22 18:28:28] | avg step: 145.721 ms | MLUPS: 1422.992
+003 | [2026-05-22 18:29:17] | avg step: 144.585 ms | MLUPS: 1434.177
+
+--- [ avg step metrics ] --------------------------------------------------
+median                    = 144.947 ms
+best                      = 144.585 ms
+worst                     = 145.721 ms
+mean                      = 145.084 ms
+stddev                    = 0.400 %
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 1430.591
+best                      = 1434.177
+worst                     = 1422.992
+mean                      = 1429.253
+stddev                    = 0.400 %
+
+
+
+[fr_fl184@uc2n603 FastFortranBoltzmann]$ python3 scripts/benchmark_runs.py --exe build/release-native/bin/FFB --runs 3 --images 36 --ix 1 --iy 36
+
+--- [ benchmark script settings ] -----------------------------------------
+executable                = build/release-native/bin/FFB
+runs                      = 3
+images                    = 36
+image grid                = 1 x 36
+sim size                  = 14400 x 14400
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads           = 128
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+use_staged_halo_exchange  = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           36
+image grid [X/Y]:         [ 1 / 36 ]
+local domain [X/Y]:       [ 14400 / 400 ]
+halo cells:               0.514 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          15.007
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.495
+
+--- [ benchmark runs ] ----------------------------------------------------
+001 | [2026-05-22 18:25:33] | avg step: 97.511 ms | MLUPS: 2126.536
+002 | [2026-05-22 18:26:09] | avg step: 98.086 ms | MLUPS: 2114.062
+003 | [2026-05-22 18:26:46] | avg step: 97.286 ms | MLUPS: 2131.454
+
+--- [ avg step metrics ] --------------------------------------------------
+median                    = 97.511 ms
+best                      = 97.286 ms
+worst                     = 98.086 ms
+mean                      = 97.628 ms
+stddev                    = 0.423 %
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 2126.536
+best                      = 2131.454
+worst                     = 2114.062
+mean                      = 2124.017
+stddev                    = 0.422 %
+
+
+
+[fr_fl184@uc2n603 FastFortranBoltzmann]$ python3 scripts/benchmark_runs.py --exe build/release-native/bin/FFB --runs 3 --images 48 --ix 1 --iy 48
+
+--- [ benchmark script settings ] -----------------------------------------
+executable                = build/release-native/bin/FFB
+runs                      = 3
+images                    = 48
+image grid                = 1 x 48
+sim size                  = 14400 x 14400
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads           = 128
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+use_staged_halo_exchange  = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           48
+image grid [X/Y]:         [ 1 / 48 ]
+local domain [X/Y]:       [ 14400 / 300 ]
+halo cells:               0.681 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          15.032
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.520
+
+--- [ benchmark runs ] ----------------------------------------------------
+001 | [2026-05-22 18:29:56] | avg step: 81.266 ms | MLUPS: 2551.626
+002 | [2026-05-22 18:30:29] | avg step: 81.193 ms | MLUPS: 2553.907
+003 | [2026-05-22 18:31:02] | avg step: 81.392 ms | MLUPS: 2547.662
+
+--- [ avg step metrics ] --------------------------------------------------
+median                    = 81.266 ms
+best                      = 81.193 ms
+worst                     = 81.392 ms
+mean                      = 81.284 ms
+stddev                    = 0.124 %
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 2551.626
+best                      = 2553.907
+worst                     = 2547.662
+mean                      = 2551.065
+stddev                    = 0.124 %
+
+
+
+[fr_fl184@uc2n603 FastFortranBoltzmann]$ python3 scripts/benchmark_runs.py --exe build/release-native/bin/FFB --runs 3 --images 64 --ix 1 --iy 64
+
+--- [ benchmark script settings ] -----------------------------------------
+executable                = build/release-native/bin/FFB
+runs                      = 3
+images                    = 64
+image grid                = 1 x 64
+sim size                  = 14400 x 14400
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads           = 128
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+use_staged_halo_exchange  = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           64
+image grid [X/Y]:         [ 1 / 64 ]
+local domain [X/Y]:       [ 14400 / 225 ]
+halo cells:               0.903 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            73  |          15.065
+macro field buffers                      |            12  |           2.488
+total                                    |            85  |          17.553
+
+--- [ benchmark runs ] ----------------------------------------------------
+001 | [2026-05-22 18:31:43] | avg step: 78.803 ms | MLUPS: 2631.386
+002 | [2026-05-22 18:32:17] | avg step: 78.796 ms | MLUPS: 2631.590
+003 | [2026-05-22 18:32:52] | avg step: 78.821 ms | MLUPS: 2630.776
+
+--- [ avg step metrics ] --------------------------------------------------
+median                    = 78.803 ms
+best                      = 78.796 ms
+worst                     = 78.821 ms
+mean                      = 78.807 ms
+stddev                    = 0.016 %
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 2631.386
+best                      = 2631.590
+worst                     = 2630.776
+mean                      = 2631.251
+stddev                    = 0.016 %
+
+
+
+[fr_fl184@uc2n603 FastFortranBoltzmann]$ python3 scripts/benchmark_runs.py --exe build/release-native/bin/FFB --runs 3 --images 80 --ix 1 --iy 80
+
+--- [ benchmark script settings ] -----------------------------------------
+executable                = build/release-native/bin/FFB
+runs                      = 3
+images                    = 80
+image grid                = 1 x 80
+sim size                  = 14400 x 14400
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads           = 128
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+use_staged_halo_exchange  = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           80
+image grid [X/Y]:         [ 1 / 80 ]
+local domain [X/Y]:       [ 14400 / 180 ]
+halo cells:               1.125 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            73  |          15.098
+macro field buffers                      |            12  |           2.488
+total                                    |            85  |          17.586
+
+--- [ benchmark runs ] ----------------------------------------------------
+001 | [2026-05-22 18:33:36] | avg step: 79.895 ms | MLUPS: 2595.392
+002 | [2026-05-22 18:34:14] | avg step: 79.876 ms | MLUPS: 2596.038
+003 | [2026-05-22 18:34:52] | avg step: 79.870 ms | MLUPS: 2596.234
+
+--- [ avg step metrics ] --------------------------------------------------
+median                    = 79.876 ms
+best                      = 79.870 ms
+worst                     = 79.895 ms
+mean                      = 79.880 ms
+stddev                    = 0.016 %
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 2596.038
+best                      = 2596.234
+worst                     = 2595.392
+mean                      = 2595.888
+stddev                    = 0.017 %
+
+
+
+[fr_fl184@uc2n603 FastFortranBoltzmann]$ python3 scripts/benchmark_runs.py --exe build/release-native/bin/FFB --runs 3 --images 100 --ix 1 --iy 100
+
+--- [ benchmark script settings ] -----------------------------------------
+executable                = build/release-native/bin/FFB
+runs                      = 3
+images                    = 100
+image grid                = 1 x 100
+sim size                  = 14400 x 14400
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads           = 128
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+use_staged_halo_exchange  = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           100
+image grid [X/Y]:         [ 1 / 100 ]
+local domain [X/Y]:       [ 14400 / 144 ]
+halo cells:               1.403 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            73  |          15.139
+macro field buffers                      |            12  |           2.488
+total                                    |            85  |          17.628
+
+--- [ benchmark runs ] ----------------------------------------------------
+001 | [2026-05-22 18:35:39] | avg step: 77.674 ms | MLUPS: 2669.626
+002 | [2026-05-22 18:36:20] | avg step: 77.589 ms | MLUPS: 2672.551
+003 | [2026-05-22 18:37:00] | avg step: 77.825 ms | MLUPS: 2664.449
+
+--- [ avg step metrics ] --------------------------------------------------
+median                    = 77.674 ms
+best                      = 77.589 ms
+worst                     = 77.825 ms
+mean                      = 77.696 ms
+stddev                    = 0.154 %
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 2669.626
+best                      = 2672.551
+worst                     = 2664.449
+mean                      = 2668.875
+stddev                    = 0.154 %
+
+
+
+[fr_fl184@uc2n603 FastFortranBoltzmann]$ python3 scripts/benchmark_runs.py --exe build/release-native/bin/FFB --runs 3 --images 120 --ix 1 --iy 120
+
+--- [ benchmark script settings ] -----------------------------------------
+executable                = build/release-native/bin/FFB
+runs                      = 3
+images                    = 120
+image grid                = 1 x 120
+sim size                  = 14400 x 14400
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads           = 128
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+use_staged_halo_exchange  = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           120
+image grid [X/Y]:         [ 1 / 120 ]
+local domain [X/Y]:       [ 14400 / 120 ]
+halo cells:               1.681 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            73  |          15.181
+macro field buffers                      |            12  |           2.488
+total                                    |            85  |          17.669
+
+--- [ benchmark runs ] ----------------------------------------------------
+001 | [2026-05-22 18:37:50] | avg step: 78.801 ms | MLUPS: 2631.454
+002 | [2026-05-22 18:38:36] | avg step: 78.825 ms | MLUPS: 2630.639
+003 | [2026-05-22 18:39:21] | avg step: 78.960 ms | MLUPS: 2626.131
+
+--- [ avg step metrics ] --------------------------------------------------
+median                    = 78.825 ms
+best                      = 78.801 ms
+worst                     = 78.960 ms
+mean                      = 78.862 ms
+stddev                    = 0.109 %
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 2630.639
+best                      = 2631.454
+worst                     = 2626.131
+mean                      = 2629.408
+stddev                    = 0.109 %
+
+
+
+[fr_fl184@uc2n603 FastFortranBoltzmann]$ python3 scripts/benchmark_runs.py --exe build/release-native/bin/FFB --runs 3 --images 144 --ix 1 --iy 144
+
+--- [ benchmark script settings ] -----------------------------------------
+executable                = build/release-native/bin/FFB
+runs                      = 3
+images                    = 144
+image grid                = 1 x 144
+sim size                  = 14400 x 14400
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads           = 128
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+use_staged_halo_exchange  = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           144
+image grid [X/Y]:         [ 1 / 144 ]
+local domain [X/Y]:       [ 14400 / 100 ]
+halo cells:               2.014 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            73  |          15.231
+macro field buffers                      |            12  |           2.488
+total                                    |            85  |          17.719
+
+--- [ benchmark runs ] ----------------------------------------------------
+001 | [2026-05-22 18:40:26] | avg step: 107.051 ms | MLUPS: 1937.022
+002 | [2026-05-22 18:41:25] | avg step: 107.295 ms | MLUPS: 1932.615
+003 | [2026-05-22 18:42:25] | avg step: 107.024 ms | MLUPS: 1937.503
+
+--- [ avg step metrics ] --------------------------------------------------
+median                    = 107.051 ms
+best                      = 107.024 ms
+worst                     = 107.295 ms
+mean                      = 107.123 ms
+stddev                    = 0.139 %
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 1937.022
+best                      = 1937.503
+worst                     = 1932.615
+mean                      = 1935.713
+stddev                    = 0.139 %
+
+
+
+[fr_fl184@uc2n603 FastFortranBoltzmann]$ python3 scripts/benchmark_runs.py --exe build/release-native/bin/FFB --runs 3 --images 160 --ix 1 --iy 160
+
+--- [ benchmark script settings ] -----------------------------------------
+executable                = build/release-native/bin/FFB
+runs                      = 3
+images                    = 160
+image grid                = 1 x 160
+sim size                  = 14400 x 14400
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads           = 128
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+use_staged_halo_exchange  = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           160
+image grid [X/Y]:         [ 1 / 160 ]
+local domain [X/Y]:       [ 14400 / 90 ]
+halo cells:               2.236 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            74  |          15.264
+macro field buffers                      |            12  |           2.488
+total                                    |            86  |          17.752
+
+--- [ benchmark runs ] ----------------------------------------------------
+001 | [2026-05-22 18:47:30] | avg step: 125.432 ms | MLUPS: 1653.161
+002 | [2026-05-22 18:48:39] | avg step: 124.885 ms | MLUPS: 1660.404
+003 | [2026-05-22 18:49:49] | avg step: 125.385 ms | MLUPS: 1653.783
+
+--- [ avg step metrics ] --------------------------------------------------
+median                    = 125.385 ms
+best                      = 124.885 ms
+worst                     = 125.432 ms
+mean                      = 125.234 ms
+stddev                    = 0.242 %
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 1653.783
+best                      = 1660.404
+worst                     = 1653.161
+mean                      = 1655.783
+stddev                    = 0.242 %
+
+
+
+[fr_fl184@uc2n603 FastFortranBoltzmann]$ python3 scripts/benchmark_runs.py --exe build/release-native/bin/FFB --runs 3 --images 192 --ix 1 --iy 192
+
+--- [ benchmark script settings ] -----------------------------------------
+executable                = build/release-native/bin/FFB
+runs                      = 3
+images                    = 192
+image grid                = 1 x 192
+sim size                  = 14400 x 14400
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads           = 128
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+use_staged_halo_exchange  = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           192
+image grid [X/Y]:         [ 1 / 192 ]
+local domain [X/Y]:       [ 14400 / 75 ]
+halo cells:               2.681 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            74  |          15.330
+macro field buffers                      |            12  |           2.488
+total                                    |            86  |          17.819
+
+--- [ benchmark runs ] ----------------------------------------------------
+001 | [2026-05-22 18:43:46] | avg step: 108.635 ms | MLUPS: 1908.785
+002 | [2026-05-22 18:44:59] | avg step: 107.683 ms | MLUPS: 1925.652
+003 | [2026-05-22 18:46:12] | avg step: 108.659 ms | MLUPS: 1908.362
+
+--- [ avg step metrics ] --------------------------------------------------
+median                    = 108.635 ms
+best                      = 107.683 ms
+worst                     = 108.659 ms
+mean                      = 108.326 ms
+stddev                    = 0.514 %
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 1908.785
+best                      = 1925.652
+worst                     = 1908.362
+mean                      = 1914.266
+stddev                    = 0.515 %
+
+
+
+[fr_fl184@uc2n603 FastFortranBoltzmann]$ python3 scripts/benchmark_runs.py --exe build/release-native/bin/FFB --runs 3 --images 225 --ix 1 --iy 225
+
+--- [ benchmark script settings ] -----------------------------------------
+executable                = build/release-native/bin/FFB
+runs                      = 3
+images                    = 225
+image grid                = 1 x 225
+sim size                  = 14400 x 14400
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads           = 128
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+use_staged_halo_exchange  = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           225
+image grid [X/Y]:         [ 1 / 225 ]
+local domain [X/Y]:       [ 14400 / 64 ]
+halo cells:               3.139 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            74  |          15.399
+macro field buffers                      |            12  |           2.488
+total                                    |            86  |          17.887
+
+--- [ benchmark runs ] ----------------------------------------------------
+001 | [2026-05-22 18:51:18] | avg step: 101.944 ms | MLUPS: 2034.068
+002 | [2026-05-22 18:52:39] | avg step: 101.563 ms | MLUPS: 2041.682
+003 | [2026-05-22 18:54:00] | avg step: 101.411 ms | MLUPS: 2044.756
+
+--- [ avg step metrics ] --------------------------------------------------
+median                    = 101.563 ms
+best                      = 101.411 ms
+worst                     = 101.944 ms
+mean                      = 101.639 ms
+stddev                    = 0.270 %
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 2041.682
+best                      = 2044.756
+worst                     = 2034.068
+mean                      = 2040.169
+stddev                    = 0.270 %
