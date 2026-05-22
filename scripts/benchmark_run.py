@@ -14,11 +14,18 @@ from pathlib import Path
 NUMBER = r"(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)"
 STEP_RE = re.compile(rf"step time:\s*({NUMBER})\s*ms", re.IGNORECASE)
 MLUPS_RE = re.compile(rf"MLUPS:\s*({NUMBER})", re.IGNORECASE)
+EXECUTION_TIME_RE = re.compile(rf"^([a-z ]+?)\s*\|\s*({NUMBER})\s*\|\s*({NUMBER})\s*%", re.IGNORECASE | re.MULTILINE)
 LAUNCHED_RE = re.compile(r"^\[[0-9:]+\]\s+launched", re.MULTILINE)
 SIM_SIZE_RE = re.compile(r"^\s*integer\(int32\), parameter :: (N_[XY])\s*=\s*([0-9]+)", re.MULTILINE)
 CMAKE_CACHE_RE = re.compile(r"^([^#/\n][^:=\n]*):[^=\n]*=(.*)$", re.MULTILINE)
 HEADER_WIDTH = 75
 MAX_RUNS = 999
+TIMING_CATEGORIES = (
+    "kernel compute",
+    "halo exchange",
+    "other",
+    "total",
+)
 
 # settings
 DEFAULT_EXE = "build/release/bin/FFB"
@@ -108,6 +115,21 @@ def parse_last(pattern, text, name):
     return float(matches[-1])
 
 
+def parse_execution_times(output):
+    values = {}
+    for name, seconds, share in EXECUTION_TIME_RE.findall(output):
+        values[name.strip().lower()] = {
+            "seconds": float(seconds),
+            "share": float(share),
+        }
+
+    missing = [name for name in TIMING_CATEGORIES if name not in values]
+    if missing:
+        raise RuntimeError("could not parse execution time table")
+
+    return values
+
+
 def run_once(exe, images, ix, iy, run_num):
     env = os.environ.copy()
     if "FOR_COARRAY_CONFIG_FILE" not in env:
@@ -131,6 +153,7 @@ def run_once(exe, images, ix, iy, run_num):
     return (
         parse_last(STEP_RE, output, "step time"),
         parse_last(MLUPS_RE, output, "MLUPS"),
+        parse_execution_times(output),
         output,
     )
 
@@ -158,6 +181,18 @@ def get_stats(values, higher_is_better):
     }
 
 
+def print_execution_time_stats(execution_times):
+    print()
+    print(f"{'execution time median':<40} | {'total [sec]':>14} | {'share [%]':>15}")
+    print("-" * HEADER_WIDTH)
+
+    for category in TIMING_CATEGORIES:
+        seconds = [values[category]["seconds"] for values in execution_times]
+        shares = [values[category]["share"] for values in execution_times]
+
+        print(f"{category:<40} | {statistics.median(seconds):14.3f} | {statistics.median(shares):13.3f} %")
+
+
 def main():
     args = parse_args()
 
@@ -181,6 +216,7 @@ def main():
 
     step_times = []
     mlups_values = []
+    execution_times = []
 
     print()
     print_header("benchmark script settings")
@@ -192,7 +228,7 @@ def main():
     print()
 
     for run_num in range(1, args.runs + 1):
-        step_ms, mlups, output = run_once(args.exe, args.images, args.ix, args.iy, run_num)
+        step_ms, mlups, execution_time, output = run_once(args.exe, args.images, args.ix, args.iy, run_num)
 
         if run_num == 1:
             print_static_app_output(output)
@@ -202,6 +238,7 @@ def main():
 
         step_times.append(step_ms)
         mlups_values.append(mlups)
+        execution_times.append(execution_time)
 
     print()
     step_stats = get_stats(step_times, higher_is_better=False)
@@ -221,6 +258,8 @@ def main():
     print_param("worst", f"{mlups_stats['worst']:.3f}")
     print_param("mean", f"{mlups_stats['mean']:.3f}")
     print_param("stddev", f"{mlups_stats['stddev_percent']:.3f} %")
+
+    print_execution_time_stats(execution_times)
 
 
 if __name__ == "__main__":

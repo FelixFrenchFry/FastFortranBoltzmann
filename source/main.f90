@@ -41,12 +41,9 @@ program main
     real(real64) :: total_bytes_per_cell
     real(real64) :: kernel_compute_seconds
     real(real64) :: halo_exchange_seconds
-    real(real64) :: buffer_swap_seconds
-    real(real64) :: export_seconds
-    real(real64) :: progress_seconds
     real(real64) :: measured_seconds
     real(real64) :: other_seconds
-    real(real64) :: execution_time_values(7)[*]
+    real(real64) :: execution_time_values(4)[*]
     integer(int32) :: image_id
     integer(int32) :: timing_image_id
 
@@ -152,9 +149,6 @@ program main
 
     kernel_compute_seconds = 0.0_real64
     halo_exchange_seconds = 0.0_real64
-    buffer_swap_seconds = 0.0_real64
-    export_seconds = 0.0_real64
-    progress_seconds = 0.0_real64
 
     call system_clock(clock_start, clock_rate)
 
@@ -191,31 +185,19 @@ program main
         kernel_compute_seconds = kernel_compute_seconds + &
             real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
 
-        call system_clock(clock_section_start)
         read_from_a = .not. read_from_a
-        call system_clock(clock_section_end)
-        buffer_swap_seconds = buffer_swap_seconds + &
-            real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
 
         ! export selected field
         if (should_export_step(step, EXPORT_INTERVAL, &
             EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE)) then
-            call system_clock(clock_section_start)
             call export_selected_data_distributed(domain_info, EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, &
                 EXPORT_NUM, step, rho, u_x, u_y)
-            call system_clock(clock_section_end)
-            export_seconds = export_seconds + &
-                real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
         end if
 
         ! print sim progress info
         if (this_image() == 1) then
             if (mod(step, PROGRESS_INTERVAL) == 0 .or. step == N_STEPS) then
-                call system_clock(clock_section_start)
                 call print_progress_status(step, clock_start, clock_rate, INTERACTIVE_PROGRESS)
-                call system_clock(clock_section_end)
-                progress_seconds = progress_seconds + &
-                    real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
             end if
         end if
 
@@ -231,36 +213,33 @@ program main
     ! finalize timing and print metrics
     call system_clock(clock_end)
     elapsed_seconds = real(clock_end - clock_start, real64) / real(clock_rate, real64)
-    seconds_per_step = elapsed_seconds / real(N_STEPS, real64)
-    mlups = real(N_CELLS, real64) * real(N_STEPS, real64) / elapsed_seconds / 1.0e6_real64
 
-    measured_seconds = kernel_compute_seconds + halo_exchange_seconds + &
-        buffer_swap_seconds + export_seconds + progress_seconds
+    measured_seconds = kernel_compute_seconds + halo_exchange_seconds
     other_seconds = max(0.0_real64, elapsed_seconds - measured_seconds)
 
     execution_time_values(1) = kernel_compute_seconds
     execution_time_values(2) = halo_exchange_seconds
-    execution_time_values(3) = buffer_swap_seconds
-    execution_time_values(4) = export_seconds
-    execution_time_values(5) = progress_seconds
-    execution_time_values(6) = other_seconds
-    execution_time_values(7) = elapsed_seconds
+    execution_time_values(3) = other_seconds
+    execution_time_values(4) = elapsed_seconds
 
     sync all
 
     if (this_image() == 1) then
         timing_image_id = 1
         do image_id = 2, domain_info%n_images
-            if (execution_time_values(7)[image_id] > execution_time_values(7)[timing_image_id]) then
+            if (execution_time_values(4)[image_id] > execution_time_values(4)[timing_image_id]) then
                 timing_image_id = image_id
             end if
         end do
 
+        elapsed_seconds = execution_time_values(4)[timing_image_id]
+        seconds_per_step = elapsed_seconds / real(N_STEPS, real64)
+        mlups = real(N_CELLS, real64) * real(N_STEPS, real64) / elapsed_seconds / 1.0e6_real64
+
         call print_execution_summary( &
             execution_time_values(1)[timing_image_id], execution_time_values(2)[timing_image_id], &
             execution_time_values(3)[timing_image_id], execution_time_values(4)[timing_image_id], &
-            execution_time_values(5)[timing_image_id], execution_time_values(6)[timing_image_id], &
-            execution_time_values(7)[timing_image_id], seconds_per_step, mlups)
+            seconds_per_step, mlups)
     end if
 
 
