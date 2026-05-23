@@ -26,10 +26,32 @@ TIMING_CATEGORIES = (
     "other",
     "total",
 )
+PINNING_ENV_NAMES = (
+    "I_MPI_PIN",
+    "I_MPI_PIN_DOMAIN",
+    "I_MPI_PIN_ORDER",
+    "I_MPI_PIN_PROCESSOR_LIST",
+)
+PINNING_PRESETS = {
+    "none": {
+        "I_MPI_PIN": "0",
+    },
+    "core_scatter": {
+        "I_MPI_PIN": "1",
+        "I_MPI_PIN_DOMAIN": "core",
+        "I_MPI_PIN_ORDER": "scatter",
+    },
+    "core_spread": {
+        "I_MPI_PIN": "1",
+        "I_MPI_PIN_DOMAIN": "core",
+        "I_MPI_PIN_ORDER": "spread",
+    },
+}
 
 # settings
 DEFAULT_EXE = "build/release/bin/FFB"
 DEFAULT_RUNS = 5
+DEFAULT_PIN = "core_scatter"
 
 
 def print_header(title):
@@ -51,6 +73,7 @@ def parse_args():
     parser.add_argument("--images", type=int, required=True)
     parser.add_argument("--ix", type=int, required=True)
     parser.add_argument("--iy", type=int, required=True)
+    parser.add_argument("--pin", choices=PINNING_PRESETS.keys(), default=DEFAULT_PIN)
     return parser.parse_args()
 
 
@@ -130,8 +153,22 @@ def parse_execution_times(output):
     return values
 
 
-def run_once(exe, images, ix, iy, run_num):
+def apply_pinning_preset(env, pin):
+    for name in PINNING_ENV_NAMES:
+        env.pop(name, None)
+
+    env.update(PINNING_PRESETS[pin])
+
+
+def print_pinning_settings(pin):
+    print_param("mpi pinning", pin)
+    for name in PINNING_ENV_NAMES:
+        print_param(name, PINNING_PRESETS[pin].get(name, "unset"))
+
+
+def run_once(exe, images, ix, iy, run_num, pin):
     env = os.environ.copy()
+    apply_pinning_preset(env, pin)
     if "FOR_COARRAY_CONFIG_FILE" not in env:
         env["FOR_COARRAY_NUM_IMAGES"] = str(images)
     env["I_X"] = str(ix)
@@ -225,10 +262,12 @@ def main():
     print_param("images", args.images)
     print_param("image grid", f"{args.ix} x {args.iy}")
     print_param("sim size", f"{n_x} x {n_y}")
+    print_pinning_settings(args.pin)
     print()
 
     for run_num in range(1, args.runs + 1):
-        step_ms, mlups, execution_time, output = run_once(args.exe, args.images, args.ix, args.iy, run_num)
+        step_ms, mlups, execution_time, output = run_once(
+            args.exe, args.images, args.ix, args.iy, run_num, args.pin)
 
         if run_num == 1:
             print_static_app_output(output)
