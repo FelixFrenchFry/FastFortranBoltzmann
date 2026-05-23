@@ -2,7 +2,7 @@ module exchange
     ! imports
     use iso_fortran_env, only: int32
     use domain, only: domain_t
-    use settings, only: N_DIRS, FP, USE_STAGED_HALO_EXCHANGE, &
+    use settings, only: N_DIRS, FP, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID
     implicit none
     private
@@ -15,17 +15,15 @@ module exchange
 
     type :: halo_buffers_t
 
-        ! distribution function receive buffers for staged halo exchange
+        ! distribution function receive buffers for staged left/right halo exchange
         real(FP), allocatable :: recv_left(:,:)
         real(FP), allocatable :: recv_right(:,:)
-        real(FP), allocatable :: recv_bottom(:,:)
-        real(FP), allocatable :: recv_top(:,:)
 
-        ! x-direction macro field send buffers
+        ! left/right macro field send buffers
         real(FP), allocatable :: send_macro_left(:,:)[:]
         real(FP), allocatable :: send_macro_right(:,:)[:]
 
-        ! x-direction macro field receive buffers
+        ! left/right macro field receive buffers
         real(FP), allocatable :: recv_macro_left(:,:)
         real(FP), allocatable :: recv_macro_right(:,:)
 
@@ -110,12 +108,8 @@ contains
             error stop "error: halo buffers are already allocated"
         end if
 
-        if (USE_STAGED_HALO_EXCHANGE) then
-            allocate(halo_buffers%recv_left(domain_info%n_y, 3))
-            allocate(halo_buffers%recv_right(domain_info%n_y, 3))
-            allocate(halo_buffers%recv_bottom(0:domain_info%n_x+1, 3))
-            allocate(halo_buffers%recv_top(0:domain_info%n_x+1, 3))
-        end if
+        allocate(halo_buffers%recv_left(domain_info%n_y, 3))
+        allocate(halo_buffers%recv_right(domain_info%n_y, 3))
 
         allocate(halo_buffers%send_macro_left(domain_info%n_y, 3)[*])
         allocate(halo_buffers%send_macro_right(domain_info%n_y, 3)[*])
@@ -173,40 +167,26 @@ contains
         ! | 4 1 2 |
         ! | 8 5 9 |
         ! ---------
-        ! read left/right halos from neighboring distribution function buffers
-        if (USE_STAGED_HALO_EXCHANGE) then
-            if (exchange_plan%left) then
-                halo_buffers%recv_left(:, 1) = f(n_x_local, 1:n_y_local, 2)[domain_info%left_image_id]
-                halo_buffers%recv_left(:, 2) = f(n_x_local, 1:n_y_local, 6)[domain_info%left_image_id]
-                halo_buffers%recv_left(:, 3) = f(n_x_local, 1:n_y_local, 9)[domain_info%left_image_id]
-                f(0, 1:n_y_local, 2) = halo_buffers%recv_left(:, 1)
-                f(0, 1:n_y_local, 6) = halo_buffers%recv_left(:, 2)
-                f(0, 1:n_y_local, 9) = halo_buffers%recv_left(:, 3)
-            end if
-
-            if (exchange_plan%right) then
-                halo_buffers%recv_right(:, 1) = f(1, 1:n_y_local, 4)[domain_info%right_image_id]
-                halo_buffers%recv_right(:, 2) = f(1, 1:n_y_local, 7)[domain_info%right_image_id]
-                halo_buffers%recv_right(:, 3) = f(1, 1:n_y_local, 8)[domain_info%right_image_id]
-                f(n_x_local+1, 1:n_y_local, 4) = halo_buffers%recv_right(:, 1)
-                f(n_x_local+1, 1:n_y_local, 7) = halo_buffers%recv_right(:, 2)
-                f(n_x_local+1, 1:n_y_local, 8) = halo_buffers%recv_right(:, 3)
-            end if
-        else ! direct unpacking into f()
-            if (exchange_plan%left) then
-                f(0, 1:n_y_local, 2) = f(n_x_local, 1:n_y_local, 2)[domain_info%left_image_id]
-                f(0, 1:n_y_local, 6) = f(n_x_local, 1:n_y_local, 6)[domain_info%left_image_id]
-                f(0, 1:n_y_local, 9) = f(n_x_local, 1:n_y_local, 9)[domain_info%left_image_id]
-            end if
-
-            if (exchange_plan%right) then
-                f(n_x_local+1, 1:n_y_local, 4) = f(1, 1:n_y_local, 4)[domain_info%right_image_id]
-                f(n_x_local+1, 1:n_y_local, 7) = f(1, 1:n_y_local, 7)[domain_info%right_image_id]
-                f(n_x_local+1, 1:n_y_local, 8) = f(1, 1:n_y_local, 8)[domain_info%right_image_id]
-            end if
+        ! exchange strided left/right halos through staging buffers
+        if (exchange_plan%left) then
+            halo_buffers%recv_left(:, 1) = f(n_x_local, 1:n_y_local, 2)[domain_info%left_image_id]
+            halo_buffers%recv_left(:, 2) = f(n_x_local, 1:n_y_local, 6)[domain_info%left_image_id]
+            halo_buffers%recv_left(:, 3) = f(n_x_local, 1:n_y_local, 9)[domain_info%left_image_id]
+            f(0, 1:n_y_local, 2) = halo_buffers%recv_left(:, 1)
+            f(0, 1:n_y_local, 6) = halo_buffers%recv_left(:, 2)
+            f(0, 1:n_y_local, 9) = halo_buffers%recv_left(:, 3)
         end if
 
-        ! pressure-periodic macro strips are maintained by the poiseuille kernels
+        if (exchange_plan%right) then
+            halo_buffers%recv_right(:, 1) = f(1, 1:n_y_local, 4)[domain_info%right_image_id]
+            halo_buffers%recv_right(:, 2) = f(1, 1:n_y_local, 7)[domain_info%right_image_id]
+            halo_buffers%recv_right(:, 3) = f(1, 1:n_y_local, 8)[domain_info%right_image_id]
+            f(n_x_local+1, 1:n_y_local, 4) = halo_buffers%recv_right(:, 1)
+            f(n_x_local+1, 1:n_y_local, 7) = halo_buffers%recv_right(:, 2)
+            f(n_x_local+1, 1:n_y_local, 8) = halo_buffers%recv_right(:, 3)
+        end if
+
+        ! pressure-periodic macros for poiseuille flow
         if (exchange_plan%macro_left) then
             halo_buffers%recv_macro_left(:, :) = halo_buffers%send_macro_right(:, :)[domain_info%left_image_id]
         end if
@@ -223,37 +203,17 @@ contains
         ! | 4 1 2 |
         ! | 8 5 9 |
         ! ---------
-        ! read bottom/top halos, including x-halos carrying corner halo values
-        if (USE_STAGED_HALO_EXCHANGE) then
-            if (exchange_plan%bottom) then
-                halo_buffers%recv_bottom(:, 1) = f(0:n_x_local+1, n_y_local, 3)[domain_info%bottom_image_id]
-                halo_buffers%recv_bottom(:, 2) = f(0:n_x_local+1, n_y_local, 6)[domain_info%bottom_image_id]
-                halo_buffers%recv_bottom(:, 3) = f(0:n_x_local+1, n_y_local, 7)[domain_info%bottom_image_id]
-                f(0:n_x_local+1, 0, 3) = halo_buffers%recv_bottom(:, 1)
-                f(0:n_x_local+1, 0, 6) = halo_buffers%recv_bottom(:, 2)
-                f(0:n_x_local+1, 0, 7) = halo_buffers%recv_bottom(:, 3)
-            end if
+        ! exchange contiguous bottom/top halos directly, including corners
+        if (exchange_plan%bottom) then
+            f(0:n_x_local+1, 0, 3) = f(0:n_x_local+1, n_y_local, 3)[domain_info%bottom_image_id]
+            f(0:n_x_local+1, 0, 6) = f(0:n_x_local+1, n_y_local, 6)[domain_info%bottom_image_id]
+            f(0:n_x_local+1, 0, 7) = f(0:n_x_local+1, n_y_local, 7)[domain_info%bottom_image_id]
+        end if
 
-            if (exchange_plan%top) then
-                halo_buffers%recv_top(:, 1) = f(0:n_x_local+1, 1, 5)[domain_info%top_image_id]
-                halo_buffers%recv_top(:, 2) = f(0:n_x_local+1, 1, 8)[domain_info%top_image_id]
-                halo_buffers%recv_top(:, 3) = f(0:n_x_local+1, 1, 9)[domain_info%top_image_id]
-                f(0:n_x_local+1, n_y_local+1, 5) = halo_buffers%recv_top(:, 1)
-                f(0:n_x_local+1, n_y_local+1, 8) = halo_buffers%recv_top(:, 2)
-                f(0:n_x_local+1, n_y_local+1, 9) = halo_buffers%recv_top(:, 3)
-            end if
-        else ! direct unpacking into f()
-            if (exchange_plan%bottom) then
-                f(0:n_x_local+1, 0, 3) = f(0:n_x_local+1, n_y_local, 3)[domain_info%bottom_image_id]
-                f(0:n_x_local+1, 0, 6) = f(0:n_x_local+1, n_y_local, 6)[domain_info%bottom_image_id]
-                f(0:n_x_local+1, 0, 7) = f(0:n_x_local+1, n_y_local, 7)[domain_info%bottom_image_id]
-            end if
-
-            if (exchange_plan%top) then
-                f(0:n_x_local+1, n_y_local+1, 5) = f(0:n_x_local+1, 1, 5)[domain_info%top_image_id]
-                f(0:n_x_local+1, n_y_local+1, 8) = f(0:n_x_local+1, 1, 8)[domain_info%top_image_id]
-                f(0:n_x_local+1, n_y_local+1, 9) = f(0:n_x_local+1, 1, 9)[domain_info%top_image_id]
-            end if
+        if (exchange_plan%top) then
+            f(0:n_x_local+1, n_y_local+1, 5) = f(0:n_x_local+1, 1, 5)[domain_info%top_image_id]
+            f(0:n_x_local+1, n_y_local+1, 8) = f(0:n_x_local+1, 1, 8)[domain_info%top_image_id]
+            f(0:n_x_local+1, n_y_local+1, 9) = f(0:n_x_local+1, 1, 9)[domain_info%top_image_id]
         end if
 
         call sync_neighbor_images(y_neighbor_images, n_y_neighbor_images)
