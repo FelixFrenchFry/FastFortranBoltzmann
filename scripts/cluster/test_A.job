@@ -78,7 +78,8 @@ mpirun --version
 # generate config file and run
 export FOR_COARRAY_CONFIG_FILE=$HOME/FastFortranBoltzmann/${SLURM_JOB_ID}.conf
 export EXE=$BUILD_DIR/bin/FFB
-printf '%s\n' "-genvall -genv FOR_ICAF_STATUS launched -genv I_MPI_FABRICS=shm:ofi -genv I_X=$I_X -genv I_Y=$I_Y -n $IMAGES $EXE" > "$FOR_COARRAY_CONFIG_FILE"
+unset I_MPI_PIN_PROCESSOR_LIST
+printf '%s\n' "-genvall -genv FOR_ICAF_STATUS launched -genv I_MPI_FABRICS=shm:ofi -genv I_MPI_PIN=1 -genv I_MPI_PIN_DOMAIN=core -genv I_MPI_PIN_ORDER=scatter -genv I_X=$I_X -genv I_Y=$I_Y -n $IMAGES $EXE" > "$FOR_COARRAY_CONFIG_FILE"
 
 # python3 -u scripts/benchmark_runs.py --exe $EXE --runs 3 --images $IMAGES --ix $I_X --iy $I_Y
 "$EXE"

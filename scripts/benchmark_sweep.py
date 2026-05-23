@@ -26,10 +26,32 @@ TIMING_CATEGORIES = (
     "other",
     "total",
 )
+PINNING_ENV_NAMES = (
+    "I_MPI_PIN",
+    "I_MPI_PIN_DOMAIN",
+    "I_MPI_PIN_ORDER",
+    "I_MPI_PIN_PROCESSOR_LIST",
+)
+PINNING_PRESETS = {
+    "none": {
+        "I_MPI_PIN": "0",
+    },
+    "core_scatter": {
+        "I_MPI_PIN": "1",
+        "I_MPI_PIN_DOMAIN": "core",
+        "I_MPI_PIN_ORDER": "scatter",
+    },
+    "core_spread": {
+        "I_MPI_PIN": "1",
+        "I_MPI_PIN_DOMAIN": "core",
+        "I_MPI_PIN_ORDER": "spread",
+    },
+}
 
 # settings
 DEFAULT_EXE = "build/release/bin/FFB"
 DEFAULT_RUNS = 5
+DEFAULT_PIN = "core_scatter"
 SKIP = 0
 
 # domain decompositions (images, ix, iy)
@@ -274,6 +296,7 @@ def parse_args():
     parser.add_argument("--runs", type=int, default=DEFAULT_RUNS)
     parser.add_argument("--case", choices=DOMAIN_DECOMP_CASE_SETS.keys(), default="custom")
     parser.add_argument("--skip", type=int, default=SKIP)
+    parser.add_argument("--pin", choices=PINNING_PRESETS.keys(), default=DEFAULT_PIN)
     return parser.parse_args()
 
 
@@ -353,8 +376,22 @@ def parse_execution_times(output):
     return values
 
 
-def run_once(exe, images, ix, iy, run_num):
+def apply_pinning_preset(env, pin):
+    for name in PINNING_ENV_NAMES:
+        env.pop(name, None)
+
+    env.update(PINNING_PRESETS[pin])
+
+
+def print_pinning_settings(pin):
+    print_param("mpi pinning", pin)
+    for name in PINNING_ENV_NAMES:
+        print_param(name, PINNING_PRESETS[pin].get(name, "unset"))
+
+
+def run_once(exe, images, ix, iy, run_num, pin):
     env = os.environ.copy()
+    apply_pinning_preset(env, pin)
     if "FOR_COARRAY_CONFIG_FILE" not in env:
         env["FOR_COARRAY_NUM_IMAGES"] = str(images)
     env["I_X"] = str(ix)
@@ -429,7 +466,7 @@ def validate_case(case_num, n_x, n_y, images, ix, iy):
         sys.exit(f"error: case {case_num}: N_Y must be divisible by I_Y")
 
 
-def run_case(exe, runs, n_x, n_y, case_num, n_cases, images, ix, iy):
+def run_case(exe, runs, n_x, n_y, case_num, n_cases, images, ix, iy, pin):
     validate_case(case_num, n_x, n_y, images, ix, iy)
 
     step_times = []
@@ -444,10 +481,11 @@ def run_case(exe, runs, n_x, n_y, case_num, n_cases, images, ix, iy):
     print_param("images", images)
     print_param("image grid", f"{ix} x {iy}")
     print_param("sim size", f"{n_x} x {n_y}")
+    print_pinning_settings(pin)
     print()
 
     for run_num in range(1, runs + 1):
-        step_ms, mlups, execution_time, output = run_once(exe, images, ix, iy, run_num)
+        step_ms, mlups, execution_time, output = run_once(exe, images, ix, iy, run_num, pin)
 
         if run_num == 1:
             print_static_app_output(output)
@@ -502,7 +540,7 @@ def main():
 
     for case_num, (images, ix, iy) in enumerate(domain_decomp_cases[args.skip:], start=args.skip + 1):
         run_case(
-            args.exe, args.runs, n_x, n_y, case_num, len(domain_decomp_cases), images, ix, iy)
+            args.exe, args.runs, n_x, n_y, case_num, len(domain_decomp_cases), images, ix, iy, args.pin)
 
 
 if __name__ == "__main__":
