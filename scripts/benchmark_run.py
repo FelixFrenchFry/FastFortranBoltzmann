@@ -161,9 +161,10 @@ def apply_pinning_preset(env, pin):
 
 
 def print_pinning_settings(pin):
-    print_param("mpi pinning", pin)
-    for name in PINNING_ENV_NAMES:
-        print_param(name, PINNING_PRESETS[pin].get(name, "unset"))
+    env = " ".join(f"{name}={value}" for name, value in PINNING_PRESETS[pin].items())
+
+    print_param("mpi pinning preset", pin)
+    print_param("mpi pinning env", env)
 
 
 def run_once(exe, images, ix, iy, run_num, pin):
