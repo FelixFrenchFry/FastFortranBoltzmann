@@ -11,6 +11,7 @@ from datetime import datetime
 from pathlib import Path
 
 
+
 NUMBER = r"(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)"
 STEP_RE = re.compile(rf"step time:\s*({NUMBER})\s*ms", re.IGNORECASE)
 MLUPS_RE = re.compile(rf"MLUPS:\s*({NUMBER})", re.IGNORECASE)
@@ -485,14 +486,16 @@ def run_case(exe, runs, n_x, n_y, case_num, n_cases, images, ix, iy, pin):
     print_pinning_settings(pin)
     print()
 
+    runs_started_at = timestamp()
+
     for run_num in range(1, runs + 1):
         step_ms, mlups, execution_time, output = run_once(exe, images, ix, iy, run_num, pin)
 
         if run_num == 1:
             print_static_app_output(output)
-            print_header("benchmark runs")
+            print_header(f"benchmark runs started at {runs_started_at}")
 
-        print(f"{run_num:03d} | [{timestamp()}] | avg step: {step_ms:.3f} ms | MLUPS: {mlups:.3f}")
+        print(f"{run_num:03d} | avg step: {step_ms:.3f} ms | MLUPS: {mlups:.3f}")
 
         step_times.append(step_ms)
         mlups_values.append(mlups)
