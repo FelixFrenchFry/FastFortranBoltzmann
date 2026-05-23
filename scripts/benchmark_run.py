@@ -253,7 +253,6 @@ def main():
     if n_y % args.iy != 0:
         sys.exit("error: N_Y must be divisible by --iy")
 
-    step_times = []
     mlups_values = []
     execution_times = []
 
@@ -279,22 +278,12 @@ def main():
 
         print(f"{run_num:03d} | avg step: {step_ms:.3f} ms | MLUPS: {mlups:.3f}")
 
-        step_times.append(step_ms)
         mlups_values.append(mlups)
         execution_times.append(execution_time)
 
     print()
-    step_stats = get_stats(step_times, higher_is_better=False)
     mlups_stats = get_stats(mlups_values, higher_is_better=True)
 
-    print_header("avg step metrics")
-    print_param("median", f"{step_stats['median']:.3f} ms")
-    print_param("best", f"{step_stats['best']:.3f} ms")
-    print_param("worst", f"{step_stats['worst']:.3f} ms")
-    print_param("mean", f"{step_stats['mean']:.3f} ms")
-    print_param("stddev", f"{step_stats['stddev_percent']:.3f} %")
-
-    print()
     print_header("MLUPS metrics")
     print_param("median", f"{mlups_stats['median']:.3f}")
     print_param("best", f"{mlups_stats['best']:.3f}")
