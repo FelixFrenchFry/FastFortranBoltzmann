@@ -34,7 +34,7 @@ contains
         real(FP) :: f_eq_val
         real(FP) :: f_next_val
 
-        ! loop over all owned local cells
+        ! loop over all image-owned cells
         do y = 1, n_y_local
             do x = 1, n_x_local
 
@@ -42,22 +42,13 @@ contains
                 u_x_val = 0.0_FP
                 u_y_val = 0.0_FP
 
-                ! 1: ( 0,  0) = rest
-                ! 2: ( 1,  0) = east
-                ! 3: ( 0,  1) = north
-                ! 4: (-1,  0) = west
-                ! 5: ( 0, -1) = south
-                ! 6: ( 1,  1) = north-east
-                ! 7: (-1,  1) = north-west
-                ! 8: (-1, -1) = south-west
-                ! 9: ( 1, -1) = south-east
                 ! ---------
                 ! | 7 3 6 |
                 ! | 4 1 2 |
                 ! | 8 5 9 |
                 ! ---------
-                ! pull streamed distribution functions from source cells in all channels
-                ! (local boundary handling through halo cells)
+                ! pull streamed distribution functions from source cells
+                ! (periodic boundaries handled by wrapped halo exchange)
                 !DIR$ UNROLL(9)
                 do i = 1, N_DIRS
 
@@ -71,7 +62,7 @@ contains
                     u_y_val = u_y_val + f_pulled(i) * C_Y_FP(i)
                 end do
 
-                ! safety check to avoid division by zero in case of wrong density
+                ! debug check
             #ifdef FFB_DENSITY_CHECKS
                 if (rho_val <= 0.0_FP) then
                     error stop "error: density is zero in collision/streaming step (rho_val <= 0)"
@@ -89,7 +80,7 @@ contains
                     u_y(x, y) = u_y_val
                 end if
 
-                ! collide and stream locally to destination channels
+                ! collide and stream locally
                 !DIR$ UNROLL(9)
                 do i = 1, N_DIRS
 
@@ -101,7 +92,7 @@ contains
                         4.5_FP * c_dot_u * c_dot_u - &
                         1.5_FP * u_squ)
 
-                    ! relax towards equilibrium and write to destination channel in this cell
+                    ! relax towards equilibrium and write to destination channel
                     f_next_val = f_pulled(i) + omega * (f_eq_val - f_pulled(i))
                     f_next(x, y, i) = f_next_val
                 end do
@@ -142,26 +133,17 @@ contains
         real(FP) :: u_y_val
         real(FP) :: u_squ
 
-        ! loop over all owned local cells
+        ! loop over all image-owned cells
         do y = 1, n_y_local
             do x = 1, n_x_local
 
-                ! 1: ( 0,  0) = rest
-                ! 2: ( 1,  0) = east
-                ! 3: ( 0,  1) = north
-                ! 4: (-1,  0) = west
-                ! 5: ( 0, -1) = south
-                ! 6: ( 1,  1) = north-east
-                ! 7: (-1,  1) = north-west
-                ! 8: (-1, -1) = south-west
-                ! 9: ( 1, -1) = south-east
                 ! ---------
                 ! | 7 3 6 |
                 ! | 4 1 2 |
                 ! | 8 5 9 |
                 ! ---------
-                ! pull streamed distribution functions from source cells in all channels
-                ! (local boundary handling through halo cells, manually unrolled)
+                ! pull streamed distribution functions from source cells
+                ! (periodic boundaries handled by wrapped halo exchange)
                 f_1 = f(x, y, 1)
                 f_2 = f(x - 1, y, 2)
                 f_3 = f(x, y - 1, 3)
@@ -176,7 +158,7 @@ contains
                 u_x_val = f_2 - f_4 + f_6 - f_7 - f_8 + f_9
                 u_y_val = f_3 - f_5 + f_6 + f_7 - f_8 - f_9
 
-                ! safety check to avoid division by zero in case of wrong density
+                ! debug check
             #ifdef FFB_DENSITY_CHECKS
                 if (rho_val <= 0.0_FP) then
                     error stop "error: density is zero in collision/streaming step (rho_val <= 0)"
@@ -194,8 +176,7 @@ contains
                     u_y(x, y) = u_y_val
                 end if
 
-                ! collide and stream locally to destination channels
-                ! (manually unrolled)
+                ! collide and stream locally
                 ! 1: (0, 0)
                 f_next(x, y, 1) = f_1 + omega * ((4.0_FP/9.0_FP) * rho_val * ( &
                     1.0_FP - 1.5_FP * u_squ) - f_1)
@@ -263,7 +244,8 @@ contains
         ! temp
         integer(int32) :: x, y
 
-        ! local periodic x-boundary handling for single-image x decompositions
+        ! periodic boundary handling for left/right sides
+        ! (only used in single-image decompositions, otherwise handled by wrapped halo exchange)
         if (n_images_x == 1) then
             do y = 1, n_y_local
                 f(0, y, 2) = f(n_x_local, y, 2)
@@ -276,7 +258,8 @@ contains
             end do
         end if
 
-        ! local periodic y-boundary handling for single-image y decompositions
+        ! periodic boundary handling for bottom/top sides
+        ! (only used in single-image decompositions, otherwise handled by wrapped halo exchange)
         if (n_images_y == 1) then
             do x = 0, n_x_local + 1
                 f(x, 0, 3) = f(x, n_y_local, 3)

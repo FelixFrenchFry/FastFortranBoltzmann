@@ -37,7 +37,7 @@ module exchange
         logical :: bottom
         logical :: top
 
-        ! pressure macro strip exchange for poiseuille flow
+        ! macro exchange for poiseuille flow
         logical :: macro_left
         logical :: macro_right
 
