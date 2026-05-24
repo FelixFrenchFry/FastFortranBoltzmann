@@ -132,280 +132,235 @@ contains
         real(FP), intent(inout) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS)[*]
 
         if (USE_SINGLE_SYNC_EXCHANGE) then
-            call exchange_halos_single_sync(domain_info, halo_buffers, n_x_local, n_y_local, f, exchange_plan)
+            call exchange_halos_single_sync()
         else
-            call exchange_halos_directional(domain_info, halo_buffers, n_x_local, n_y_local, f, exchange_plan)
-        end if
-    end subroutine exchange_halos
-
-
-    subroutine exchange_halos_directional( &
-        domain_info, halo_buffers, n_x_local, n_y_local, f, exchange_plan &
-        )
-        ! inputs
-        type(domain_t), intent(in) :: domain_info
-        integer(int32), intent(in) :: n_x_local
-        integer(int32), intent(in) :: n_y_local
-        type(exchange_plan_t), intent(in) :: exchange_plan
-
-        ! read/write inputs
-        type(halo_buffers_t), intent(inout) :: halo_buffers
-        real(FP), intent(inout) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS)[*]
-
-        ! locals
-        integer(int32) :: n_x_neighbor_images
-        integer(int32) :: n_y_neighbor_images
-        integer(int32) :: x_neighbor_images(4)
-        integer(int32) :: y_neighbor_images(2)
-
-        n_x_neighbor_images = 0
-        n_y_neighbor_images = 0
-
-        if (exchange_plan%left) then
-            call add_neighbor_image(x_neighbor_images, n_x_neighbor_images, domain_info%left_image_id)
-        end if
-        if (exchange_plan%right) then
-            call add_neighbor_image(x_neighbor_images, n_x_neighbor_images, domain_info%right_image_id)
-        end if
-        if (exchange_plan%macro_left) then
-            call add_neighbor_image(x_neighbor_images, n_x_neighbor_images, domain_info%left_image_id)
-        end if
-        if (exchange_plan%macro_right) then
-            call add_neighbor_image(x_neighbor_images, n_x_neighbor_images, domain_info%right_image_id)
+            call exchange_halos_directional()
         end if
 
-        if (exchange_plan%bottom) then
-            call add_neighbor_image(y_neighbor_images, n_y_neighbor_images, domain_info%bottom_image_id)
-        end if
-        if (exchange_plan%top) then
-            call add_neighbor_image(y_neighbor_images, n_y_neighbor_images, domain_info%top_image_id)
-        end if
+    contains
 
-        call sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
+        subroutine exchange_halos_directional()
+            ! locals
+            integer(int32) :: n_x_neighbor_images
+            integer(int32) :: n_y_neighbor_images
+            integer(int32) :: x_neighbor_images(4)
+            integer(int32) :: y_neighbor_images(2)
 
-        call exchange_left_right_halos(domain_info, halo_buffers, n_x_local, n_y_local, f, exchange_plan)
-        call exchange_macro_strips(domain_info, halo_buffers, exchange_plan)
+            n_x_neighbor_images = 0
+            n_y_neighbor_images = 0
 
-        call sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
-        call sync_neighbor_images(y_neighbor_images, n_y_neighbor_images)
-
-        ! ---------
-        ! | 7 3 6 |
-        ! | 4 1 2 |
-        ! | 8 5 9 |
-        ! ---------
-        ! exchange contiguous bottom/top halos directly, including corners
-        if (exchange_plan%bottom) then
-            f(0:n_x_local+1, 0, 3) = f(0:n_x_local+1, n_y_local, 3)[domain_info%bottom_image_id]
-            f(0:n_x_local+1, 0, 6) = f(0:n_x_local+1, n_y_local, 6)[domain_info%bottom_image_id]
-            f(0:n_x_local+1, 0, 7) = f(0:n_x_local+1, n_y_local, 7)[domain_info%bottom_image_id]
-        end if
-
-        if (exchange_plan%top) then
-            f(0:n_x_local+1, n_y_local+1, 5) = f(0:n_x_local+1, 1, 5)[domain_info%top_image_id]
-            f(0:n_x_local+1, n_y_local+1, 8) = f(0:n_x_local+1, 1, 8)[domain_info%top_image_id]
-            f(0:n_x_local+1, n_y_local+1, 9) = f(0:n_x_local+1, 1, 9)[domain_info%top_image_id]
-        end if
-
-        call sync_neighbor_images(y_neighbor_images, n_y_neighbor_images)
-    end subroutine exchange_halos_directional
-
-
-    subroutine exchange_halos_single_sync( &
-        domain_info, halo_buffers, n_x_local, n_y_local, f, exchange_plan &
-        )
-        ! inputs
-        type(domain_t), intent(in) :: domain_info
-        integer(int32), intent(in) :: n_x_local
-        integer(int32), intent(in) :: n_y_local
-        type(exchange_plan_t), intent(in) :: exchange_plan
-
-        ! read/write inputs
-        type(halo_buffers_t), intent(inout) :: halo_buffers
-        real(FP), intent(inout) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS)[*]
-
-        ! locals
-        integer(int32) :: n_neighbor_images
-        integer(int32) :: neighbor_images(8)
-
-        n_neighbor_images = 0
-
-        if (exchange_plan%left) then
-            call add_neighbor_image(neighbor_images, n_neighbor_images, domain_info%left_image_id)
-        end if
-        if (exchange_plan%right) then
-            call add_neighbor_image(neighbor_images, n_neighbor_images, domain_info%right_image_id)
-        end if
-        if (exchange_plan%bottom) then
-            call add_neighbor_image(neighbor_images, n_neighbor_images, domain_info%bottom_image_id)
-        end if
-        if (exchange_plan%top) then
-            call add_neighbor_image(neighbor_images, n_neighbor_images, domain_info%top_image_id)
-        end if
-        if (exchange_plan%macro_left) then
-            call add_neighbor_image(neighbor_images, n_neighbor_images, domain_info%left_image_id)
-        end if
-        if (exchange_plan%macro_right) then
-            call add_neighbor_image(neighbor_images, n_neighbor_images, domain_info%right_image_id)
-        end if
-        if (exchange_plan%bottom .and. exchange_plan%left) then
-            call add_neighbor_image(neighbor_images, n_neighbor_images, domain_info%bottom_left_image_id)
-        end if
-        if (exchange_plan%bottom .and. exchange_plan%right) then
-            call add_neighbor_image(neighbor_images, n_neighbor_images, domain_info%bottom_right_image_id)
-        end if
-        if (exchange_plan%top .and. exchange_plan%left) then
-            call add_neighbor_image(neighbor_images, n_neighbor_images, domain_info%top_left_image_id)
-        end if
-        if (exchange_plan%top .and. exchange_plan%right) then
-            call add_neighbor_image(neighbor_images, n_neighbor_images, domain_info%top_right_image_id)
-        end if
-
-        call sync_neighbor_images(neighbor_images, n_neighbor_images)
-
-        call exchange_left_right_halos(domain_info, halo_buffers, n_x_local, n_y_local, f, exchange_plan)
-        call exchange_macro_strips(domain_info, halo_buffers, exchange_plan)
-
-        ! ---------
-        ! | 7 3 6 |
-        ! | 4 1 2 |
-        ! | 8 5 9 |
-        ! ---------
-        ! exchange contiguous bottom/top halo rows without corners
-        if (exchange_plan%bottom) then
-            f(1:n_x_local, 0, 3) = f(1:n_x_local, n_y_local, 3)[domain_info%bottom_image_id]
-            f(1:n_x_local, 0, 6) = f(1:n_x_local, n_y_local, 6)[domain_info%bottom_image_id]
-            f(1:n_x_local, 0, 7) = f(1:n_x_local, n_y_local, 7)[domain_info%bottom_image_id]
-        end if
-
-        if (exchange_plan%top) then
-            f(1:n_x_local, n_y_local+1, 5) = f(1:n_x_local, 1, 5)[domain_info%top_image_id]
-            f(1:n_x_local, n_y_local+1, 8) = f(1:n_x_local, 1, 8)[domain_info%top_image_id]
-            f(1:n_x_local, n_y_local+1, 9) = f(1:n_x_local, 1, 9)[domain_info%top_image_id]
-        end if
-
-        if (exchange_plan%bottom .and. exchange_plan%left) then
-            f(0, 0, 6) = f(n_x_local, n_y_local, 6)[domain_info%bottom_left_image_id]
-        end if
-
-        if (exchange_plan%bottom .and. exchange_plan%right) then
-            f(n_x_local+1, 0, 7) = f(1, n_y_local, 7)[domain_info%bottom_right_image_id]
-        end if
-
-        if (exchange_plan%top .and. exchange_plan%left) then
-            f(0, n_y_local+1, 9) = f(n_x_local, 1, 9)[domain_info%top_left_image_id]
-        end if
-
-        if (exchange_plan%top .and. exchange_plan%right) then
-            f(n_x_local+1, n_y_local+1, 8) = f(1, 1, 8)[domain_info%top_right_image_id]
-        end if
-
-        call sync_neighbor_images(neighbor_images, n_neighbor_images)
-    end subroutine exchange_halos_single_sync
-
-
-    subroutine exchange_left_right_halos( &
-        domain_info, halo_buffers, n_x_local, n_y_local, f, exchange_plan &
-        )
-        ! inputs
-        type(domain_t), intent(in) :: domain_info
-        integer(int32), intent(in) :: n_x_local
-        integer(int32), intent(in) :: n_y_local
-        type(exchange_plan_t), intent(in) :: exchange_plan
-
-        ! read/write inputs
-        type(halo_buffers_t), intent(inout) :: halo_buffers
-        real(FP), intent(inout) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS)[*]
-
-        ! ---------
-        ! | 7 3 6 |
-        ! | 4 1 2 |
-        ! | 8 5 9 |
-        ! ---------
-        ! exchange strided left/right halos through staging buffers
-        if (exchange_plan%left) then
-            halo_buffers%recv_left(:, 1) = f(n_x_local, 1:n_y_local, 2)[domain_info%left_image_id]
-            halo_buffers%recv_left(:, 2) = f(n_x_local, 1:n_y_local, 6)[domain_info%left_image_id]
-            halo_buffers%recv_left(:, 3) = f(n_x_local, 1:n_y_local, 9)[domain_info%left_image_id]
-            f(0, 1:n_y_local, 2) = halo_buffers%recv_left(:, 1)
-            f(0, 1:n_y_local, 6) = halo_buffers%recv_left(:, 2)
-            f(0, 1:n_y_local, 9) = halo_buffers%recv_left(:, 3)
-        end if
-
-        if (exchange_plan%right) then
-            halo_buffers%recv_right(:, 1) = f(1, 1:n_y_local, 4)[domain_info%right_image_id]
-            halo_buffers%recv_right(:, 2) = f(1, 1:n_y_local, 7)[domain_info%right_image_id]
-            halo_buffers%recv_right(:, 3) = f(1, 1:n_y_local, 8)[domain_info%right_image_id]
-            f(n_x_local+1, 1:n_y_local, 4) = halo_buffers%recv_right(:, 1)
-            f(n_x_local+1, 1:n_y_local, 7) = halo_buffers%recv_right(:, 2)
-            f(n_x_local+1, 1:n_y_local, 8) = halo_buffers%recv_right(:, 3)
-        end if
-    end subroutine exchange_left_right_halos
-
-
-    subroutine exchange_macro_strips( &
-        domain_info, halo_buffers, exchange_plan &
-        )
-        ! inputs
-        type(domain_t), intent(in) :: domain_info
-        type(exchange_plan_t), intent(in) :: exchange_plan
-
-        ! read/write inputs
-        type(halo_buffers_t), intent(inout) :: halo_buffers
-
-        ! pressure-periodic macros for poiseuille flow
-        if (exchange_plan%macro_left) then
-            halo_buffers%recv_macro_left(:, :) = halo_buffers%send_macro_right(:, :)[domain_info%left_image_id]
-        end if
-
-        if (exchange_plan%macro_right) then
-            halo_buffers%recv_macro_right(:, :) = halo_buffers%send_macro_left(:, :)[domain_info%right_image_id]
-        end if
-    end subroutine exchange_macro_strips
-
-
-    subroutine add_neighbor_image( &
-        neighbor_images, n_neighbor_images, neighbor_image &
-        )
-        ! inputs
-        integer(int32), intent(in) :: neighbor_image
-
-        ! read/write inputs
-        integer(int32), intent(inout) :: neighbor_images(:)
-        integer(int32), intent(inout) :: n_neighbor_images
-
-        ! locals
-        integer(int32) :: i
-
-        do i = 1, n_neighbor_images
-            if (neighbor_images(i) == neighbor_image) then
-                return
+            if (exchange_plan%left) then
+                call add_neighbor_image(x_neighbor_images, n_x_neighbor_images, domain_info%left_image_id)
             end if
-        end do
+            if (exchange_plan%right) then
+                call add_neighbor_image(x_neighbor_images, n_x_neighbor_images, domain_info%right_image_id)
+            end if
+            if (exchange_plan%macro_left) then
+                call add_neighbor_image(x_neighbor_images, n_x_neighbor_images, domain_info%left_image_id)
+            end if
+            if (exchange_plan%macro_right) then
+                call add_neighbor_image(x_neighbor_images, n_x_neighbor_images, domain_info%right_image_id)
+            end if
 
-        n_neighbor_images = n_neighbor_images + 1
-        if (n_neighbor_images > size(neighbor_images)) then
-            error stop "error: exchange neighbor list is too small"
-        end if
-        neighbor_images(n_neighbor_images) = neighbor_image
-    end subroutine add_neighbor_image
+            if (exchange_plan%bottom) then
+                call add_neighbor_image(y_neighbor_images, n_y_neighbor_images, domain_info%bottom_image_id)
+            end if
+            if (exchange_plan%top) then
+                call add_neighbor_image(y_neighbor_images, n_y_neighbor_images, domain_info%top_image_id)
+            end if
+
+            call sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
+
+            call exchange_left_right_halos()
+            call exchange_macro_strips()
+
+            call sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
+            call sync_neighbor_images(y_neighbor_images, n_y_neighbor_images)
+
+            ! ---------
+            ! | 7 3 6 |
+            ! | 4 1 2 |
+            ! | 8 5 9 |
+            ! ---------
+            ! exchange contiguous bottom/top halos directly, including corners
+            if (exchange_plan%bottom) then
+                f(0:n_x_local+1, 0, 3) = f(0:n_x_local+1, n_y_local, 3)[domain_info%bottom_image_id]
+                f(0:n_x_local+1, 0, 6) = f(0:n_x_local+1, n_y_local, 6)[domain_info%bottom_image_id]
+                f(0:n_x_local+1, 0, 7) = f(0:n_x_local+1, n_y_local, 7)[domain_info%bottom_image_id]
+            end if
+
+            if (exchange_plan%top) then
+                f(0:n_x_local+1, n_y_local+1, 5) = f(0:n_x_local+1, 1, 5)[domain_info%top_image_id]
+                f(0:n_x_local+1, n_y_local+1, 8) = f(0:n_x_local+1, 1, 8)[domain_info%top_image_id]
+                f(0:n_x_local+1, n_y_local+1, 9) = f(0:n_x_local+1, 1, 9)[domain_info%top_image_id]
+            end if
+
+            call sync_neighbor_images(y_neighbor_images, n_y_neighbor_images)
+        end subroutine exchange_halos_directional
 
 
-    subroutine sync_neighbor_images( &
-        neighbor_images, n_neighbor_images &
-        )
-        ! inputs
-        integer(int32), intent(in) :: neighbor_images(:)
-        integer(int32), intent(in) :: n_neighbor_images
+        subroutine exchange_halos_single_sync()
+            ! locals
+            integer(int32) :: n_neighbor_images
+            integer(int32) :: neighbor_images(8)
 
-        if (n_neighbor_images == 0) then
-            return
-        else if (n_neighbor_images == 1) then
-            sync images(neighbor_images(1))
-        else
-            sync images(neighbor_images(1:n_neighbor_images))
-        end if
-    end subroutine sync_neighbor_images
+            n_neighbor_images = 0
+
+            if (exchange_plan%left) then
+                call add_neighbor_image(neighbor_images, n_neighbor_images, domain_info%left_image_id)
+            end if
+            if (exchange_plan%right) then
+                call add_neighbor_image(neighbor_images, n_neighbor_images, domain_info%right_image_id)
+            end if
+            if (exchange_plan%bottom) then
+                call add_neighbor_image(neighbor_images, n_neighbor_images, domain_info%bottom_image_id)
+            end if
+            if (exchange_plan%top) then
+                call add_neighbor_image(neighbor_images, n_neighbor_images, domain_info%top_image_id)
+            end if
+            if (exchange_plan%macro_left) then
+                call add_neighbor_image(neighbor_images, n_neighbor_images, domain_info%left_image_id)
+            end if
+            if (exchange_plan%macro_right) then
+                call add_neighbor_image(neighbor_images, n_neighbor_images, domain_info%right_image_id)
+            end if
+            if (exchange_plan%bottom .and. exchange_plan%left) then
+                call add_neighbor_image(neighbor_images, n_neighbor_images, domain_info%bottom_left_image_id)
+            end if
+            if (exchange_plan%bottom .and. exchange_plan%right) then
+                call add_neighbor_image(neighbor_images, n_neighbor_images, domain_info%bottom_right_image_id)
+            end if
+            if (exchange_plan%top .and. exchange_plan%left) then
+                call add_neighbor_image(neighbor_images, n_neighbor_images, domain_info%top_left_image_id)
+            end if
+            if (exchange_plan%top .and. exchange_plan%right) then
+                call add_neighbor_image(neighbor_images, n_neighbor_images, domain_info%top_right_image_id)
+            end if
+
+            call sync_neighbor_images(neighbor_images, n_neighbor_images)
+
+            call exchange_left_right_halos()
+            call exchange_macro_strips()
+
+            ! ---------
+            ! | 7 3 6 |
+            ! | 4 1 2 |
+            ! | 8 5 9 |
+            ! ---------
+            ! exchange contiguous bottom/top halo rows without corners
+            if (exchange_plan%bottom) then
+                f(1:n_x_local, 0, 3) = f(1:n_x_local, n_y_local, 3)[domain_info%bottom_image_id]
+                f(1:n_x_local, 0, 6) = f(1:n_x_local, n_y_local, 6)[domain_info%bottom_image_id]
+                f(1:n_x_local, 0, 7) = f(1:n_x_local, n_y_local, 7)[domain_info%bottom_image_id]
+            end if
+
+            if (exchange_plan%top) then
+                f(1:n_x_local, n_y_local+1, 5) = f(1:n_x_local, 1, 5)[domain_info%top_image_id]
+                f(1:n_x_local, n_y_local+1, 8) = f(1:n_x_local, 1, 8)[domain_info%top_image_id]
+                f(1:n_x_local, n_y_local+1, 9) = f(1:n_x_local, 1, 9)[domain_info%top_image_id]
+            end if
+
+            if (exchange_plan%bottom .and. exchange_plan%left) then
+                f(0, 0, 6) = f(n_x_local, n_y_local, 6)[domain_info%bottom_left_image_id]
+            end if
+
+            if (exchange_plan%bottom .and. exchange_plan%right) then
+                f(n_x_local+1, 0, 7) = f(1, n_y_local, 7)[domain_info%bottom_right_image_id]
+            end if
+
+            if (exchange_plan%top .and. exchange_plan%left) then
+                f(0, n_y_local+1, 9) = f(n_x_local, 1, 9)[domain_info%top_left_image_id]
+            end if
+
+            if (exchange_plan%top .and. exchange_plan%right) then
+                f(n_x_local+1, n_y_local+1, 8) = f(1, 1, 8)[domain_info%top_right_image_id]
+            end if
+
+            call sync_neighbor_images(neighbor_images, n_neighbor_images)
+        end subroutine exchange_halos_single_sync
+
+
+        subroutine exchange_left_right_halos()
+            ! ---------
+            ! | 7 3 6 |
+            ! | 4 1 2 |
+            ! | 8 5 9 |
+            ! ---------
+            ! exchange strided left/right halos through staging buffers
+            if (exchange_plan%left) then
+                halo_buffers%recv_left(:, 1) = f(n_x_local, 1:n_y_local, 2)[domain_info%left_image_id]
+                halo_buffers%recv_left(:, 2) = f(n_x_local, 1:n_y_local, 6)[domain_info%left_image_id]
+                halo_buffers%recv_left(:, 3) = f(n_x_local, 1:n_y_local, 9)[domain_info%left_image_id]
+                f(0, 1:n_y_local, 2) = halo_buffers%recv_left(:, 1)
+                f(0, 1:n_y_local, 6) = halo_buffers%recv_left(:, 2)
+                f(0, 1:n_y_local, 9) = halo_buffers%recv_left(:, 3)
+            end if
+
+            if (exchange_plan%right) then
+                halo_buffers%recv_right(:, 1) = f(1, 1:n_y_local, 4)[domain_info%right_image_id]
+                halo_buffers%recv_right(:, 2) = f(1, 1:n_y_local, 7)[domain_info%right_image_id]
+                halo_buffers%recv_right(:, 3) = f(1, 1:n_y_local, 8)[domain_info%right_image_id]
+                f(n_x_local+1, 1:n_y_local, 4) = halo_buffers%recv_right(:, 1)
+                f(n_x_local+1, 1:n_y_local, 7) = halo_buffers%recv_right(:, 2)
+                f(n_x_local+1, 1:n_y_local, 8) = halo_buffers%recv_right(:, 3)
+            end if
+        end subroutine exchange_left_right_halos
+
+
+        subroutine exchange_macro_strips()
+            ! pressure-periodic macros for poiseuille flow
+            if (exchange_plan%macro_left) then
+                halo_buffers%recv_macro_left(:, :) = halo_buffers%send_macro_right(:, :)[domain_info%left_image_id]
+            end if
+
+            if (exchange_plan%macro_right) then
+                halo_buffers%recv_macro_right(:, :) = halo_buffers%send_macro_left(:, :)[domain_info%right_image_id]
+            end if
+        end subroutine exchange_macro_strips
+
+        subroutine add_neighbor_image( &
+            neighbor_images, n_neighbor_images, neighbor_image &
+            )
+            ! inputs
+            integer(int32), intent(in) :: neighbor_image
+
+            ! read/write inputs
+            integer(int32), intent(inout) :: neighbor_images(:)
+            integer(int32), intent(inout) :: n_neighbor_images
+
+            ! locals
+            integer(int32) :: i
+
+            do i = 1, n_neighbor_images
+                if (neighbor_images(i) == neighbor_image) then
+                    return
+                end if
+            end do
+
+            n_neighbor_images = n_neighbor_images + 1
+            if (n_neighbor_images > size(neighbor_images)) then
+                error stop "error: exchange neighbor list is too small"
+            end if
+            neighbor_images(n_neighbor_images) = neighbor_image
+        end subroutine add_neighbor_image
+
+
+        subroutine sync_neighbor_images( &
+            neighbor_images, n_neighbor_images &
+            )
+            ! inputs
+            integer(int32), intent(in) :: neighbor_images(:)
+            integer(int32), intent(in) :: n_neighbor_images
+
+            if (n_neighbor_images == 0) then
+                return
+            else if (n_neighbor_images == 1) then
+                sync images(neighbor_images(1))
+            else
+                sync images(neighbor_images(1:n_neighbor_images))
+            end if
+        end subroutine sync_neighbor_images
+    end subroutine exchange_halos
 
 
 end module exchange
