@@ -46,7 +46,7 @@ contains
         real(FP) :: f_eq_val
         real(FP) :: f_next_val
 
-        ! loop over all owned local cells
+        ! loop over all image-owned cells
         do y = 1, n_y_local
             do x = 1, n_x_local
 
@@ -54,39 +54,30 @@ contains
                 u_x_val = 0.0_FP
                 u_y_val = 0.0_FP
 
-                ! 1: ( 0,  0) = rest
-                ! 2: ( 1,  0) = east
-                ! 3: ( 0,  1) = north
-                ! 4: (-1,  0) = west
-                ! 5: ( 0, -1) = south
-                ! 6: ( 1,  1) = north-east
-                ! 7: (-1,  1) = north-west
-                ! 8: (-1, -1) = south-west
-                ! 9: ( 1, -1) = south-east
                 ! ---------
                 ! | 7 3 6 |
                 ! | 4 1 2 |
                 ! | 8 5 9 |
                 ! ---------
-                ! pull streamed distribution functions from source cells in all channels
-                ! (local interior handling through halo cells)
+                ! pull streamed distribution functions from source cells
+                ! (periodic left/right boundaries handled by wrapped halo exchange)
                 !DIR$ UNROLL(9)
                 do i = 1, N_DIRS
 
                     src_x = x - C_X(i)
                     src_y = y - C_Y(i)
 
-                    ! no pressure-periodic boundary or bounce-back
+                    ! no boundary
                     if (src_x >= 1 .and. src_x <= n_x_local .and. &
                         src_y >= 1 .and. src_y <= n_y_local) then
                         f_pulled(i) = f(src_x, src_y, i)
 
-                    ! pressure-periodic inlet for global left boundary
+                    ! pressure-periodic inlet for left boundary
                     else if (src_x < 1 .and. at_left_boundary) then
                         f_pulled(i) = pressure_periodic_distribution( &
                             i, f(0, y, i), macro_left(y, 1), macro_left(y, 2), macro_left(y, 3), rho_in)
 
-                    ! pressure-periodic outlet for global right boundary
+                    ! pressure-periodic outlet for right boundary
                     else if (src_x > n_x_local .and. at_right_boundary) then
                         f_pulled(i) = pressure_periodic_distribution( &
                             i, f(n_x_local+1, y, i), macro_right(y, 1), macro_right(y, 2), macro_right(y, 3), rho_out)
@@ -121,7 +112,7 @@ contains
                     #endif
                         end select
 
-                    ! interior image boundary
+                    ! no boundary
                     else
                         f_pulled(i) = f(src_x, src_y, i)
                     end if
@@ -131,7 +122,7 @@ contains
                     u_y_val = u_y_val + f_pulled(i) * C_Y_FP(i)
                 end do
 
-                ! safety check to avoid division by zero in case of wrong density
+                ! debug check
             #ifdef FFB_DENSITY_CHECKS
                 if (rho_val <= 0.0_FP) then
                     error stop "error: density is zero in collision/streaming step (rho_val <= 0)"
@@ -161,7 +152,7 @@ contains
                     u_y(x, y) = u_y_val
                 end if
 
-                ! collide and stream locally to destination channels
+                ! collide and stream locally
                 !DIR$ UNROLL(9)
                 do i = 1, N_DIRS
 
@@ -173,7 +164,7 @@ contains
                         4.5_FP * c_dot_u * c_dot_u - &
                         1.5_FP * u_squ)
 
-                    ! relax towards equilibrium and write to destination channel in this cell
+                    ! relax towards equilibrium and write to destination channel
                     f_next_val = f_pulled(i) + omega * (f_eq_val - f_pulled(i))
                     f_next(x, y, i) = f_next_val
                 end do
@@ -236,7 +227,7 @@ contains
         real(FP) :: c_dot_u_src
         real(FP) :: pressure_factor
 
-        ! loop over all owned local cells
+        ! loop over all image-owned cells
         do y = 1, n_y_local
 
             bottom_wall_row = at_bottom_boundary .and. y == 1
@@ -247,22 +238,13 @@ contains
                 left_pressure_cell = at_left_boundary .and. x == 1
                 right_pressure_cell = at_right_boundary .and. x == n_x_local
 
-                ! 1: ( 0,  0) = rest
-                ! 2: ( 1,  0) = east
-                ! 3: ( 0,  1) = north
-                ! 4: (-1,  0) = west
-                ! 5: ( 0, -1) = south
-                ! 6: ( 1,  1) = north-east
-                ! 7: (-1,  1) = north-west
-                ! 8: (-1, -1) = south-west
-                ! 9: ( 1, -1) = south-east
                 ! ---------
                 ! | 7 3 6 |
                 ! | 4 1 2 |
                 ! | 8 5 9 |
                 ! ---------
-                ! pull streamed distribution functions from source cells in all channels
-                ! (local interior handling through halo cells, manually unrolled)
+                ! pull streamed distribution functions from source cells
+                ! (periodic left/right boundaries handled by wrapped halo exchange)
                 f_1 = f(x, y, 1)
 
                 if (left_pressure_cell) then
@@ -365,7 +347,7 @@ contains
                 u_x_val = f_2 - f_4 + f_6 - f_7 - f_8 + f_9
                 u_y_val = f_3 - f_5 + f_6 + f_7 - f_8 - f_9
 
-                ! safety check to avoid division by zero in case of wrong density
+                ! debug check
             #ifdef FFB_DENSITY_CHECKS
                 if (rho_val <= 0.0_FP) then
                     error stop "error: density is zero in collision/streaming step (rho_val <= 0)"
@@ -395,8 +377,7 @@ contains
                     u_y(x, y) = u_y_val
                 end if
 
-                ! collide and stream locally to destination channels
-                ! (manually unrolled)
+                ! collide and stream locally
                 ! 1: (0, 0)
                 f_next(x, y, 1) = f_1 + omega * ((4.0_FP/9.0_FP) * rho_val * ( &
                     1.0_FP - 1.5_FP * u_squ) - f_1)
@@ -449,7 +430,6 @@ contains
     end subroutine fuzed_pull_streaming_collision_local_unrolled_PF
 
 
-
     subroutine prepare_poiseuille_flow_halos_PF( &
         n_x_local, n_y_local, at_left_boundary, at_right_boundary, at_bottom_boundary, at_top_boundary, &
         rho_in, rho_out, f, macro_left, macro_right &
@@ -474,7 +454,7 @@ contains
         real(FP) :: pressure_left(n_y_local, 3)
         real(FP) :: pressure_right(n_y_local, 3)
 
-        ! global bottom boundary (static), written to pull-streaming halo row
+        ! bottom bounce-back boundary, written into the halo row used by pull streaming
         if (at_bottom_boundary) then
             do x = 1, n_x_local
                 f(x, 0, 3) = f(x, 1, 5)
@@ -483,7 +463,7 @@ contains
             end do
         end if
 
-        ! global top boundary (static), written to pull-streaming halo row
+        ! top bounce-back boundary, written into the halo row used by pull streaming
         if (at_top_boundary) then
             do x = 1, n_x_local
                 f(x, n_y_local+1, 5) = f(x, n_y_local, 3)
@@ -492,7 +472,7 @@ contains
             end do
         end if
 
-        ! pressure-periodic inlet, written to pull-streaming halo column
+        ! pressure-periodic inlet, written into the halo column used by pull streaming
         if (at_left_boundary) then
             do y = 1, n_y_local
                 pressure_left(y, 1) = pressure_periodic_distribution( &
@@ -510,7 +490,7 @@ contains
             end do
         end if
 
-        ! pressure-periodic outlet, written to pull-streaming halo column
+        ! pressure-periodic outlet, written into the halo column used by pull streaming
         if (at_right_boundary) then
             do y = 1, n_y_local
                 pressure_right(y, 1) = pressure_periodic_distribution( &
@@ -596,7 +576,7 @@ contains
                 u_x_val = f_2 - f_4 + f_6 - f_7 - f_8 + f_9
                 u_y_val = f_3 - f_5 + f_6 + f_7 - f_8 - f_9
 
-                ! safety check to avoid division by zero in case of wrong density
+                ! debug check
             #ifdef FFB_DENSITY_CHECKS
                 if (rho_val <= 0.0_FP) then
                     error stop "error: density is zero in collision/streaming step (rho_val <= 0)"

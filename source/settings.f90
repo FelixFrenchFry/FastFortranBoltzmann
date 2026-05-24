@@ -134,7 +134,7 @@ contains
     pure function sim_mode_to_string( &
         sim_mode &
         ) result(name)
-        ! read-only inputs
+        ! inputs
         integer(int32), intent(in) :: sim_mode
 
         ! output

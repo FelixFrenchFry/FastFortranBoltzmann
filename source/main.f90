@@ -155,7 +155,7 @@ program main
     ! simulation loop
     do step = 1, N_STEPS
 
-        ! decide if density and velocity fields need to be stored in this step
+        ! only store density and velocity if required in this step
         write_macro_fields = should_export_step(step, EXPORT_INTERVAL, EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE) .and. &
             (EXPORT_RHO .or. EXPORT_U_X .or. EXPORT_U_Y .or. EXPORT_U_MAG)
 
