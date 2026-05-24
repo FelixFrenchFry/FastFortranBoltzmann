@@ -61,11 +61,9 @@ module settings
 #ifdef FFB_USE_CMAKE_SETTINGS
     logical, parameter :: USE_UNROLLED_KERNELS = FFB_USE_UNROLLED_KERNELS
     logical, parameter :: USE_UNIVERSAL_KERNELS = FFB_USE_UNIVERSAL_KERNELS
-    logical, parameter :: USE_SINGLE_SYNC_EXCHANGE = FFB_USE_SINGLE_SYNC_EXCHANGE
 #else
     logical, parameter :: USE_UNROLLED_KERNELS = .true.
     logical, parameter :: USE_UNIVERSAL_KERNELS = .true.
-    logical, parameter :: USE_SINGLE_SYNC_EXCHANGE = .true.
 #endif
 
     ! export settings
