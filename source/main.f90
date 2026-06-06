@@ -48,6 +48,7 @@ program main
     integer(int32) :: timing_image_id
 
     ! allocate sim data structures
+    !DIR$ ATTRIBUTES ALIGN: 64 :: f_a, f_b, rho, u_x, u_y
     real(FP), allocatable :: f_a(:, :, :)[:] ! distribution function buffer A
     real(FP), allocatable :: f_b(:, :, :)[:] ! distribution function buffer B
     logical :: read_from_a

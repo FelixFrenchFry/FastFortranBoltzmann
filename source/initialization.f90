@@ -44,6 +44,7 @@ contains
             u_squ = u_x_val * u_x_val
 
             ! loop over all image-owned cols
+            !DIR$ SIMD
             do x = 1, n_x_local
 
                 rho(x, y) = rho_0
@@ -96,6 +97,7 @@ contains
 
         ! loop over all image-owned cells
         do y = 1, n_y_local
+            !DIR$ SIMD
             do x = 1, n_x_local
 
                 rho(x, y) = rho_0
@@ -141,6 +143,7 @@ contains
 
         ! loop over all image-owned cells
         do y = 1, n_y_local
+            !DIR$ SIMD
             do x = 1, n_x_local
 
                 rho(x, y) = rho_0
@@ -183,6 +186,7 @@ contains
 
         ! loop over all image-owned cells
         do y = 1, n_y_local
+            !DIR$ SIMD
             do x = 1, n_x_local
 
                 rho(x, y) = rho_0

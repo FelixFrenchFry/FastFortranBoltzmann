@@ -62,6 +62,7 @@ contains
         real(FP), intent(in) :: u_y(:,:)
 
         ! temp
+        !DIR$ ATTRIBUTES ALIGN: 64 :: velocity_mag
         real(FP), allocatable :: velocity_mag(:,:)
 
         ! export selected scalar fields
@@ -82,6 +83,7 @@ contains
 
         if (export_u_mag) then
             allocate(velocity_mag(size(u_x, 1), size(u_x, 2)))
+            !DIR$ ASSUME_ALIGNED u_x: 64, u_y: 64, velocity_mag: 64
             velocity_mag = sqrt(u_x * u_x + u_y * u_y) ! element-wise sqrt of velocity magnitude
             call export_scalar_field_distributed( &
                 domain_info, velocity_mag, "velocity_mag", export_num, suffix_num)
@@ -257,6 +259,7 @@ contains
         integer(int32) :: y_global_end
         character(len=:), allocatable :: output_path
         character(len=:), allocatable :: file_path
+        !DIR$ ATTRIBUTES ALIGN: 64 :: global_field, export_buffer
         real(FP), allocatable :: global_field(:,:)
         real(FP), allocatable :: export_buffer(:,:)[:]
 

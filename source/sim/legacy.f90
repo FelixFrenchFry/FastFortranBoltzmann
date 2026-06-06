@@ -59,6 +59,7 @@ contains
         ! | 8 5 9 |
         ! ---------
         ! periodic pull-style streaming of f into f_next (temporarily)
+        !DIR$ ASSUME_ALIGNED f: 64, f_next: 64, rho: 64, u_x: 64, u_y: 64
         f_next(:, :, 2) = cshift(f(:, :, 2), shift=-1, dim=1)
         f_next(:, :, 3) = cshift(f(:, :, 3), shift=-1, dim=2)
         f_next(:, :, 4) = cshift(f(:, :, 4), shift=1, dim=1)
@@ -70,6 +71,7 @@ contains
 
         ! loop over rows and cols of all cells
         do y = 1, N_Y
+            !DIR$ SIMD
             do x = 1, N_X
 
                 ! read streamed distribution functions from f_next in all moving channels
@@ -174,6 +176,7 @@ contains
         ! | 8 5 9 |
         ! ---------
         ! periodic pull-style streaming of f into f_next (temporarily)
+        !DIR$ ASSUME_ALIGNED f: 64, f_next: 64, rho: 64, u_x: 64, u_y: 64
         f_next(:, :, 2) = cshift(f(:, :, 2), shift=-1, dim=1)
         f_next(:, :, 3) = cshift(f(:, :, 3), shift=-1, dim=2)
         f_next(:, :, 4) = cshift(f(:, :, 4), shift=1, dim=1)
@@ -185,6 +188,7 @@ contains
 
         ! loop over rows and cols of all cells
         do y = 1, N_Y
+            !DIR$ SIMD
             do x = 1, N_X
 
                 ! read streamed distribution functions from f_next in all moving channels
