@@ -42,7 +42,7 @@ contains
         ! loop over all image-owned cells
         !DIR$ ASSUME_ALIGNED f: 64, f_next: 64, rho: 64, u_x: 64, u_y: 64
         do y = 1, n_y_local
-            !$OMP SIMD
+            !DIR$ SIMD
             do x = 1, n_x_local
 
                 rho_val = 0.0_FP
@@ -196,7 +196,7 @@ contains
             bottom_wall_row = at_bottom_boundary .and. y == 1
             top_wall_row = at_top_boundary .and. y == n_y_local
 
-            !$OMP SIMD
+            !DIR$ SIMD
             do x = 1, n_x_local
 
                 ! ---------
@@ -345,7 +345,7 @@ contains
 
         ! bottom bounce-back boundary, written into the halo row used by pull streaming
         if (at_bottom_boundary) then
-            !$OMP SIMD
+            !DIR$ SIMD
             do x = 1, n_x_local
                 f(x, 0, 3) = f(x, 1, 5)
                 f(x-1, 0, 6) = f(x, 1, 8)
@@ -358,7 +358,7 @@ contains
             moving_wall_correction_8 = 6.0_FP * W(6) * rho_0 * u_wall
             moving_wall_correction_9 = 6.0_FP * W(7) * rho_0 * u_wall
 
-            !$OMP SIMD
+            !DIR$ SIMD
             do x = 1, n_x_local
                 f(x, n_y_local+1, 5) = f(x, n_y_local, 3)
                 f(x+1, n_y_local+1, 8) = f(x, n_y_local, 6) - moving_wall_correction_8
