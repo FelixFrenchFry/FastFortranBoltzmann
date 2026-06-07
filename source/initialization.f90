@@ -32,7 +32,6 @@ contains
         real(FP) :: c_dot_u
         real(FP) :: f_eq_val
 
-        !DIR$ ASSUME_ALIGNED f: 64, rho: 64, u_x: 64, u_y: 64
         f = 0.0_FP
 
         ! loop over all image-owned rows
@@ -45,7 +44,7 @@ contains
             u_squ = u_x_val * u_x_val
 
             ! loop over all image-owned cols
-            !$OMP SIMD
+            !DIR$ SIMD
             do x = 1, n_x_local
 
                 rho(x, y) = rho_0
@@ -89,7 +88,6 @@ contains
         integer(int32) :: x, y, i
         real(FP) :: f_eq(N_DIRS)
 
-        !DIR$ ASSUME_ALIGNED f: 64, rho: 64, u_x: 64, u_y: 64
         f = 0.0_FP
 
         ! pre-computed equilibrium distribution at t=0
@@ -99,7 +97,7 @@ contains
 
         ! loop over all image-owned cells
         do y = 1, n_y_local
-            !$OMP SIMD
+            !DIR$ SIMD
             do x = 1, n_x_local
 
                 rho(x, y) = rho_0
@@ -133,7 +131,6 @@ contains
         integer(int32) :: x, y, i
         real(FP) :: f_eq(N_DIRS)
 
-        !DIR$ ASSUME_ALIGNED f: 64, rho: 64, u_x: 64, u_y: 64
         ! pre-computed equilibrium distribution at t=0
         do i = 1, N_DIRS
             f_eq(i) = W(i) * rho_0
@@ -146,7 +143,7 @@ contains
 
         ! loop over all image-owned cells
         do y = 1, n_y_local
-            !$OMP SIMD
+            !DIR$ SIMD
             do x = 1, n_x_local
 
                 rho(x, y) = rho_0
@@ -180,7 +177,6 @@ contains
         integer(int32) :: x, y, i
         real(FP) :: f_eq(N_DIRS)
 
-        !DIR$ ASSUME_ALIGNED f: 64, rho: 64, u_x: 64, u_y: 64
         f = 0.0_FP
 
         ! pre-computed equilibrium distribution at t=0
@@ -190,7 +186,7 @@ contains
 
         ! loop over all image-owned cells
         do y = 1, n_y_local
-            !$OMP SIMD
+            !DIR$ SIMD
             do x = 1, n_x_local
 
                 rho(x, y) = rho_0
