@@ -53,6 +53,7 @@ target_compile_options(FFB PRIVATE
     -fpp
     -warn all
     -standard-semantics
+    -qopenmp-simd
     $<$<CONFIG:Debug>:-O0>
     $<$<CONFIG:Debug>:-g>
     $<$<CONFIG:Debug>:-traceback>
