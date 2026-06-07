@@ -71,7 +71,7 @@ contains
 
         ! loop over rows and cols of all cells
         do y = 1, N_Y
-            !DIR$ SIMD
+            !$OMP SIMD
             do x = 1, N_X
 
                 ! read streamed distribution functions from f_next in all moving channels
@@ -188,7 +188,7 @@ contains
 
         ! loop over rows and cols of all cells
         do y = 1, N_Y
-            !DIR$ SIMD
+            !$OMP SIMD
             do x = 1, N_X
 
                 ! read streamed distribution functions from f_next in all moving channels
