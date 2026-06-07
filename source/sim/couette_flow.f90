@@ -40,9 +40,7 @@ contains
         real(FP) :: f_next_val
 
         ! loop over all image-owned cells
-        !DIR$ ASSUME_ALIGNED f: 64, f_next: 64, rho: 64, u_x: 64, u_y: 64
         do y = 1, n_y_local
-            !DIR$ SIMD
             do x = 1, n_x_local
 
                 rho_val = 0.0_FP
@@ -186,7 +184,6 @@ contains
         real(FP) :: u_y_val
         real(FP) :: u_squ
 
-        !DIR$ ASSUME_ALIGNED f: 64, f_next: 64, rho: 64, u_x: 64, u_y: 64
         moving_wall_correction_8 = 6.0_FP * W(6) * rho_0 * u_wall
         moving_wall_correction_9 = 6.0_FP * W(7) * rho_0 * u_wall
 
@@ -196,7 +193,6 @@ contains
             bottom_wall_row = at_bottom_boundary .and. y == 1
             top_wall_row = at_top_boundary .and. y == n_y_local
 
-            !DIR$ SIMD
             do x = 1, n_x_local
 
                 ! ---------
@@ -330,7 +326,6 @@ contains
 
         ! periodic boundary handling for left/right sides
         ! (only used in single-image decompositions, otherwise handled by wrapped halo exchange)
-        !DIR$ ASSUME_ALIGNED f: 64
         if (n_images_x == 1) then
             do y = 1, n_y_local
                 f(0, y, 2) = f(n_x_local, y, 2)
@@ -345,7 +340,6 @@ contains
 
         ! bottom bounce-back boundary, written into the halo row used by pull streaming
         if (at_bottom_boundary) then
-            !DIR$ SIMD
             do x = 1, n_x_local
                 f(x, 0, 3) = f(x, 1, 5)
                 f(x-1, 0, 6) = f(x, 1, 8)
@@ -358,7 +352,6 @@ contains
             moving_wall_correction_8 = 6.0_FP * W(6) * rho_0 * u_wall
             moving_wall_correction_9 = 6.0_FP * W(7) * rho_0 * u_wall
 
-            !DIR$ SIMD
             do x = 1, n_x_local
                 f(x, n_y_local+1, 5) = f(x, n_y_local, 3)
                 f(x+1, n_y_local+1, 8) = f(x, n_y_local, 6) - moving_wall_correction_8

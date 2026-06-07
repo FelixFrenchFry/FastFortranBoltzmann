@@ -47,9 +47,7 @@ contains
         real(FP) :: f_next_val
 
         ! loop over all image-owned cells
-        !DIR$ ASSUME_ALIGNED f: 64, f_next: 64, rho: 64, u_x: 64, u_y: 64
         do y = 1, n_y_local
-            !DIR$ SIMD
             do x = 1, n_x_local
 
                 rho_val = 0.0_FP
@@ -230,13 +228,11 @@ contains
         real(FP) :: pressure_factor
 
         ! loop over all image-owned cells
-        !DIR$ ASSUME_ALIGNED f: 64, f_next: 64, rho: 64, u_x: 64, u_y: 64
         do y = 1, n_y_local
 
             bottom_wall_row = at_bottom_boundary .and. y == 1
             top_wall_row = at_top_boundary .and. y == n_y_local
 
-            !DIR$ SIMD
             do x = 1, n_x_local
 
                 left_pressure_cell = at_left_boundary .and. x == 1
@@ -459,9 +455,7 @@ contains
         real(FP) :: pressure_right(n_y_local, 3)
 
         ! bottom bounce-back boundary, written into the halo row used by pull streaming
-        !DIR$ ASSUME_ALIGNED f: 64
         if (at_bottom_boundary) then
-            !DIR$ SIMD
             do x = 1, n_x_local
                 f(x, 0, 3) = f(x, 1, 5)
                 f(x-1, 0, 6) = f(x, 1, 8)
@@ -471,7 +465,6 @@ contains
 
         ! top bounce-back boundary, written into the halo row used by pull streaming
         if (at_top_boundary) then
-            !DIR$ SIMD
             do x = 1, n_x_local
                 f(x, n_y_local+1, 5) = f(x, n_y_local, 3)
                 f(x+1, n_y_local+1, 8) = f(x, n_y_local, 6)
@@ -534,7 +527,6 @@ contains
         real(FP), intent(inout) :: macro_send_left(n_y_local, 3)
         real(FP), intent(inout) :: macro_send_right(n_y_local, 3)
 
-        !DIR$ ASSUME_ALIGNED f: 64, macro_send_left: 64, macro_send_right: 64
         if (at_left_boundary) then
             call update_macro_strip(1_int32, macro_send_left)
         end if

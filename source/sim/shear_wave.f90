@@ -35,9 +35,7 @@ contains
         real(FP) :: f_next_val
 
         ! loop over all image-owned cells
-        !DIR$ ASSUME_ALIGNED f: 64, f_next: 64, rho: 64, u_x: 64, u_y: 64
         do y = 1, n_y_local
-            !DIR$ SIMD
             do x = 1, n_x_local
 
                 rho_val = 0.0_FP
@@ -136,9 +134,7 @@ contains
         real(FP) :: u_squ
 
         ! loop over all image-owned cells
-        !DIR$ ASSUME_ALIGNED f: 64, f_next: 64, rho: 64, u_x: 64, u_y: 64
         do y = 1, n_y_local
-            !DIR$ SIMD
             do x = 1, n_x_local
 
                 ! ---------
@@ -250,7 +246,6 @@ contains
 
         ! periodic boundary handling for left/right sides
         ! (only used in single-image decompositions, otherwise handled by wrapped halo exchange)
-        !DIR$ ASSUME_ALIGNED f: 64
         if (n_images_x == 1) then
             do y = 1, n_y_local
                 f(0, y, 2) = f(n_x_local, y, 2)
@@ -266,7 +261,6 @@ contains
         ! periodic boundary handling for bottom/top sides
         ! (only used in single-image decompositions, otherwise handled by wrapped halo exchange)
         if (n_images_y == 1) then
-            !DIR$ SIMD
             do x = 0, n_x_local + 1
                 f(x, 0, 3) = f(x, n_y_local, 3)
                 f(x, 0, 6) = f(x, n_y_local, 6)
