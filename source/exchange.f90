@@ -16,21 +16,15 @@ module exchange
     type :: halo_buffers_t
 
         ! distribution function receive buffers for staged left/right halo exchange
-        !DIR$ ATTRIBUTES ALIGN: 64 :: recv_left
         real(FP), allocatable :: recv_left(:,:)
-        !DIR$ ATTRIBUTES ALIGN: 64 :: recv_right
         real(FP), allocatable :: recv_right(:,:)
 
         ! left/right macro field send buffers
-        !DIR$ ATTRIBUTES ALIGN: 64 :: send_macro_left
         real(FP), allocatable :: send_macro_left(:,:)[:]
-        !DIR$ ATTRIBUTES ALIGN: 64 :: send_macro_right
         real(FP), allocatable :: send_macro_right(:,:)[:]
 
         ! left/right macro field receive buffers
-        !DIR$ ATTRIBUTES ALIGN: 64 :: recv_macro_left
         real(FP), allocatable :: recv_macro_left(:,:)
-        !DIR$ ATTRIBUTES ALIGN: 64 :: recv_macro_right
         real(FP), allocatable :: recv_macro_right(:,:)
 
     end type halo_buffers_t

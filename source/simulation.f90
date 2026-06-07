@@ -198,9 +198,7 @@ contains
         real(FP) :: f_next_val
 
         ! loop over all image-owned cells
-        !DIR$ ASSUME_ALIGNED f: 64, f_next: 64, rho: 64, u_x: 64, u_y: 64
         do y = 1, n_y_local
-            !DIR$ SIMD
             do x = 1, n_x_local
 
                 rho_val = 0.0_FP
@@ -299,9 +297,7 @@ contains
         real(FP) :: u_squ
 
         ! loop over all image-owned cells
-        !DIR$ ASSUME_ALIGNED f: 64, f_next: 64, rho: 64, u_x: 64, u_y: 64
         do y = 1, n_y_local
-            !DIR$ SIMD
             do x = 1, n_x_local
 
                 ! ---------
