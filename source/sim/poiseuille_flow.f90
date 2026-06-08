@@ -449,6 +449,11 @@ contains
         ! read/write inputs
         real(FP), intent(inout) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
 
+        ! ---------
+        ! | 7 3 6 |
+        ! | 4 1 2 |
+        ! | 8 5 9 |
+        ! ---------
         ! temp
         integer(int32) :: x, y
         real(FP) :: pressure_left(n_y_local, 3)
