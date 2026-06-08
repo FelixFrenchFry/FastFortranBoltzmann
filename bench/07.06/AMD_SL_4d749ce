@@ -1,0 +1,1545 @@
+NOTE: benchmarks recorded at commit 4d749ce
+
+--------------------------------------------------------------------------------
+--- [ 2 x AMD EPYC 9454, 1 node, core scatter ] --------------------------------
+--------------------------------------------------------------------------------
+images  grid      local domain     halo      MLUPS median   speedup   efficiency
+4       1 x 4     14400 x 3600     0.07 %       532.505      1.00     100.00 %
+9       1 x 9     14400 x 1600     0.14 %      1191.292      2.24      99.43 %
+16      1 x 16    14400 x 900      0.24 %      2036.418      3.82      95.61 %
+25      1 x 25    14400 x 576      0.36 %      2443.990      4.59      73.43 %
+36      1 x 36    14400 x 400      0.51 %      2710.912      5.09      56.57 %
+64      1 x 64    14400 x 225      0.90 %      3991.611      7.50      46.85 %
+100     1 x 100   14400 x 144      1.40 %      4748.956      8.92      35.67 %
+
+images  grid      local domain     halo      MLUPS median   speedup   efficiency
+4       2 x 2     7200 x 7200      0.06 %       531.759      1.00     100.00 %
+9       3 x 3     4800 x 4800      0.08 %      1177.558      2.21      98.42 %
+16      4 x 4     3600 x 3600      0.11 %      1992.590      3.75      93.68 %
+25      5 x 5     2880 x 2880      0.14 %      2244.879      4.22      67.55 %
+36      6 x 6     2400 x 2400      0.17 %      2479.496      4.66      51.81 %
+64      8 x 8     1800 x 1800      0.22 %      3328.448      6.26      39.12 %
+100     10 x 10   1440 x 1440      0.28 %      3534.576      6.65      26.59 %
+
+images  grid      local domain     halo      MLUPS median   speedup   efficiency
+4       4 x 1     3600 x 14400     0.07 %       529.826      1.00     100.00 %
+9       9 x 1     1600 x 14400     0.14 %      1178.451      2.22      98.85 %
+16      16 x 1    900 x 14400      0.24 %      1709.247      3.23      80.65 %
+25      25 x 1    576 x 14400      0.36 %      2192.536      4.14      66.21 %
+36      36 x 1    400 x 14400      0.51 %      2587.350      4.88      54.26 %
+64      64 x 1    225 x 14400      0.90 %      3761.783      7.10      44.38 %
+100     100 x 1   144 x 14400      1.40 %      4323.044      8.16      32.64 %
+
+
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 1 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 4
+image grid                = 1 x 4
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           4
+image grid [X/Y]:         [ 1 / 4 ]
+local domain [X/Y]:       [ 14400 / 3600 ]
+halo cells:               0.069 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          14.940
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.429
+
+--- [ benchmark runs started at 2026-06-08 11:39:32 ] ---------------------
+001 | avg step: 389.405 ms | MLUPS: 532.505
+002 | avg step: 389.493 ms | MLUPS: 532.384
+003 | avg step: 389.167 ms | MLUPS: 532.830
+004 | avg step: 389.027 ms | MLUPS: 533.023
+005 | avg step: 389.656 ms | MLUPS: 532.162
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 532.505
+best                      = 533.023
+worst                     = 532.162
+mean                      = 532.581
+stddev                    = 0.065 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |        115.461 |        98.846 %
+halo exchange                            |          1.333 |         1.142 %
+other                                    |          0.019 |         0.016 %
+total                                    |        116.821 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 2 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 9
+image grid                = 1 x 9
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           9
+image grid [X/Y]:         [ 1 / 9 ]
+local domain [X/Y]:       [ 14400 / 1600 ]
+halo cells:               0.139 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          14.951
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.439
+
+--- [ benchmark runs started at 2026-06-08 11:49:38 ] ---------------------
+001 | avg step: 174.164 ms | MLUPS: 1190.604
+002 | avg step: 174.382 ms | MLUPS: 1189.112
+003 | avg step: 174.046 ms | MLUPS: 1191.412
+004 | avg step: 174.027 ms | MLUPS: 1191.538
+005 | avg step: 174.063 ms | MLUPS: 1191.292
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 1191.292
+best                      = 1191.538
+worst                     = 1189.112
+mean                      = 1190.792
+stddev                    = 0.084 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |         51.296 |        98.200 %
+halo exchange                            |          0.926 |         1.771 %
+other                                    |          0.012 |         0.023 %
+total                                    |         52.219 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 3 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 16
+image grid                = 1 x 16
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           16
+image grid [X/Y]:         [ 1 / 16 ]
+local domain [X/Y]:       [ 14400 / 900 ]
+halo cells:               0.236 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          14.965
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.453
+
+--- [ benchmark runs started at 2026-06-08 11:54:18 ] ---------------------
+001 | avg step: 102.583 ms | MLUPS: 2021.395
+002 | avg step: 148.526 ms | MLUPS: 1396.123
+003 | avg step: 101.585 ms | MLUPS: 2041.256
+004 | avg step: 101.826 ms | MLUPS: 2036.418
+005 | avg step: 101.629 ms | MLUPS: 2040.369
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 2036.418
+best                      = 2041.256
+worst                     = 1396.123
+mean                      = 1907.112
+stddev                    = 14.984 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |         29.488 |        96.531 %
+halo exchange                            |          1.043 |         3.413 %
+other                                    |          0.019 |         0.056 %
+total                                    |         30.548 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 4 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 25
+image grid                = 1 x 25
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           25
+image grid [X/Y]:         [ 1 / 25 ]
+local domain [X/Y]:       [ 14400 / 576 ]
+halo cells:               0.361 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          14.984
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.472
+
+--- [ benchmark runs started at 2026-06-08 11:57:20 ] ---------------------
+001 | avg step: 84.845 ms | MLUPS: 2443.990
+002 | avg step: 109.458 ms | MLUPS: 1894.425
+003 | avg step: 84.267 ms | MLUPS: 2460.752
+004 | avg step: 84.518 ms | MLUPS: 2453.454
+005 | avg step: 86.431 ms | MLUPS: 2399.128
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 2443.990
+best                      = 2460.752
+worst                     = 1894.425
+mean                      = 2330.350
+stddev                    = 10.508 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |         22.745 |        89.953 %
+halo exchange                            |          2.515 |         9.919 %
+other                                    |          0.037 |         0.146 %
+total                                    |         25.453 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 5 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 36
+image grid                = 1 x 36
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           36
+image grid [X/Y]:         [ 1 / 36 ]
+local domain [X/Y]:       [ 14400 / 400 ]
+halo cells:               0.514 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          15.007
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.495
+
+--- [ benchmark runs started at 2026-06-08 11:59:55 ] ---------------------
+001 | avg step: 76.516 ms | MLUPS: 2710.033
+002 | avg step: 81.239 ms | MLUPS: 2552.479
+003 | avg step: 76.458 ms | MLUPS: 2712.061
+004 | avg step: 76.491 ms | MLUPS: 2710.912
+005 | avg step: 76.480 ms | MLUPS: 2711.314
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 2710.912
+best                      = 2712.061
+worst                     = 2552.479
+mean                      = 2679.360
+stddev                    = 2.647 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |         20.659 |        90.067 %
+halo exchange                            |          2.246 |         9.790 %
+other                                    |          0.033 |         0.143 %
+total                                    |         22.947 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 6 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 64
+image grid                = 1 x 64
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           64
+image grid [X/Y]:         [ 1 / 64 ]
+local domain [X/Y]:       [ 14400 / 225 ]
+halo cells:               0.903 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            73  |          15.065
+macro field buffers                      |            12  |           2.488
+total                                    |            85  |          17.553
+
+--- [ benchmark runs started at 2026-06-08 12:02:18 ] ---------------------
+001 | avg step: 51.522 ms | MLUPS: 4024.705
+002 | avg step: 52.072 ms | MLUPS: 3982.190
+003 | avg step: 53.523 ms | MLUPS: 3874.229
+004 | avg step: 51.949 ms | MLUPS: 3991.611
+005 | avg step: 51.498 ms | MLUPS: 4026.572
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 3991.611
+best                      = 4026.572
+worst                     = 3874.229
+mean                      = 3979.861
+stddev                    = 1.564 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |         11.888 |        76.277 %
+halo exchange                            |          3.563 |        22.862 %
+other                                    |          0.117 |         0.728 %
+total                                    |         15.585 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 7 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 100
+image grid                = 1 x 100
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           100
+image grid [X/Y]:         [ 1 / 100 ]
+local domain [X/Y]:       [ 14400 / 144 ]
+halo cells:               1.403 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            73  |          15.139
+macro field buffers                      |            12  |           2.488
+total                                    |            85  |          17.628
+
+--- [ benchmark runs started at 2026-06-08 12:04:30 ] ---------------------
+001 | avg step: 43.664 ms | MLUPS: 4748.956
+002 | avg step: 44.064 ms | MLUPS: 4705.862
+003 | avg step: 43.432 ms | MLUPS: 4774.362
+004 | avg step: 43.352 ms | MLUPS: 4783.197
+005 | avg step: 44.024 ms | MLUPS: 4710.190
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 4748.956
+best                      = 4783.197
+worst                     = 4705.862
+mean                      = 4744.513
+stddev                    = 0.751 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |         10.376 |        78.598 %
+halo exchange                            |          2.338 |        17.975 %
+other                                    |          0.404 |         3.057 %
+total                                    |         13.099 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 11 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 4
+image grid                = 2 x 2
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           4
+image grid [X/Y]:         [ 2 / 2 ]
+local domain [X/Y]:       [ 7200 / 7200 ]
+halo cells:               0.056 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          14.938
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.427
+
+--- [ benchmark runs started at 2026-06-08 08:40:26 ] ---------------------
+001 | avg step: 390.046 ms | MLUPS: 531.630
+002 | avg step: 389.951 ms | MLUPS: 531.759
+003 | avg step: 389.581 ms | MLUPS: 532.264
+004 | avg step: 390.001 ms | MLUPS: 531.691
+005 | avg step: 389.693 ms | MLUPS: 532.111
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 531.759
+best                      = 532.264
+worst                     = 531.630
+mean                      = 531.891
+stddev                    = 0.053 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |        115.337 |        98.629 %
+halo exchange                            |          1.589 |         1.359 %
+other                                    |          0.012 |         0.010 %
+total                                    |        116.985 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 12 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 9
+image grid                = 3 x 3
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           9
+image grid [X/Y]:         [ 3 / 3 ]
+local domain [X/Y]:       [ 4800 / 4800 ]
+halo cells:               0.083 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          14.942
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.431
+
+--- [ benchmark runs started at 2026-06-08 08:50:21 ] ---------------------
+001 | avg step: 176.093 ms | MLUPS: 1177.558
+002 | avg step: 176.505 ms | MLUPS: 1174.811
+003 | avg step: 176.288 ms | MLUPS: 1176.258
+004 | avg step: 176.036 ms | MLUPS: 1177.942
+005 | avg step: 175.970 ms | MLUPS: 1178.381
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 1177.558
+best                      = 1178.381
+worst                     = 1174.811
+mean                      = 1176.990
+stddev                    = 0.123 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |         51.363 |        97.219 %
+halo exchange                            |          1.457 |         2.758 %
+other                                    |          0.013 |         0.025 %
+total                                    |         52.828 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 13 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 16
+image grid                = 4 x 4
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           16
+image grid [X/Y]:         [ 4 / 4 ]
+local domain [X/Y]:       [ 3600 / 3600 ]
+halo cells:               0.111 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          14.947
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.435
+
+--- [ benchmark runs started at 2026-06-08 08:54:56 ] ---------------------
+001 | avg step: 108.670 ms | MLUPS: 1908.162
+002 | avg step: 104.066 ms | MLUPS: 1992.590
+003 | avg step: 104.248 ms | MLUPS: 1989.097
+004 | avg step: 103.280 ms | MLUPS: 2007.741
+005 | avg step: 103.869 ms | MLUPS: 1996.358
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 1992.590
+best                      = 2007.741
+worst                     = 1908.162
+mean                      = 1978.790
+stddev                    = 2.026 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |         29.268 |        93.747 %
+halo exchange                            |          1.939 |         6.212 %
+other                                    |          0.014 |         0.043 %
+total                                    |         31.220 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 14 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 25
+image grid                = 5 x 5
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           25
+image grid [X/Y]:         [ 5 / 5 ]
+local domain [X/Y]:       [ 2880 / 2880 ]
+halo cells:               0.139 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          14.951
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.439
+
+--- [ benchmark runs started at 2026-06-08 08:57:47 ] ---------------------
+001 | avg step: 92.370 ms | MLUPS: 2244.879
+002 | avg step: 91.308 ms | MLUPS: 2270.988
+003 | avg step: 95.176 ms | MLUPS: 2178.708
+004 | avg step: 100.662 ms | MLUPS: 2059.959
+005 | avg step: 91.757 ms | MLUPS: 2259.878
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 2244.879
+best                      = 2270.988
+worst                     = 2059.959
+mean                      = 2202.882
+stddev                    = 3.974 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |         23.122 |        83.441 %
+halo exchange                            |          4.553 |        16.431 %
+other                                    |          0.027 |         0.098 %
+total                                    |         27.711 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 15 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 36
+image grid                = 6 x 6
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           36
+image grid [X/Y]:         [ 6 / 6 ]
+local domain [X/Y]:       [ 2400 / 2400 ]
+halo cells:               0.167 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          14.955
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.443
+
+--- [ benchmark runs started at 2026-06-08 09:00:27 ] ---------------------
+001 | avg step: 87.007 ms | MLUPS: 2383.258
+002 | avg step: 83.630 ms | MLUPS: 2479.496
+003 | avg step: 83.076 ms | MLUPS: 2496.030
+004 | avg step: 83.682 ms | MLUPS: 2477.963
+005 | avg step: 83.429 ms | MLUPS: 2485.458
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 2479.496
+best                      = 2496.030
+worst                     = 2383.258
+mean                      = 2464.441
+stddev                    = 1.864 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |         22.169 |        88.949 %
+halo exchange                            |          2.724 |        10.928 %
+other                                    |          0.031 |         0.123 %
+total                                    |         25.089 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 16 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 64
+image grid                = 8 x 8
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           64
+image grid [X/Y]:         [ 8 / 8 ]
+local domain [X/Y]:       [ 1800 / 1800 ]
+halo cells:               0.222 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          14.963
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.451
+
+--- [ benchmark runs started at 2026-06-08 09:03:06 ] ---------------------
+001 | avg step: 61.902 ms | MLUPS: 3349.820
+002 | avg step: 62.738 ms | MLUPS: 3305.168
+003 | avg step: 62.299 ms | MLUPS: 3328.448
+004 | avg step: 62.357 ms | MLUPS: 3325.343
+005 | avg step: 62.283 ms | MLUPS: 3329.345
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 3328.448
+best                      = 3349.820
+worst                     = 3305.168
+mean                      = 3327.625
+stddev                    = 0.477 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |         12.044 |        64.292 %
+halo exchange                            |          6.593 |        35.284 %
+other                                    |          0.076 |         0.408 %
+total                                    |         18.690 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 17 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 100
+image grid                = 10 x 10
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           100
+image grid [X/Y]:         [ 10 / 10 ]
+local domain [X/Y]:       [ 1440 / 1440 ]
+halo cells:               0.278 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          14.971
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.460
+
+--- [ benchmark runs started at 2026-06-08 09:05:34 ] ---------------------
+001 | avg step: 56.444 ms | MLUPS: 3673.752
+002 | avg step: 59.656 ms | MLUPS: 3475.903
+003 | avg step: 60.123 ms | MLUPS: 3448.923
+004 | avg step: 56.649 ms | MLUPS: 3660.439
+005 | avg step: 58.666 ms | MLUPS: 3534.576
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 3534.576
+best                      = 3673.752
+worst                     = 3448.923
+mean                      = 3558.719
+stddev                    = 2.916 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |         10.670 |        60.535 %
+halo exchange                            |          6.971 |        38.950 %
+other                                    |          0.097 |         0.565 %
+total                                    |         17.600 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 21 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 4
+image grid                = 4 x 1
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           4
+image grid [X/Y]:         [ 4 / 1 ]
+local domain [X/Y]:       [ 3600 / 14400 ]
+halo cells:               0.069 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          14.940
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.429
+
+--- [ benchmark runs started at 2026-06-08 09:12:30 ] ---------------------
+001 | avg step: 391.347 ms | MLUPS: 529.862
+002 | avg step: 391.594 ms | MLUPS: 529.528
+003 | avg step: 391.374 ms | MLUPS: 529.826
+004 | avg step: 391.165 ms | MLUPS: 530.109
+005 | avg step: 391.987 ms | MLUPS: 528.997
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 529.826
+best                      = 530.109
+worst                     = 528.997
+mean                      = 529.664
+stddev                    = 0.080 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |        115.456 |        98.339 %
+halo exchange                            |          1.932 |         1.645 %
+other                                    |          0.018 |         0.015 %
+total                                    |        117.412 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 22 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 9
+image grid                = 9 x 1
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           9
+image grid [X/Y]:         [ 9 / 1 ]
+local domain [X/Y]:       [ 1600 / 14400 ]
+halo cells:               0.139 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          14.951
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.439
+
+--- [ benchmark runs started at 2026-06-08 09:22:27 ] ---------------------
+001 | avg step: 176.221 ms | MLUPS: 1176.701
+002 | avg step: 175.976 ms | MLUPS: 1178.341
+003 | avg step: 175.764 ms | MLUPS: 1179.764
+004 | avg step: 175.960 ms | MLUPS: 1178.451
+005 | avg step: 175.850 ms | MLUPS: 1179.186
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 1178.451
+best                      = 1179.764
+worst                     = 1176.701
+mean                      = 1178.489
+stddev                    = 0.098 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |         51.374 |        97.318 %
+halo exchange                            |          1.402 |         2.660 %
+other                                    |          0.014 |         0.026 %
+total                                    |         52.788 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 23 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 16
+image grid                = 16 x 1
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           16
+image grid [X/Y]:         [ 16 / 1 ]
+local domain [X/Y]:       [ 900 / 14400 ]
+halo cells:               0.236 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          14.965
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.453
+
+--- [ benchmark runs started at 2026-06-08 09:27:02 ] ---------------------
+001 | avg step: 147.392 ms | MLUPS: 1406.862
+002 | avg step: 171.859 ms | MLUPS: 1206.574
+003 | avg step: 121.317 ms | MLUPS: 1709.247
+004 | avg step: 115.400 ms | MLUPS: 1796.875
+005 | avg step: 104.631 ms | MLUPS: 1981.823
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 1709.247
+best                      = 1981.823
+worst                     = 1206.574
+mean                      = 1620.276
+stddev                    = 19.185 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |         29.681 |        81.674 %
+halo exchange                            |          6.643 |        18.253 %
+other                                    |          0.027 |         0.073 %
+total                                    |         36.395 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 24 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 25
+image grid                = 25 x 1
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           25
+image grid [X/Y]:         [ 25 / 1 ]
+local domain [X/Y]:       [ 576 / 14400 ]
+halo cells:               0.361 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          14.984
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.472
+
+--- [ benchmark runs started at 2026-06-08 09:30:35 ] ---------------------
+001 | avg step: 94.575 ms | MLUPS: 2192.536
+002 | avg step: 96.035 ms | MLUPS: 2159.210
+003 | avg step: 94.881 ms | MLUPS: 2185.468
+004 | avg step: 87.110 ms | MLUPS: 2380.452
+005 | avg step: 88.512 ms | MLUPS: 2342.721
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 2192.536
+best                      = 2380.452
+worst                     = 2159.210
+mean                      = 2252.077
+stddev                    = 4.512 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |         21.763 |        78.100 %
+halo exchange                            |          6.179 |        21.778 %
+other                                    |          0.036 |         0.128 %
+total                                    |         28.373 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 25 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 36
+image grid                = 36 x 1
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           36
+image grid [X/Y]:         [ 36 / 1 ]
+local domain [X/Y]:       [ 400 / 14400 ]
+halo cells:               0.514 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          15.007
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.495
+
+--- [ benchmark runs started at 2026-06-08 09:33:13 ] ---------------------
+001 | avg step: 80.144 ms | MLUPS: 2587.350
+002 | avg step: 87.822 ms | MLUPS: 2361.135
+003 | avg step: 79.985 ms | MLUPS: 2592.500
+004 | avg step: 82.801 ms | MLUPS: 2504.317
+005 | avg step: 79.885 ms | MLUPS: 2595.743
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 2587.350
+best                      = 2595.743
+worst                     = 2361.135
+mean                      = 2528.209
+stddev                    = 3.989 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |         19.778 |        82.423 %
+halo exchange                            |          4.183 |        17.433 %
+other                                    |          0.030 |         0.122 %
+total                                    |         24.043 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 26 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 64
+image grid                = 64 x 1
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           64
+image grid [X/Y]:         [ 64 / 1 ]
+local domain [X/Y]:       [ 225 / 14400 ]
+halo cells:               0.903 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            73  |          15.065
+macro field buffers                      |            12  |           2.488
+total                                    |            85  |          17.553
+
+--- [ benchmark runs started at 2026-06-08 09:35:43 ] ---------------------
+001 | avg step: 57.724 ms | MLUPS: 3592.278
+002 | avg step: 61.548 ms | MLUPS: 3369.100
+003 | avg step: 55.123 ms | MLUPS: 3761.783
+004 | avg step: 54.874 ms | MLUPS: 3778.838
+005 | avg step: 54.724 ms | MLUPS: 3789.196
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 3761.783
+best                      = 3789.196
+worst                     = 3369.100
+mean                      = 3658.239
+stddev                    = 4.935 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |         11.817 |        71.782 %
+halo exchange                            |          4.589 |        27.877 %
+other                                    |          0.099 |         0.536 %
+total                                    |         16.537 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 27 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 100
+image grid                = 100 x 1
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           100
+image grid [X/Y]:         [ 100 / 1 ]
+local domain [X/Y]:       [ 144 / 14400 ]
+halo cells:               1.403 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            73  |          15.139
+macro field buffers                      |            12  |           2.488
+total                                    |            85  |          17.628
+
+--- [ benchmark runs started at 2026-06-08 09:38:02 ] ---------------------
+001 | avg step: 47.770 ms | MLUPS: 4340.807
+002 | avg step: 48.750 ms | MLUPS: 4253.564
+003 | avg step: 47.966 ms | MLUPS: 4323.044
+004 | avg step: 47.158 ms | MLUPS: 4397.097
+005 | avg step: 48.133 ms | MLUPS: 4308.051
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 4323.044
+best                      = 4397.097
+worst                     = 4253.564
+mean                      = 4324.513
+stddev                    = 1.204 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |         10.435 |        72.813 %
+halo exchange                            |          3.850 |        26.863 %
+other                                    |          0.052 |         0.360 %
+total                                    |         14.390 |       100.000 %
