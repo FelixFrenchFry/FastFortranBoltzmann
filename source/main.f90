@@ -2,7 +2,7 @@ program main
     ! imports
     use iso_fortran_env, only: int32, int64, real64
     use domain, only: domain_t, initialize_domain
-    use exchange, only: halo_buffers_t, exchange_plan_t, allocate_halo_buffers, build_exchange_plan, exchange_halos
+    use exchange, only: halo_buffers_t, exchange_plan_t, BUF_MACRO_LEFT, BUF_MACRO_RIGHT, allocate_halo_buffers, build_exchange_plan, exchange_halos
     use export, only: should_export_step, export_selected_data_distributed, export_metadata
     use hardware_info, only: hardware_info_t, collect_hardware_info
     use initialization, only: apply_condition_shear_wave_local, &
@@ -99,13 +99,13 @@ program main
     end if
 
     if (SIM_MODE == SIM_POISEUILLE_FLOW) then
-        halo_buffers%send_macro_left(:, 1) = RHO_0
-        halo_buffers%send_macro_left(:, 2) = 0.0_FP
-        halo_buffers%send_macro_left(:, 3) = 0.0_FP
+        halo_buffers%window(:, 1, BUF_MACRO_LEFT) = RHO_0
+        halo_buffers%window(:, 2, BUF_MACRO_LEFT) = 0.0_FP
+        halo_buffers%window(:, 3, BUF_MACRO_LEFT) = 0.0_FP
 
-        halo_buffers%send_macro_right(:, 1) = RHO_0
-        halo_buffers%send_macro_right(:, 2) = 0.0_FP
-        halo_buffers%send_macro_right(:, 3) = 0.0_FP
+        halo_buffers%window(:, 1, BUF_MACRO_RIGHT) = RHO_0
+        halo_buffers%window(:, 2, BUF_MACRO_RIGHT) = 0.0_FP
+        halo_buffers%window(:, 3, BUF_MACRO_RIGHT) = 0.0_FP
 
         halo_buffers%recv_macro_left(:, 1) = RHO_0
         halo_buffers%recv_macro_left(:, 2) = 0.0_FP
