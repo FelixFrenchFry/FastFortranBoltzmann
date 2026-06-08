@@ -11,7 +11,7 @@ import numpy as np
 # --- [ plot shear wave velocity scalar fields as heatmaps ] ---
 
 # run config
-RUN_NAME = "run_005"
+RUN_NAME = "run_001_SW"
 DATA_FIELDS = {
     "velocity_x": {
         "label": "u_x",

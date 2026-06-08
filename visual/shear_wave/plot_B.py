@@ -11,7 +11,7 @@ import numpy as np
 # --- [ plot shear wave velocity magnitude scalar field as heatmap ] ---
 
 # run config
-RUN_NAME = "run_005"
+RUN_NAME = "run_001_SW"
 DATA_NAME = "velocity_mag"
 
 # step config

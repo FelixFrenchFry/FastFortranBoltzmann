@@ -11,7 +11,7 @@ import numpy as np
 # --- [ plot shear wave velocity magnitude as streamlines ] ---
 
 # run config
-RUN_NAME = "run_005"
+RUN_NAME = "run_001_SW"
 DATA_NAME_X = "velocity_x"
 DATA_NAME_Y = "velocity_y"
 PLOT_NAME = "velocity_mag_streamlines"
