@@ -10,33 +10,30 @@ module exchange
     public :: halo_buffers_t
     public :: exchange_plan_t
     public :: allocate_halo_buffers
+    public :: BUF_SEND_LEFT
+    public :: BUF_SEND_RIGHT
+    public :: BUF_MACRO_LEFT
+    public :: BUF_MACRO_RIGHT
+
+    ! halo buffer indices in the exchange buffer window
+    integer(int32), parameter :: BUF_SEND_LEFT = 1
+    integer(int32), parameter :: BUF_SEND_RIGHT = 2
+    integer(int32), parameter :: BUF_MACRO_LEFT = 3
+    integer(int32), parameter :: BUF_MACRO_RIGHT = 4
     public :: build_exchange_plan
     public :: exchange_halos
 
     type :: halo_buffers_t
 
         ! distribution function send buffers for staged left/right halo exchange
-        !DIR$ ATTRIBUTES ALIGN : 64 :: send_left
-        real(FP), allocatable :: send_left(:,:)[:]
-        !DIR$ ATTRIBUTES ALIGN : 64 :: send_right
-        real(FP), allocatable :: send_right(:,:)[:]
+        real(FP), allocatable :: window(:,:,:)[:]
 
         ! distribution function receive buffers for staged left/right halo exchange
-        !DIR$ ATTRIBUTES ALIGN : 64 :: recv_left
         real(FP), allocatable :: recv_left(:,:)
-        !DIR$ ATTRIBUTES ALIGN : 64 :: recv_right
         real(FP), allocatable :: recv_right(:,:)
-
-        ! left/right macro field send buffers
-        !DIR$ ATTRIBUTES ALIGN : 64 :: send_macro_left
-        real(FP), allocatable :: send_macro_left(:,:)[:]
-        !DIR$ ATTRIBUTES ALIGN : 64 :: send_macro_right
-        real(FP), allocatable :: send_macro_right(:,:)[:]
-
+        
         ! left/right macro field receive buffers
-        !DIR$ ATTRIBUTES ALIGN : 64 :: recv_macro_left
         real(FP), allocatable :: recv_macro_left(:,:)
-        !DIR$ ATTRIBUTES ALIGN : 64 :: recv_macro_right
         real(FP), allocatable :: recv_macro_right(:,:)
 
     end type halo_buffers_t
@@ -120,13 +117,9 @@ contains
             error stop "error: halo buffers are already allocated"
         end if
 
-        allocate(halo_buffers%send_left(domain_info%n_y, 3)[*])
-        allocate(halo_buffers%send_right(domain_info%n_y, 3)[*])
+        allocate(halo_buffers%window(domain_info%n_y, 3, 4)[*])
         allocate(halo_buffers%recv_left(domain_info%n_y, 3))
         allocate(halo_buffers%recv_right(domain_info%n_y, 3))
-
-        allocate(halo_buffers%send_macro_left(domain_info%n_y, 3)[*])
-        allocate(halo_buffers%send_macro_right(domain_info%n_y, 3)[*])
         allocate(halo_buffers%recv_macro_left(domain_info%n_y, 3))
         allocate(halo_buffers%recv_macro_right(domain_info%n_y, 3))
     end subroutine allocate_halo_buffers
@@ -166,7 +159,6 @@ contains
         if (exchange_plan%macro_right) then
             call add_neighbor_image(x_neighbor_images, n_x_neighbor_images, domain_info%right_image_id)
         end if
-
         if (exchange_plan%bottom) then
             call add_neighbor_image(y_neighbor_images, n_y_neighbor_images, domain_info%bottom_image_id)
         end if
@@ -181,29 +173,29 @@ contains
         ! ---------
         ! pack strided left/right boundaries into contiguous send buffers locally
         if (exchange_plan%left) then
-            halo_buffers%send_left(:, 1) = f(1, 1:n_y_local, 4)
-            halo_buffers%send_left(:, 2) = f(1, 1:n_y_local, 7)
-            halo_buffers%send_left(:, 3) = f(1, 1:n_y_local, 8)
+            halo_buffers%window(:, 1, BUF_SEND_LEFT) = f(1, 1:n_y_local, 4)
+            halo_buffers%window(:, 2, BUF_SEND_LEFT) = f(1, 1:n_y_local, 7)
+            halo_buffers%window(:, 3, BUF_SEND_LEFT) = f(1, 1:n_y_local, 8)
         end if
 
         if (exchange_plan%right) then
-            halo_buffers%send_right(:, 1) = f(n_x_local, 1:n_y_local, 2)
-            halo_buffers%send_right(:, 2) = f(n_x_local, 1:n_y_local, 6)
-            halo_buffers%send_right(:, 3) = f(n_x_local, 1:n_y_local, 9)
+            halo_buffers%window(:, 1, BUF_SEND_RIGHT) = f(n_x_local, 1:n_y_local, 2)
+            halo_buffers%window(:, 2, BUF_SEND_RIGHT) = f(n_x_local, 1:n_y_local, 6)
+            halo_buffers%window(:, 3, BUF_SEND_RIGHT) = f(n_x_local, 1:n_y_local, 9)
         end if
 
         call sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
 
         ! exchange packed left/right halos through staging buffers
         if (exchange_plan%left) then
-            halo_buffers%recv_left(:, :) = halo_buffers%send_right(:, :)[domain_info%left_image_id]
+            halo_buffers%recv_left(:, :) = halo_buffers%window(:, :, BUF_SEND_RIGHT)[domain_info%left_image_id]
             f(0, 1:n_y_local, 2) = halo_buffers%recv_left(:, 1)
             f(0, 1:n_y_local, 6) = halo_buffers%recv_left(:, 2)
             f(0, 1:n_y_local, 9) = halo_buffers%recv_left(:, 3)
         end if
 
         if (exchange_plan%right) then
-            halo_buffers%recv_right(:, :) = halo_buffers%send_left(:, :)[domain_info%right_image_id]
+            halo_buffers%recv_right(:, :) = halo_buffers%window(:, :, BUF_SEND_LEFT)[domain_info%right_image_id]
             f(n_x_local+1, 1:n_y_local, 4) = halo_buffers%recv_right(:, 1)
             f(n_x_local+1, 1:n_y_local, 7) = halo_buffers%recv_right(:, 2)
             f(n_x_local+1, 1:n_y_local, 8) = halo_buffers%recv_right(:, 3)
@@ -211,11 +203,11 @@ contains
 
         ! pressure-periodic macros for poiseuille flow
         if (exchange_plan%macro_left) then
-            halo_buffers%recv_macro_left(:, :) = halo_buffers%send_macro_right(:, :)[domain_info%left_image_id]
+            halo_buffers%recv_macro_left(:, :) = halo_buffers%window(:, :, BUF_MACRO_RIGHT)[domain_info%left_image_id]
         end if
 
         if (exchange_plan%macro_right) then
-            halo_buffers%recv_macro_right(:, :) = halo_buffers%send_macro_left(:, :)[domain_info%right_image_id]
+            halo_buffers%recv_macro_right(:, :) = halo_buffers%window(:, :, BUF_MACRO_LEFT)[domain_info%right_image_id]
         end if
 
         call sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)

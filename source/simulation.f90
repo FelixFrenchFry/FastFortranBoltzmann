@@ -2,7 +2,7 @@ module simulation
     ! imports
     use iso_fortran_env, only: int32
     use domain, only: domain_t
-    use exchange, only: halo_buffers_t
+    use exchange, only: halo_buffers_t, BUF_MACRO_LEFT, BUF_MACRO_RIGHT
     use settings, only: N_DIRS, C_X, C_Y, C_X_FP, C_Y_FP, W, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
         USE_UNROLLED_KERNELS, USE_UNIVERSAL_KERNELS, &
@@ -101,7 +101,7 @@ contains
                 call update_poiseuille_flow_macro_strips_PF( &
                     n_x_local, n_y_local, &
                     domain_info%at_left_boundary, domain_info%at_right_boundary, f, &
-                    halo_buffers%send_macro_left, halo_buffers%send_macro_right)
+                    halo_buffers%window(:,:,BUF_MACRO_LEFT), halo_buffers%window(:,:,BUF_MACRO_RIGHT))
                 if (USE_UNROLLED_KERNELS) then
                     call fuzed_pull_streaming_collision_local_unrolled_universal( &
                         n_x_local, n_y_local, &
@@ -120,7 +120,7 @@ contains
                     RHO_IN, RHO_OUT, &
                     f, f_next, rho, u_x, u_y, &
                     halo_buffers%recv_macro_left, halo_buffers%recv_macro_right, &
-                    halo_buffers%send_macro_left, halo_buffers%send_macro_right)
+                    halo_buffers%window(:,:,BUF_MACRO_LEFT), halo_buffers%window(:,:,BUF_MACRO_RIGHT))
             else
                 call fuzed_pull_streaming_collision_local_PF( &
                     n_x_local, n_y_local, &
@@ -130,7 +130,7 @@ contains
                     RHO_IN, RHO_OUT, &
                     f, f_next, rho, u_x, u_y, &
                     halo_buffers%recv_macro_left, halo_buffers%recv_macro_right, &
-                    halo_buffers%send_macro_left, halo_buffers%send_macro_right)
+                    halo_buffers%window(:,:,BUF_MACRO_LEFT), halo_buffers%window(:,:,BUF_MACRO_RIGHT))
             end if
         case (SIM_SLIDING_LID) ! sliding lid
             if (USE_UNIVERSAL_KERNELS) then
