@@ -4,16 +4,40 @@ NOTE: benchmarks recorded at commit 4d749ce
 --- [ 2 x Intel Xeon Platinum 8358, 1 node, core scatter ] ---------------------
 --------------------------------------------------------------------------------
 images  grid      local domain     halo      MLUPS median   speedup   efficiency
-4       2 x 2     7200 x 7200      0.06 %       435.743      1.00     100.00 %
-9       3 x 3     4800 x 4800      0.08 %       902.659      2.07      92.07 %
-16      4 x 4     3600 x 3600      0.11 %      1512.104      3.47      86.75 %
-25      5 x 5     2880 x 2880      0.14 %      1874.611      4.30      68.83 %
-36      6 x 6     2400 x 2400      0.17 %      2019.100      4.63      51.49 %
-64      8 x 8     1800 x 1800      0.22 %      1962.584      4.50      28.15 %
-100     10 x 10   1440 x 1440      0.28 %      2189.845      5.03      20.10 %
-144     12 x 12   1200 x 1200      0.33 %      2041.360      4.68      13.01 %
-225     15 x 15   960 x 960        0.42 %      1516.720      3.48       6.19 %
-400     20 x 20   720 x 720        0.56 %       259.874      0.60       0.60 %
+4       1 x 4     14400 x 3600     0.07 %       437.402      1.00     100.00 %
+9       1 x 9     14400 x 1600     0.14 %       920.548      2.10      93.54 %
+16      1 x 16    14400 x 900      0.24 %      1512.292      3.46      86.44 %
+25      1 x 25    14400 x 576      0.36 %      2094.483      4.79      76.62 %
+36      1 x 36    14400 x 400      0.51 %      2398.118      5.48      60.92 %
+64      1 x 64    14400 x 225      0.90 %      2533.899      5.79      36.21 %
+100     1 x 100   14400 x 144      1.40 %      2646.971      6.05      24.21 %
+144     1 x 144   14400 x 100      2.01 %      2535.272      5.80      16.10 %
+225     1 x 225   14400 x 64       3.14 %      1997.400      4.57       8.12 %
+400     1 x 400   14400 x 36       5.57 %       538.047      1.23       1.23 %
+
+images  grid      local domain     halo      MLUPS median   speedup   efficiency
+4       2 x 2     7200 x 7200      0.06 %       433.627      1.00     100.00 %
+9       3 x 3     4800 x 4800      0.08 %       901.142      2.08      92.36 %
+16      4 x 4     3600 x 3600      0.11 %      1521.389      3.51      87.71 %
+25      5 x 5     2880 x 2880      0.14 %      1873.002      4.32      69.11 %
+36      6 x 6     2400 x 2400      0.17 %      2022.693      4.66      51.83 %
+64      8 x 8     1800 x 1800      0.22 %      1962.988      4.53      28.29 %
+100     10 x 10   1440 x 1440      0.28 %      2185.478      5.04      20.16 %
+144     12 x 12   1200 x 1200      0.33 %      2050.568      4.73      13.14 %
+225     15 x 15   960 x 960        0.42 %      1502.355      3.46       6.16 %
+400     20 x 20   720 x 720        0.56 %       234.769      0.54       0.54 %
+
+images  grid      local domain     halo      MLUPS median   speedup   efficiency
+4       4 x 1     3600 x 14400     0.07 %       425.893      1.00     100.00 %
+9       9 x 1     1600 x 14400     0.14 %       905.424      2.13      94.49 %
+16      16 x 1    900 x 14400      0.24 %      1415.335      3.32      83.08 %
+25      25 x 1    576 x 14400      0.36 %      1936.990      4.55      72.77 %
+36      36 x 1    400 x 14400      0.51 %      2339.200      5.49      61.03 %
+64      64 x 1    225 x 14400      0.90 %      2375.639      5.58      34.86 %
+100     100 x 1   144 x 14400      1.40 %      2277.978      5.35      21.39 %
+144     144 x 1   100 x 14400      2.01 %      1988.263      4.67      12.97 %
+225     225 x 1   64 x 14400       3.14 %      1666.195      3.91       6.96 %
+400     400 x 1   36 x 14400       5.57 %       442.792      1.04       1.04 %
 
 
 
@@ -2104,3 +2128,75 @@ kernel compute                           |          6.924 |        18.609 %
 halo exchange                            |         29.292 |        78.679 %
 other                                    |          1.029 |         2.725 %
 total                                    |         37.335 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 30 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 400
+image grid                = 400 x 1
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads           = 128
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           400
+image grid [X/Y]:         [ 400 / 1 ]
+local domain [X/Y]:       [ 36 / 14400 ]
+halo cells:               5.570 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            76  |          15.762
+macro field buffers                      |            12  |           2.488
+total                                    |            88  |          18.250
+
+--- [ benchmark runs started at 2026-06-08 10:37:01 ] ---------------------
+001 | avg step: 458.013 ms | MLUPS: 452.738
+002 | avg step: 463.381 ms | MLUPS: 447.494
+003 | avg step: 475.580 ms | MLUPS: 436.015
+004 | avg step: 468.301 ms | MLUPS: 442.792
+005 | avg step: 479.399 ms | MLUPS: 432.541
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 442.792
+best                      = 452.738
+worst                     = 432.541
+mean                      = 442.316
+stddev                    = 1.861 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |          4.589 |         3.340 %
+halo exchange                            |        122.601 |        88.193 %
+other                                    |         12.035 |         8.658 %
+total                                    |        140.490 |       100.000 %
