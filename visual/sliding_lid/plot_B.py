@@ -8,10 +8,10 @@ import numpy as np
 
 
 
-# --- [ plot shear wave velocity magnitude scalar field as heatmap ] ---
+# --- [ plot sliding lid velocity magnitude scalar field as heatmap ] ---
 
 # run config
-RUN_NAME = "run_001_SW"
+RUN_NAME = "run_001_SL"
 DATA_NAME = "velocity_mag"
 
 # step config
@@ -39,8 +39,8 @@ def load_config() -> dict:
 
 def validate_config(config: dict) -> None:
     sim_mode = config.get("SIM_MODE")
-    if sim_mode != "shear_wave":
-        raise ValueError(f"expected SIM_MODE 'shear_wave', got {sim_mode!r}")
+    if sim_mode != "sliding_lid":
+        raise ValueError(f"expected SIM_MODE 'sliding_lid', got {sim_mode!r}")
 
 
 def get_steps(config: dict) -> list[int]:
