@@ -11,8 +11,13 @@ import numpy as np
 # --- [ plot x-velocity scalar field as heatmap ] ---
 
 # run config
-RUN_NAME = "run_005"
+# options "shear_wave" (1), "couette_flow" (2), "poiseuille_flow" (3), "sliding_lid" (4)
+SIM_MODE = 2
+RUN_NAME = "run_001_CF"
 DATA_NAME = "velocity_x"
+
+_MODE_MAP = {1: "shear_wave", 2: "couette_flow", 3: "poiseuille_flow", 4: "sliding_lid"}
+_SIM_MODE_RESOLVED = _MODE_MAP.get(SIM_MODE, SIM_MODE)
 
 # step config
 STEP_START = 0
@@ -21,9 +26,10 @@ STEP_STRIDE = None    # None -> uses export_interval from config.json
 COLOR_LIMIT = None    # None -> uses max(abs(field)) across all selected steps
 
 # path config
+SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = Path(__file__).resolve().parents[1]
 RUN_DIR = ROOT_DIR / "output" / RUN_NAME
-PLOT_DIR = ROOT_DIR / "visual" / "plots" / RUN_NAME
+PLOT_DIR = SCRIPT_DIR / _SIM_MODE_RESOLVED / RUN_NAME / "A"
 
 
 def format_step_suffix(step: int, width: int = 9) -> str:

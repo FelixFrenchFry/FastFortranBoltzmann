@@ -11,8 +11,13 @@ import numpy as np
 # --- [ plot velocity magnitude as streamlines ] ---
 
 # run config
-RUN_NAME = "run_004d"
+# options "shear_wave" (1), "couette_flow" (2), "poiseuille_flow" (3), "sliding_lid" (4)
+SIM_MODE = 2
+RUN_NAME = "run_001_CF"
 DATA_NAME_X = "velocity_x"
+
+_MODE_MAP = {1: "shear_wave", 2: "couette_flow", 3: "poiseuille_flow", 4: "sliding_lid"}
+_SIM_MODE_RESOLVED = _MODE_MAP.get(SIM_MODE, SIM_MODE)
 DATA_NAME_Y = "velocity_y"
 PLOT_NAME = "velocity_mag_streamlines"
 
@@ -27,9 +32,10 @@ STREAM_LINEWIDTH = 1.5
 STREAM_ARROWSIZE = 1.5
 
 # path config
+SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = Path(__file__).resolve().parents[1]
 RUN_DIR = ROOT_DIR / "output" / RUN_NAME
-PLOT_DIR = ROOT_DIR / "visual" / "plots" / RUN_NAME
+PLOT_DIR = SCRIPT_DIR / _SIM_MODE_RESOLVED / RUN_NAME / "C"
 
 
 def format_step_suffix(step: int, width: int = 9) -> str:

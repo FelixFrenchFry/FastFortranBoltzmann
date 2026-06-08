@@ -28,7 +28,10 @@ Makefile
 # output data
 /output/
 /visual/plots/
-/visual/*/plots/
+/visual/shear_wave/*
+/visual/sliding_lid/*
+/visual/couette_flow/*
+/visual/poiseuille_flow/*
 
 # python environments
 .venv/
