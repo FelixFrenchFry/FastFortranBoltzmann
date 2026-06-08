@@ -58,7 +58,7 @@ module load compiler/intel
 module load mpi/impi
 
 # create job-specific build
-export BUILD_DIR=$PWD/build/release-native-$SLURM_JOB_ID
+export BUILD_DIR=$PWD/build/release-fp32-native-$SLURM_JOB_ID
 cmake -S . -B "$BUILD_DIR" -G Ninja \
     -DCMAKE_Fortran_COMPILER=ifx \
     -DCMAKE_BUILD_TYPE=Release \
@@ -85,7 +85,7 @@ export I_MPI_FABRICS=shm:ofi
 unset I_MPI_PIN_PROCESSOR_LIST
 
 echo ""
-echo "--- [ launching job script in $EXECUTION_MODE execution mode ] ---"
+echo "----- [ launching job script in $EXECUTION_MODE execution mode ] -----"
 echo ""
 
 if [ "$EXECUTION_MODE" = "raw" ]; then

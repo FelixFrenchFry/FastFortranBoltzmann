@@ -2,7 +2,8 @@
 set -euo pipefail
 
 presets=(
-  release-native
+  release-fp32-native
+  release-fp64-native
 )
 
 for preset in "${presets[@]}"; do

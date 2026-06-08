@@ -50,7 +50,7 @@ PINNING_PRESETS = {
 }
 
 # settings
-DEFAULT_EXE = "build/release/bin/FFB"
+DEFAULT_EXE = "build/release-fp32/bin/FFB"
 DEFAULT_RUNS = 5
 DEFAULT_PIN = "core_scatter"
 
