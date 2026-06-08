@@ -396,6 +396,8 @@ contains
         ! ---------
         ! temp
         integer(int32) :: x, y
+        real(FP) :: moving_wall_correction_8
+        real(FP) :: moving_wall_correction_9
 
         ! left bounce-back boundary, written into the halo column used by pull streaming
         if (at_left_boundary) then
@@ -426,10 +428,13 @@ contains
 
         ! top bounce-back boundary, written into the halo row used by pull streaming
         if (at_top_boundary) then
+            moving_wall_correction_8 = 6.0_FP * W(6) * rho_0 * u_wall
+            moving_wall_correction_9 = 6.0_FP * W(7) * rho_0 * u_wall
+
             do x = 1, n_x_local
                 f(x, n_y_local+1, 5) = f(x, n_y_local, 3)
-                f(x+1, n_y_local+1, 8) = f(x, n_y_local, 6) - (6.0_FP * W(6) * rho_0 * u_wall)
-                f(x-1, n_y_local+1, 9) = f(x, n_y_local, 7) + (6.0_FP * W(7) * rho_0 * u_wall)
+                f(x+1, n_y_local+1, 8) = f(x, n_y_local, 6) - moving_wall_correction_8
+                f(x-1, n_y_local+1, 9) = f(x, n_y_local, 7) + moving_wall_correction_9
             end do
         end if
     end subroutine prepare_sliding_lid_halos_SL
