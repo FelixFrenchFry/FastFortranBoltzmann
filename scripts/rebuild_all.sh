@@ -2,11 +2,11 @@
 set -euo pipefail
 
 presets=(
-  debug
+  debug-fp32
   debug-fp64
-  release
+  release-fp32
   release-fp64
-  release-native
+  release-fp32-native
   release-fp64-native
 )
 

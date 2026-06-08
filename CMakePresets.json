@@ -7,10 +7,10 @@
   },
   "configurePresets": [
     {
-      "name": "debug",
-      "displayName": "FFB debug-build with ifx",
+      "name": "debug-fp32",
+      "displayName": "FFB debug-build with ifx and fp32",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/debug",
+      "binaryDir": "${sourceDir}/build/debug-fp32",
       "cacheVariables": {
         "CMAKE_Fortran_COMPILER": "ifx",
         "CMAKE_BUILD_TYPE": "Debug",
@@ -34,10 +34,10 @@
       }
     },
     {
-      "name": "release",
-      "displayName": "FFB release-build with ifx",
+      "name": "release-fp32",
+      "displayName": "FFB release-build with ifx and fp32",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/release",
+      "binaryDir": "${sourceDir}/build/release-fp32",
       "cacheVariables": {
         "CMAKE_Fortran_COMPILER": "ifx",
         "CMAKE_BUILD_TYPE": "Release",
@@ -59,10 +59,10 @@
       }
     },
     {
-      "name": "release-native",
-      "displayName": "FFB release-build with ifx and native CPU flags",
+      "name": "release-fp32-native",
+      "displayName": "FFB release-build with ifx, fp32 and native CPU flags",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/release-native",
+      "binaryDir": "${sourceDir}/build/release-fp32-native",
       "cacheVariables": {
         "CMAKE_Fortran_COMPILER": "ifx",
         "CMAKE_BUILD_TYPE": "Release",
@@ -86,24 +86,24 @@
   ],
   "buildPresets": [
     {
-      "name": "debug",
-      "configurePreset": "debug"
+      "name": "debug-fp32",
+      "configurePreset": "debug-fp32"
     },
     {
       "name": "debug-fp64",
       "configurePreset": "debug-fp64"
     },
     {
-      "name": "release",
-      "configurePreset": "release"
+      "name": "release-fp32",
+      "configurePreset": "release-fp32"
     },
     {
       "name": "release-fp64",
       "configurePreset": "release-fp64"
     },
     {
-      "name": "release-native",
-      "configurePreset": "release-native"
+      "name": "release-fp32-native",
+      "configurePreset": "release-fp32-native"
     },
     {
       "name": "release-fp64-native",
