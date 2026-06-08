@@ -15,6 +15,10 @@ module exchange
 
     type :: halo_buffers_t
 
+        ! distribution function send buffers for staged left/right halo exchange
+        real(FP), allocatable :: send_left(:,:)[:]
+        real(FP), allocatable :: send_right(:,:)[:]
+
         ! distribution function receive buffers for staged left/right halo exchange
         real(FP), allocatable :: recv_left(:,:)
         real(FP), allocatable :: recv_right(:,:)
@@ -108,6 +112,8 @@ contains
             error stop "error: halo buffers are already allocated"
         end if
 
+        allocate(halo_buffers%send_left(domain_info%n_y, 3)[*])
+        allocate(halo_buffers%send_right(domain_info%n_y, 3)[*])
         allocate(halo_buffers%recv_left(domain_info%n_y, 3))
         allocate(halo_buffers%recv_right(domain_info%n_y, 3))
 
@@ -160,27 +166,36 @@ contains
             call add_neighbor_image(y_neighbor_images, n_y_neighbor_images, domain_info%top_image_id)
         end if
 
-        call sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
-
         ! ---------
         ! | 7 3 6 |
         ! | 4 1 2 |
         ! | 8 5 9 |
         ! ---------
-        ! exchange strided left/right halos through staging buffers
+        ! pack strided left/right boundaries into contiguous send buffers locally
         if (exchange_plan%left) then
-            halo_buffers%recv_left(:, 1) = f(n_x_local, 1:n_y_local, 2)[domain_info%left_image_id]
-            halo_buffers%recv_left(:, 2) = f(n_x_local, 1:n_y_local, 6)[domain_info%left_image_id]
-            halo_buffers%recv_left(:, 3) = f(n_x_local, 1:n_y_local, 9)[domain_info%left_image_id]
+            halo_buffers%send_left(:, 1) = f(1, 1:n_y_local, 4)
+            halo_buffers%send_left(:, 2) = f(1, 1:n_y_local, 7)
+            halo_buffers%send_left(:, 3) = f(1, 1:n_y_local, 8)
+        end if
+
+        if (exchange_plan%right) then
+            halo_buffers%send_right(:, 1) = f(n_x_local, 1:n_y_local, 2)
+            halo_buffers%send_right(:, 2) = f(n_x_local, 1:n_y_local, 6)
+            halo_buffers%send_right(:, 3) = f(n_x_local, 1:n_y_local, 9)
+        end if
+
+        call sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
+
+        ! exchange packed left/right halos through staging buffers
+        if (exchange_plan%left) then
+            halo_buffers%recv_left(:, :) = halo_buffers%send_right(:, :)[domain_info%left_image_id]
             f(0, 1:n_y_local, 2) = halo_buffers%recv_left(:, 1)
             f(0, 1:n_y_local, 6) = halo_buffers%recv_left(:, 2)
             f(0, 1:n_y_local, 9) = halo_buffers%recv_left(:, 3)
         end if
 
         if (exchange_plan%right) then
-            halo_buffers%recv_right(:, 1) = f(1, 1:n_y_local, 4)[domain_info%right_image_id]
-            halo_buffers%recv_right(:, 2) = f(1, 1:n_y_local, 7)[domain_info%right_image_id]
-            halo_buffers%recv_right(:, 3) = f(1, 1:n_y_local, 8)[domain_info%right_image_id]
+            halo_buffers%recv_right(:, :) = halo_buffers%send_left(:, :)[domain_info%right_image_id]
             f(n_x_local+1, 1:n_y_local, 4) = halo_buffers%recv_right(:, 1)
             f(n_x_local+1, 1:n_y_local, 7) = halo_buffers%recv_right(:, 2)
             f(n_x_local+1, 1:n_y_local, 8) = halo_buffers%recv_right(:, 3)
