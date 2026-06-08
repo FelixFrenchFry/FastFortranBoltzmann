@@ -319,10 +319,13 @@ contains
         ! read/write inputs
         real(FP), intent(inout) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
 
+        ! ---------
+        ! | 7 3 6 |
+        ! | 4 1 2 |
+        ! | 8 5 9 |
+        ! ---------
         ! temp
         integer(int32) :: x, y
-        real(FP) :: moving_wall_correction_8
-        real(FP) :: moving_wall_correction_9
 
         ! periodic boundary handling for left/right sides
         ! (only used in single-image decompositions, otherwise handled by wrapped halo exchange)
@@ -349,13 +352,10 @@ contains
 
         ! top bounce-back boundary, written into the halo row used by pull streaming
         if (at_top_boundary) then
-            moving_wall_correction_8 = 6.0_FP * W(6) * rho_0 * u_wall
-            moving_wall_correction_9 = 6.0_FP * W(7) * rho_0 * u_wall
-
             do x = 1, n_x_local
                 f(x, n_y_local+1, 5) = f(x, n_y_local, 3)
-                f(x+1, n_y_local+1, 8) = f(x, n_y_local, 6) - moving_wall_correction_8
-                f(x-1, n_y_local+1, 9) = f(x, n_y_local, 7) + moving_wall_correction_9
+                f(x+1, n_y_local+1, 8) = f(x, n_y_local, 6) - (6.0_FP * W(6) * rho_0 * u_wall)
+                f(x-1, n_y_local+1, 9) = f(x, n_y_local, 7) + (6.0_FP * W(7) * rho_0 * u_wall)
             end do
         end if
     end subroutine prepare_couette_flow_halos_CF
