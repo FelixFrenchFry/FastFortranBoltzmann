@@ -16,22 +16,28 @@ images  grid      local domain     halo      MLUPS median   speedup   efficiency
 400     1 x 400   14400 x 36       5.57 %      1495.631      2.81       2.81 %
 
 images  grid      local domain     halo      MLUPS median   speedup   efficiency
-4       2 x 2     7200 x 7200      0.06 %       531.759      1.00     100.00 %
-9       3 x 3     4800 x 4800      0.08 %      1177.558      2.21      98.42 %
-16      4 x 4     3600 x 3600      0.11 %      1992.590      3.75      93.68 %
-25      5 x 5     2880 x 2880      0.14 %      2244.879      4.22      67.55 %
-36      6 x 6     2400 x 2400      0.17 %      2479.496      4.66      51.81 %
-64      8 x 8     1800 x 1800      0.22 %      3328.448      6.26      39.12 %
-100     10 x 10   1440 x 1440      0.28 %      3534.576      6.65      26.59 %
+4       2 x 2     7200 x 7200      0.06 %       532.528      1.00     100.00 %
+9       3 x 3     4800 x 4800      0.08 %      1179.184      2.21      98.41 %
+16      4 x 4     3600 x 3600      0.11 %      1997.664      3.75      93.78 %
+25      5 x 5     2880 x 2880      0.14 %      2286.623      4.29      68.70 %
+36      6 x 6     2400 x 2400      0.17 %      2448.995      4.60      51.10 %
+64      8 x 8     1800 x 1800      0.22 %      3340.637      6.27      39.21 %
+100     10 x 10   1440 x 1440      0.28 %      3543.606      6.65      26.62 %
+144     12 x 12   1200 x 1200      0.33 %      2501.909      4.70      13.05 %
+225     15 x 15   960 x 960        0.42 %      1912.150      3.59       6.38 %
+400     20 x 20   720 x 720        0.56 %       787.584      1.48       1.48 %
 
 images  grid      local domain     halo      MLUPS median   speedup   efficiency
-4       4 x 1     3600 x 14400     0.07 %       529.826      1.00     100.00 %
-9       9 x 1     1600 x 14400     0.14 %      1178.451      2.22      98.85 %
-16      16 x 1    900 x 14400      0.24 %      1709.247      3.23      80.65 %
-25      25 x 1    576 x 14400      0.36 %      2192.536      4.14      66.21 %
-36      36 x 1    400 x 14400      0.51 %      2587.350      4.88      54.26 %
-64      64 x 1    225 x 14400      0.90 %      3761.783      7.10      44.38 %
-100     100 x 1   144 x 14400      1.40 %      4323.044      8.16      32.64 %
+4       4 x 1     3600 x 14400     0.07 %       529.405      1.00     100.00 %
+9       9 x 1     1600 x 14400     0.14 %      1176.689      2.22      98.79 %
+16      16 x 1    900 x 14400      0.24 %      1978.908      3.74      93.45 %
+25      25 x 1    576 x 14400      0.36 %      2082.749      3.93      62.95 %
+36      36 x 1    400 x 14400      0.51 %      2565.921      4.85      53.85 %
+64      64 x 1    225 x 14400      0.90 %      3765.644      7.11      44.46 %
+100     100 x 1   144 x 14400      1.40 %      4296.576      8.12      32.46 %
+144     144 x 1   100 x 14400      2.01 %      3748.799      7.08      19.67 %
+225     225 x 1   64 x 14400       3.14 %      3249.017      6.14      10.91 %
+400     400 x 1   36 x 14400       5.57 %      1292.236      2.44       2.44 %
 
 
 
@@ -806,26 +812,26 @@ dist function buffers                    |            72  |          14.938
 macro field buffers                      |            12  |           2.488
 total                                    |            84  |          17.427
 
---- [ benchmark runs started at 2026-06-08 08:40:26 ] ---------------------
-001 | avg step: 390.046 ms | MLUPS: 531.630
-002 | avg step: 389.951 ms | MLUPS: 531.759
-003 | avg step: 389.581 ms | MLUPS: 532.264
-004 | avg step: 390.001 ms | MLUPS: 531.691
-005 | avg step: 389.693 ms | MLUPS: 532.111
+--- [ benchmark runs started at 2026-06-08 16:46:31 ] ---------------------
+001 | avg step: 389.384 ms | MLUPS: 532.534
+002 | avg step: 389.494 ms | MLUPS: 532.382
+003 | avg step: 390.326 ms | MLUPS: 531.248
+004 | avg step: 389.337 ms | MLUPS: 532.598
+005 | avg step: 389.388 ms | MLUPS: 532.528
 
 --- [ MLUPS metrics ] -----------------------------------------------------
-median                    = 531.759
-best                      = 532.264
-worst                     = 531.630
-mean                      = 531.891
-stddev                    = 0.053 %
+median                    = 532.528
+best                      = 532.598
+worst                     = 531.248
+mean                      = 532.258
+stddev                    = 0.107 %
 
 execution time median                    |    total [sec] |       share [%]
 ---------------------------------------------------------------------------
-kernel compute                           |        115.337 |        98.629 %
-halo exchange                            |          1.589 |         1.359 %
-other                                    |          0.012 |         0.010 %
-total                                    |        116.985 |       100.000 %
+kernel compute                           |        115.285 |        98.686 %
+halo exchange                            |          1.523 |         1.304 %
+other                                    |          0.013 |         0.011 %
+total                                    |        116.816 |       100.000 %
 
 --- [ benchmark script settings ] -----------------------------------------
 case                      = 12 / 30
@@ -878,26 +884,26 @@ dist function buffers                    |            72  |          14.942
 macro field buffers                      |            12  |           2.488
 total                                    |            84  |          17.431
 
---- [ benchmark runs started at 2026-06-08 08:50:21 ] ---------------------
-001 | avg step: 176.093 ms | MLUPS: 1177.558
-002 | avg step: 176.505 ms | MLUPS: 1174.811
-003 | avg step: 176.288 ms | MLUPS: 1176.258
-004 | avg step: 176.036 ms | MLUPS: 1177.942
-005 | avg step: 175.970 ms | MLUPS: 1178.381
+--- [ benchmark runs started at 2026-06-08 16:56:38 ] ---------------------
+001 | avg step: 175.913 ms | MLUPS: 1178.761
+002 | avg step: 175.704 ms | MLUPS: 1180.165
+003 | avg step: 175.891 ms | MLUPS: 1178.914
+004 | avg step: 175.774 ms | MLUPS: 1179.697
+005 | avg step: 175.850 ms | MLUPS: 1179.184
 
 --- [ MLUPS metrics ] -----------------------------------------------------
-median                    = 1177.558
-best                      = 1178.381
-worst                     = 1174.811
-mean                      = 1176.990
-stddev                    = 0.123 %
+median                    = 1179.184
+best                      = 1180.165
+worst                     = 1178.761
+mean                      = 1179.344
+stddev                    = 0.049 %
 
 execution time median                    |    total [sec] |       share [%]
 ---------------------------------------------------------------------------
-kernel compute                           |         51.363 |        97.219 %
-halo exchange                            |          1.457 |         2.758 %
-other                                    |          0.013 |         0.025 %
-total                                    |         52.828 |       100.000 %
+kernel compute                           |         51.404 |        97.445 %
+halo exchange                            |          1.335 |         2.530 %
+other                                    |          0.011 |         0.021 %
+total                                    |         52.755 |       100.000 %
 
 --- [ benchmark script settings ] -----------------------------------------
 case                      = 13 / 30
@@ -950,26 +956,26 @@ dist function buffers                    |            72  |          14.947
 macro field buffers                      |            12  |           2.488
 total                                    |            84  |          17.435
 
---- [ benchmark runs started at 2026-06-08 08:54:56 ] ---------------------
-001 | avg step: 108.670 ms | MLUPS: 1908.162
-002 | avg step: 104.066 ms | MLUPS: 1992.590
-003 | avg step: 104.248 ms | MLUPS: 1989.097
-004 | avg step: 103.280 ms | MLUPS: 2007.741
-005 | avg step: 103.869 ms | MLUPS: 1996.358
+--- [ benchmark runs started at 2026-06-08 17:01:21 ] ---------------------
+001 | avg step: 103.709 ms | MLUPS: 1999.439
+002 | avg step: 103.801 ms | MLUPS: 1997.664
+003 | avg step: 104.040 ms | MLUPS: 1993.070
+004 | avg step: 137.695 ms | MLUPS: 1505.938
+005 | avg step: 103.713 ms | MLUPS: 1999.357
 
 --- [ MLUPS metrics ] -----------------------------------------------------
-median                    = 1992.590
-best                      = 2007.741
-worst                     = 1908.162
-mean                      = 1978.790
-stddev                    = 2.026 %
+median                    = 1997.664
+best                      = 1999.439
+worst                     = 1505.938
+mean                      = 1899.094
+stddev                    = 11.574 %
 
 execution time median                    |    total [sec] |       share [%]
 ---------------------------------------------------------------------------
-kernel compute                           |         29.268 |        93.747 %
-halo exchange                            |          1.939 |         6.212 %
+kernel compute                           |         29.262 |        94.027 %
+halo exchange                            |          1.840 |         5.915 %
 other                                    |          0.014 |         0.043 %
-total                                    |         31.220 |       100.000 %
+total                                    |         31.140 |       100.000 %
 
 --- [ benchmark script settings ] -----------------------------------------
 case                      = 14 / 30
@@ -1022,26 +1028,26 @@ dist function buffers                    |            72  |          14.951
 macro field buffers                      |            12  |           2.488
 total                                    |            84  |          17.439
 
---- [ benchmark runs started at 2026-06-08 08:57:47 ] ---------------------
-001 | avg step: 92.370 ms | MLUPS: 2244.879
-002 | avg step: 91.308 ms | MLUPS: 2270.988
-003 | avg step: 95.176 ms | MLUPS: 2178.708
-004 | avg step: 100.662 ms | MLUPS: 2059.959
-005 | avg step: 91.757 ms | MLUPS: 2259.878
+--- [ benchmark runs started at 2026-06-08 17:04:22 ] ---------------------
+001 | avg step: 90.355 ms | MLUPS: 2294.940
+002 | avg step: 90.684 ms | MLUPS: 2286.623
+003 | avg step: 104.838 ms | MLUPS: 1977.912
+004 | avg step: 90.223 ms | MLUPS: 2298.315
+005 | avg step: 91.059 ms | MLUPS: 2277.216
 
 --- [ MLUPS metrics ] -----------------------------------------------------
-median                    = 2244.879
-best                      = 2270.988
-worst                     = 2059.959
-mean                      = 2202.882
-stddev                    = 3.974 %
+median                    = 2286.623
+best                      = 2298.315
+worst                     = 1977.912
+mean                      = 2227.001
+stddev                    = 6.263 %
 
 execution time median                    |    total [sec] |       share [%]
 ---------------------------------------------------------------------------
-kernel compute                           |         23.122 |        83.441 %
-halo exchange                            |          4.553 |        16.431 %
-other                                    |          0.027 |         0.098 %
-total                                    |         27.711 |       100.000 %
+kernel compute                           |         23.348 |        85.822 %
+halo exchange                            |          3.829 |        14.073 %
+other                                    |          0.028 |         0.104 %
+total                                    |         27.205 |       100.000 %
 
 --- [ benchmark script settings ] -----------------------------------------
 case                      = 15 / 30
@@ -1094,26 +1100,26 @@ dist function buffers                    |            72  |          14.955
 macro field buffers                      |            12  |           2.488
 total                                    |            84  |          17.443
 
---- [ benchmark runs started at 2026-06-08 09:00:27 ] ---------------------
-001 | avg step: 87.007 ms | MLUPS: 2383.258
-002 | avg step: 83.630 ms | MLUPS: 2479.496
-003 | avg step: 83.076 ms | MLUPS: 2496.030
-004 | avg step: 83.682 ms | MLUPS: 2477.963
-005 | avg step: 83.429 ms | MLUPS: 2485.458
+--- [ benchmark runs started at 2026-06-08 17:07:02 ] ---------------------
+001 | avg step: 83.622 ms | MLUPS: 2479.722
+002 | avg step: 93.139 ms | MLUPS: 2226.339
+003 | avg step: 84.823 ms | MLUPS: 2444.632
+004 | avg step: 83.989 ms | MLUPS: 2468.897
+005 | avg step: 84.671 ms | MLUPS: 2448.995
 
 --- [ MLUPS metrics ] -----------------------------------------------------
-median                    = 2479.496
-best                      = 2496.030
-worst                     = 2383.258
-mean                      = 2464.441
-stddev                    = 1.864 %
+median                    = 2448.995
+best                      = 2479.722
+worst                     = 2226.339
+mean                      = 2413.717
+stddev                    = 4.380 %
 
 execution time median                    |    total [sec] |       share [%]
 ---------------------------------------------------------------------------
-kernel compute                           |         22.169 |        88.949 %
-halo exchange                            |          2.724 |        10.928 %
-other                                    |          0.031 |         0.123 %
-total                                    |         25.089 |       100.000 %
+kernel compute                           |         22.340 |        87.876 %
+halo exchange                            |          3.041 |        11.974 %
+other                                    |          0.038 |         0.149 %
+total                                    |         25.401 |       100.000 %
 
 --- [ benchmark script settings ] -----------------------------------------
 case                      = 16 / 30
@@ -1166,26 +1172,26 @@ dist function buffers                    |            72  |          14.963
 macro field buffers                      |            12  |           2.488
 total                                    |            84  |          17.451
 
---- [ benchmark runs started at 2026-06-08 09:03:06 ] ---------------------
-001 | avg step: 61.902 ms | MLUPS: 3349.820
-002 | avg step: 62.738 ms | MLUPS: 3305.168
-003 | avg step: 62.299 ms | MLUPS: 3328.448
-004 | avg step: 62.357 ms | MLUPS: 3325.343
-005 | avg step: 62.283 ms | MLUPS: 3329.345
+--- [ benchmark runs started at 2026-06-08 17:09:39 ] ---------------------
+001 | avg step: 62.072 ms | MLUPS: 3340.637
+002 | avg step: 61.591 ms | MLUPS: 3366.721
+003 | avg step: 63.401 ms | MLUPS: 3270.634
+004 | avg step: 62.032 ms | MLUPS: 3342.786
+005 | avg step: 62.302 ms | MLUPS: 3328.307
 
 --- [ MLUPS metrics ] -----------------------------------------------------
-median                    = 3328.448
-best                      = 3349.820
-worst                     = 3305.168
-mean                      = 3327.625
-stddev                    = 0.477 %
+median                    = 3340.637
+best                      = 3366.721
+worst                     = 3270.634
+mean                      = 3329.817
+stddev                    = 1.078 %
 
 execution time median                    |    total [sec] |       share [%]
 ---------------------------------------------------------------------------
-kernel compute                           |         12.044 |        64.292 %
-halo exchange                            |          6.593 |        35.284 %
-other                                    |          0.076 |         0.408 %
-total                                    |         18.690 |       100.000 %
+kernel compute                           |         12.007 |        64.243 %
+halo exchange                            |          6.609 |        35.383 %
+other                                    |          0.072 |         0.381 %
+total                                    |         18.622 |       100.000 %
 
 --- [ benchmark script settings ] -----------------------------------------
 case                      = 17 / 30
@@ -1238,26 +1244,242 @@ dist function buffers                    |            72  |          14.971
 macro field buffers                      |            12  |           2.488
 total                                    |            84  |          17.460
 
---- [ benchmark runs started at 2026-06-08 09:05:34 ] ---------------------
-001 | avg step: 56.444 ms | MLUPS: 3673.752
-002 | avg step: 59.656 ms | MLUPS: 3475.903
-003 | avg step: 60.123 ms | MLUPS: 3448.923
-004 | avg step: 56.649 ms | MLUPS: 3660.439
-005 | avg step: 58.666 ms | MLUPS: 3534.576
+--- [ benchmark runs started at 2026-06-08 17:12:06 ] ---------------------
+001 | avg step: 60.336 ms | MLUPS: 3436.727
+002 | avg step: 57.288 ms | MLUPS: 3619.612
+003 | avg step: 58.044 ms | MLUPS: 3572.474
+004 | avg step: 58.963 ms | MLUPS: 3516.774
+005 | avg step: 58.517 ms | MLUPS: 3543.606
 
 --- [ MLUPS metrics ] -----------------------------------------------------
-median                    = 3534.576
-best                      = 3673.752
-worst                     = 3448.923
-mean                      = 3558.719
-stddev                    = 2.916 %
+median                    = 3543.606
+best                      = 3619.612
+worst                     = 3436.727
+mean                      = 3537.839
+stddev                    = 1.927 %
 
 execution time median                    |    total [sec] |       share [%]
 ---------------------------------------------------------------------------
-kernel compute                           |         10.670 |        60.535 %
-halo exchange                            |          6.971 |        38.950 %
-other                                    |          0.097 |         0.565 %
-total                                    |         17.600 |       100.000 %
+kernel compute                           |         10.823 |        61.652 %
+halo exchange                            |          6.769 |        37.779 %
+other                                    |          0.100 |         0.570 %
+total                                    |         17.555 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 18 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 144
+image grid                = 12 x 12
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           144
+image grid [X/Y]:         [ 12 / 12 ]
+local domain [X/Y]:       [ 1200 / 1200 ]
+halo cells:               0.334 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          14.980
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.468
+
+--- [ benchmark runs started at 2026-06-08 17:20:56 ] ---------------------
+001 | avg step: 82.881 ms | MLUPS: 2501.909
+002 | avg step: 83.183 ms | MLUPS: 2492.829
+003 | avg step: 83.022 ms | MLUPS: 2497.645
+004 | avg step: 82.274 ms | MLUPS: 2520.344
+005 | avg step: 82.388 ms | MLUPS: 2516.862
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 2501.909
+best                      = 2520.344
+worst                     = 2492.829
+mean                      = 2505.918
+stddev                    = 0.482 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |          7.960 |        31.961 %
+halo exchange                            |         16.679 |        66.967 %
+other                                    |          0.237 |         0.948 %
+total                                    |         24.864 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 19 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 225
+image grid                = 15 x 15
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           225
+image grid [X/Y]:         [ 15 / 15 ]
+local domain [X/Y]:       [ 960 / 960 ]
+halo cells:               0.417 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          14.992
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.481
+
+--- [ benchmark runs started at 2026-06-08 17:26:12 ] ---------------------
+001 | avg step: 107.845 ms | MLUPS: 1922.758
+002 | avg step: 108.821 ms | MLUPS: 1905.514
+003 | avg step: 108.170 ms | MLUPS: 1916.981
+004 | avg step: 108.928 ms | MLUPS: 1903.642
+005 | avg step: 108.443 ms | MLUPS: 1912.150
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 1912.150
+best                      = 1922.758
+worst                     = 1903.642
+mean                      = 1912.209
+stddev                    = 0.415 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |          5.153 |        15.890 %
+halo exchange                            |         26.893 |        82.688 %
+other                                    |          0.540 |         1.653 %
+total                                    |         32.533 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 20 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 400
+image grid                = 20 x 20
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           400
+image grid [X/Y]:         [ 20 / 20 ]
+local domain [X/Y]:       [ 720 / 720 ]
+halo cells:               0.556 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            72  |          15.013
+macro field buffers                      |            12  |           2.488
+total                                    |            84  |          17.501
+
+--- [ benchmark runs started at 2026-06-08 17:36:05 ] ---------------------
+001 | avg step: 265.881 ms | MLUPS: 779.897
+002 | avg step: 260.744 ms | MLUPS: 795.264
+003 | avg step: 263.666 ms | MLUPS: 786.449
+004 | avg step: 248.562 ms | MLUPS: 834.238
+005 | avg step: 263.286 ms | MLUPS: 787.584
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 787.584
+best                      = 834.238
+worst                     = 779.897
+mean                      = 796.686
+stddev                    = 2.722 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |          1.432 |         1.861 %
+halo exchange                            |         73.719 |        93.253 %
+other                                    |          3.845 |         4.879 %
+total                                    |         78.986 |       100.000 %
 
 --- [ benchmark script settings ] -----------------------------------------
 case                      = 21 / 30
@@ -1310,26 +1532,26 @@ dist function buffers                    |            72  |          14.940
 macro field buffers                      |            12  |           2.488
 total                                    |            84  |          17.429
 
---- [ benchmark runs started at 2026-06-08 09:12:30 ] ---------------------
-001 | avg step: 391.347 ms | MLUPS: 529.862
-002 | avg step: 391.594 ms | MLUPS: 529.528
-003 | avg step: 391.374 ms | MLUPS: 529.826
-004 | avg step: 391.165 ms | MLUPS: 530.109
-005 | avg step: 391.987 ms | MLUPS: 528.997
+--- [ benchmark runs started at 2026-06-08 17:50:34 ] ---------------------
+001 | avg step: 391.523 ms | MLUPS: 529.624
+002 | avg step: 391.321 ms | MLUPS: 529.897
+003 | avg step: 391.804 ms | MLUPS: 529.244
+004 | avg step: 392.707 ms | MLUPS: 528.027
+005 | avg step: 391.685 ms | MLUPS: 529.405
 
 --- [ MLUPS metrics ] -----------------------------------------------------
-median                    = 529.826
-best                      = 530.109
-worst                     = 528.997
-mean                      = 529.664
-stddev                    = 0.080 %
+median                    = 529.405
+best                      = 529.897
+worst                     = 528.027
+mean                      = 529.239
+stddev                    = 0.136 %
 
 execution time median                    |    total [sec] |       share [%]
 ---------------------------------------------------------------------------
-kernel compute                           |        115.456 |        98.339 %
-halo exchange                            |          1.932 |         1.645 %
+kernel compute                           |        115.651 |        98.493 %
+halo exchange                            |          1.752 |         1.492 %
 other                                    |          0.018 |         0.015 %
-total                                    |        117.412 |       100.000 %
+total                                    |        117.505 |       100.000 %
 
 --- [ benchmark script settings ] -----------------------------------------
 case                      = 22 / 30
@@ -1382,26 +1604,26 @@ dist function buffers                    |            72  |          14.951
 macro field buffers                      |            12  |           2.488
 total                                    |            84  |          17.439
 
---- [ benchmark runs started at 2026-06-08 09:22:27 ] ---------------------
-001 | avg step: 176.221 ms | MLUPS: 1176.701
-002 | avg step: 175.976 ms | MLUPS: 1178.341
-003 | avg step: 175.764 ms | MLUPS: 1179.764
-004 | avg step: 175.960 ms | MLUPS: 1178.451
-005 | avg step: 175.850 ms | MLUPS: 1179.186
+--- [ benchmark runs started at 2026-06-08 18:00:43 ] ---------------------
+001 | avg step: 175.977 ms | MLUPS: 1178.339
+002 | avg step: 176.223 ms | MLUPS: 1176.689
+003 | avg step: 176.409 ms | MLUPS: 1175.450
+004 | avg step: 176.245 ms | MLUPS: 1176.546
+005 | avg step: 176.023 ms | MLUPS: 1178.029
 
 --- [ MLUPS metrics ] -----------------------------------------------------
-median                    = 1178.451
-best                      = 1179.764
-worst                     = 1176.701
-mean                      = 1178.489
-stddev                    = 0.098 %
+median                    = 1176.689
+best                      = 1178.339
+worst                     = 1175.450
+mean                      = 1177.011
+stddev                    = 0.100 %
 
 execution time median                    |    total [sec] |       share [%]
 ---------------------------------------------------------------------------
-kernel compute                           |         51.374 |        97.318 %
-halo exchange                            |          1.402 |         2.660 %
-other                                    |          0.014 |         0.026 %
-total                                    |         52.788 |       100.000 %
+kernel compute                           |         51.464 |        97.323 %
+halo exchange                            |          1.400 |         2.651 %
+other                                    |          0.013 |         0.024 %
+total                                    |         52.867 |       100.000 %
 
 --- [ benchmark script settings ] -----------------------------------------
 case                      = 23 / 30
@@ -1454,26 +1676,26 @@ dist function buffers                    |            72  |          14.965
 macro field buffers                      |            12  |           2.488
 total                                    |            84  |          17.453
 
---- [ benchmark runs started at 2026-06-08 09:27:02 ] ---------------------
-001 | avg step: 147.392 ms | MLUPS: 1406.862
-002 | avg step: 171.859 ms | MLUPS: 1206.574
-003 | avg step: 121.317 ms | MLUPS: 1709.247
-004 | avg step: 115.400 ms | MLUPS: 1796.875
-005 | avg step: 104.631 ms | MLUPS: 1981.823
+--- [ benchmark runs started at 2026-06-08 18:05:27 ] ---------------------
+001 | avg step: 114.028 ms | MLUPS: 1818.505
+002 | avg step: 104.132 ms | MLUPS: 1991.311
+003 | avg step: 104.574 ms | MLUPS: 1982.910
+004 | avg step: 137.829 ms | MLUPS: 1504.469
+005 | avg step: 104.785 ms | MLUPS: 1978.908
 
 --- [ MLUPS metrics ] -----------------------------------------------------
-median                    = 1709.247
-best                      = 1981.823
-worst                     = 1206.574
-mean                      = 1620.276
-stddev                    = 19.185 %
+median                    = 1978.908
+best                      = 1991.311
+worst                     = 1504.469
+mean                      = 1855.221
+stddev                    = 11.258 %
 
 execution time median                    |    total [sec] |       share [%]
 ---------------------------------------------------------------------------
-kernel compute                           |         29.681 |        81.674 %
-halo exchange                            |          6.643 |        18.253 %
-other                                    |          0.027 |         0.073 %
-total                                    |         36.395 |       100.000 %
+kernel compute                           |         29.721 |        94.140 %
+halo exchange                            |          1.828 |         5.815 %
+other                                    |          0.014 |         0.042 %
+total                                    |         31.436 |       100.000 %
 
 --- [ benchmark script settings ] -----------------------------------------
 case                      = 24 / 30
@@ -1526,26 +1748,26 @@ dist function buffers                    |            72  |          14.984
 macro field buffers                      |            12  |           2.488
 total                                    |            84  |          17.472
 
---- [ benchmark runs started at 2026-06-08 09:30:35 ] ---------------------
-001 | avg step: 94.575 ms | MLUPS: 2192.536
-002 | avg step: 96.035 ms | MLUPS: 2159.210
-003 | avg step: 94.881 ms | MLUPS: 2185.468
-004 | avg step: 87.110 ms | MLUPS: 2380.452
-005 | avg step: 88.512 ms | MLUPS: 2342.721
+--- [ benchmark runs started at 2026-06-08 18:08:32 ] ---------------------
+001 | avg step: 113.251 ms | MLUPS: 1830.978
+002 | avg step: 99.561 ms | MLUPS: 2082.749
+003 | avg step: 87.563 ms | MLUPS: 2368.120
+004 | avg step: 87.114 ms | MLUPS: 2380.333
+005 | avg step: 103.772 ms | MLUPS: 1998.228
 
 --- [ MLUPS metrics ] -----------------------------------------------------
-median                    = 2192.536
-best                      = 2380.452
-worst                     = 2159.210
-mean                      = 2252.077
-stddev                    = 4.512 %
+median                    = 2082.749
+best                      = 2380.333
+worst                     = 1830.978
+mean                      = 2132.082
+stddev                    = 11.207 %
 
 execution time median                    |    total [sec] |       share [%]
 ---------------------------------------------------------------------------
-kernel compute                           |         21.763 |        78.100 %
-halo exchange                            |          6.179 |        21.778 %
-other                                    |          0.036 |         0.128 %
-total                                    |         28.373 |       100.000 %
+kernel compute                           |         21.026 |        69.175 %
+halo exchange                            |          9.163 |        30.679 %
+other                                    |          0.044 |         0.168 %
+total                                    |         29.868 |       100.000 %
 
 --- [ benchmark script settings ] -----------------------------------------
 case                      = 25 / 30
@@ -1598,26 +1820,26 @@ dist function buffers                    |            72  |          15.007
 macro field buffers                      |            12  |           2.488
 total                                    |            84  |          17.495
 
---- [ benchmark runs started at 2026-06-08 09:33:13 ] ---------------------
-001 | avg step: 80.144 ms | MLUPS: 2587.350
-002 | avg step: 87.822 ms | MLUPS: 2361.135
-003 | avg step: 79.985 ms | MLUPS: 2592.500
-004 | avg step: 82.801 ms | MLUPS: 2504.317
-005 | avg step: 79.885 ms | MLUPS: 2595.743
+--- [ benchmark runs started at 2026-06-08 18:11:37 ] ---------------------
+001 | avg step: 79.656 ms | MLUPS: 2603.189
+002 | avg step: 79.480 ms | MLUPS: 2608.973
+003 | avg step: 80.813 ms | MLUPS: 2565.921
+004 | avg step: 88.375 ms | MLUPS: 2346.363
+005 | avg step: 83.758 ms | MLUPS: 2475.712
 
 --- [ MLUPS metrics ] -----------------------------------------------------
-median                    = 2587.350
-best                      = 2595.743
-worst                     = 2361.135
-mean                      = 2528.209
-stddev                    = 3.989 %
+median                    = 2565.921
+best                      = 2608.973
+worst                     = 2346.363
+mean                      = 2520.032
+stddev                    = 4.395 %
 
 execution time median                    |    total [sec] |       share [%]
 ---------------------------------------------------------------------------
-kernel compute                           |         19.778 |        82.423 %
-halo exchange                            |          4.183 |        17.433 %
-other                                    |          0.030 |         0.122 %
-total                                    |         24.043 |       100.000 %
+kernel compute                           |         19.466 |        81.492 %
+halo exchange                            |          4.396 |        18.394 %
+other                                    |          0.027 |         0.114 %
+total                                    |         24.244 |       100.000 %
 
 --- [ benchmark script settings ] -----------------------------------------
 case                      = 26 / 30
@@ -1670,26 +1892,26 @@ dist function buffers                    |            73  |          15.065
 macro field buffers                      |            12  |           2.488
 total                                    |            85  |          17.553
 
---- [ benchmark runs started at 2026-06-08 09:35:43 ] ---------------------
-001 | avg step: 57.724 ms | MLUPS: 3592.278
-002 | avg step: 61.548 ms | MLUPS: 3369.100
-003 | avg step: 55.123 ms | MLUPS: 3761.783
-004 | avg step: 54.874 ms | MLUPS: 3778.838
-005 | avg step: 54.724 ms | MLUPS: 3789.196
+--- [ benchmark runs started at 2026-06-08 18:14:08 ] ---------------------
+001 | avg step: 55.082 ms | MLUPS: 3764.561
+002 | avg step: 55.066 ms | MLUPS: 3765.644
+003 | avg step: 60.955 ms | MLUPS: 3401.870
+004 | avg step: 55.027 ms | MLUPS: 3768.312
+005 | avg step: 54.855 ms | MLUPS: 3780.152
 
 --- [ MLUPS metrics ] -----------------------------------------------------
-median                    = 3761.783
-best                      = 3789.196
-worst                     = 3369.100
-mean                      = 3658.239
-stddev                    = 4.935 %
+median                    = 3765.644
+best                      = 3780.152
+worst                     = 3401.870
+mean                      = 3696.108
+stddev                    = 4.453 %
 
 execution time median                    |    total [sec] |       share [%]
 ---------------------------------------------------------------------------
-kernel compute                           |         11.817 |        71.782 %
-halo exchange                            |          4.589 |        27.877 %
-other                                    |          0.099 |         0.536 %
-total                                    |         16.537 |       100.000 %
+kernel compute                           |         12.002 |        72.705 %
+halo exchange                            |          4.464 |        27.041 %
+other                                    |          0.065 |         0.391 %
+total                                    |         16.520 |       100.000 %
 
 --- [ benchmark script settings ] -----------------------------------------
 case                      = 27 / 30
@@ -1742,23 +1964,239 @@ dist function buffers                    |            73  |          15.139
 macro field buffers                      |            12  |           2.488
 total                                    |            85  |          17.628
 
---- [ benchmark runs started at 2026-06-08 09:38:02 ] ---------------------
-001 | avg step: 47.770 ms | MLUPS: 4340.807
-002 | avg step: 48.750 ms | MLUPS: 4253.564
-003 | avg step: 47.966 ms | MLUPS: 4323.044
-004 | avg step: 47.158 ms | MLUPS: 4397.097
-005 | avg step: 48.133 ms | MLUPS: 4308.051
+--- [ benchmark runs started at 2026-06-08 18:16:25 ] ---------------------
+001 | avg step: 47.610 ms | MLUPS: 4355.398
+002 | avg step: 48.784 ms | MLUPS: 4250.604
+003 | avg step: 48.262 ms | MLUPS: 4296.576
+004 | avg step: 48.366 ms | MLUPS: 4287.267
+005 | avg step: 47.633 ms | MLUPS: 4353.259
 
 --- [ MLUPS metrics ] -----------------------------------------------------
-median                    = 4323.044
-best                      = 4397.097
-worst                     = 4253.564
-mean                      = 4324.513
-stddev                    = 1.204 %
+median                    = 4296.576
+best                      = 4355.398
+worst                     = 4250.604
+mean                      = 4308.621
+stddev                    = 1.047 %
 
 execution time median                    |    total [sec] |       share [%]
 ---------------------------------------------------------------------------
-kernel compute                           |         10.435 |        72.813 %
-halo exchange                            |          3.850 |        26.863 %
-other                                    |          0.052 |         0.360 %
-total                                    |         14.390 |       100.000 %
+kernel compute                           |          9.967 |        69.746 %
+halo exchange                            |          4.235 |        29.635 %
+other                                    |          0.161 |         1.102 %
+total                                    |         14.479 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 28 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 144
+image grid                = 144 x 1
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           144
+image grid [X/Y]:         [ 144 / 1 ]
+local domain [X/Y]:       [ 100 / 14400 ]
+halo cells:               2.014 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            73  |          15.231
+macro field buffers                      |            12  |           2.488
+total                                    |            85  |          17.719
+
+--- [ benchmark runs started at 2026-06-08 18:46:15 ] ---------------------
+001 | avg step: 55.314 ms | MLUPS: 3748.799
+002 | avg step: 55.250 ms | MLUPS: 3753.115
+003 | avg step: 55.343 ms | MLUPS: 3746.830
+004 | avg step: 55.199 ms | MLUPS: 3756.587
+005 | avg step: 55.629 ms | MLUPS: 3727.573
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 3748.799
+best                      = 3756.587
+worst                     = 3727.573
+mean                      = 3746.581
+stddev                    = 0.301 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |          8.993 |        54.166 %
+halo exchange                            |          6.945 |        41.828 %
+other                                    |          0.596 |         3.596 %
+total                                    |         16.594 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 29 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 225
+image grid                = 225 x 1
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           225
+image grid [X/Y]:         [ 225 / 1 ]
+local domain [X/Y]:       [ 64 / 14400 ]
+halo cells:               3.139 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            74  |          15.399
+macro field buffers                      |            12  |           2.488
+total                                    |            86  |          17.887
+
+--- [ benchmark runs started at 2026-06-08 18:50:57 ] ---------------------
+001 | avg step: 63.905 ms | MLUPS: 3244.833
+002 | avg step: 62.963 ms | MLUPS: 3293.381
+003 | avg step: 63.822 ms | MLUPS: 3249.017
+004 | avg step: 61.999 ms | MLUPS: 3344.553
+005 | avg step: 63.971 ms | MLUPS: 3241.454
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 3249.017
+best                      = 3344.553
+worst                     = 3241.454
+mean                      = 3274.648
+stddev                    = 1.356 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |          4.266 |        22.283 %
+halo exchange                            |         13.077 |        68.635 %
+other                                    |          1.739 |         9.083 %
+total                                    |         19.147 |       100.000 %
+
+--- [ benchmark script settings ] -----------------------------------------
+case                      = 30 / 30
+executable                = build/release-native/bin/FFB
+runs                      = 5
+images                    = 400
+image grid                = 400 x 1
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ----------------------------------------------------------
+cpu model                 = AMD EPYC 9454 48-Core Processor
+logical threads           = 192
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] ---------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.500000
+u_lid                     = 0.100000
+
+--- [ other parameters ] --------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+use_universal_kernels     = T
+distributed_coarrays      = T
+export_rho                = F
+export_u_x                = F
+export_u_y                = F
+export_u_mag              = F
+export_interval           = 10000
+export_initial_state      = T
+export_final_state        = T
+output_dir_name           = output
+export_num                = run_000
+
+--- [ domain decomposition ] ----------------------------------------------
+coarray images:           400
+image grid [X/Y]:         [ 400 / 1 ]
+local domain [X/Y]:       [ 36 / 14400 ]
+halo cells:               5.570 %
+
+memory usage                             |  per cell [B]  |  all cells [GB]
+---------------------------------------------------------------------------
+dist function buffers                    |            76  |          15.762
+macro field buffers                      |            12  |           2.488
+total                                    |            88  |          18.250
+
+--- [ benchmark runs started at 2026-06-08 18:59:47 ] ---------------------
+001 | avg step: 170.029 ms | MLUPS: 1219.560
+002 | avg step: 156.543 ms | MLUPS: 1324.623
+003 | avg step: 160.466 ms | MLUPS: 1292.236
+004 | avg step: 170.067 ms | MLUPS: 1219.281
+005 | avg step: 158.402 ms | MLUPS: 1309.075
+
+--- [ MLUPS metrics ] -----------------------------------------------------
+median                    = 1292.236
+best                      = 1324.623
+worst                     = 1219.281
+mean                      = 1272.955
+stddev                    = 3.943 %
+
+execution time median                    |    total [sec] |       share [%]
+---------------------------------------------------------------------------
+kernel compute                           |          1.898 |         4.041 %
+halo exchange                            |         42.844 |        89.617 %
+other                                    |          3.125 |         6.576 %
+total                                    |         48.140 |       100.000 %
