@@ -47,12 +47,22 @@ PINNING_PRESETS = {
         "I_MPI_PIN_DOMAIN": "core",
         "I_MPI_PIN_ORDER": "spread",
     },
+    "numa_scatter": {
+        "I_MPI_PIN": "1",
+        "I_MPI_PIN_DOMAIN": "numa",
+        "I_MPI_PIN_ORDER": "scatter",
+    },
+    "numa_spread": {
+        "I_MPI_PIN": "1",
+        "I_MPI_PIN_DOMAIN": "numa",
+        "I_MPI_PIN_ORDER": "spread",
+    },
 }
 
 # settings
 DEFAULT_EXE = "build/release-fp32/bin/FFB"
 DEFAULT_RUNS = 5
-DEFAULT_PIN = "core_scatter"
+DEFAULT_PIN = "numa_spread"
 SKIP = 0
 
 # domain decompositions (images, ix, iy)

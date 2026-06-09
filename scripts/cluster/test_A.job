@@ -91,8 +91,8 @@ echo ""
 if [ "$EXECUTION_MODE" = "raw" ]; then
     # single raw execution
     export I_MPI_PIN=1
-    export I_MPI_PIN_DOMAIN=core
-    export I_MPI_PIN_ORDER=scatter
+    export I_MPI_PIN_DOMAIN=numa
+    export I_MPI_PIN_ORDER=spread
     export I_X=$I_X
     export I_Y=$I_Y
     export FOR_COARRAY_NUM_IMAGES=$IMAGES
@@ -106,7 +106,7 @@ elif [ "$EXECUTION_MODE" = "run" ]; then
         --images $IMAGES \
         --ix $I_X \
         --iy $I_Y \
-        --pin core_scatter
+        --pin numa_spread
 
 elif [ "$EXECUTION_MODE" = "sweep" ]; then
     # benchmark sweep with different domain decompositions
@@ -115,7 +115,7 @@ elif [ "$EXECUTION_MODE" = "sweep" ]; then
         --runs 5 \
         --case squares \
         --skip 0 \
-        --pin core_scatter
+        --pin numa_spread
 
 else
     echo "error: unknown EXECUTION_MODE='$EXECUTION_MODE'"
