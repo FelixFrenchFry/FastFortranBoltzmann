@@ -89,7 +89,34 @@ CASE_CUSTOM = [
     (192, 1, 192)
 ]
 
-CASE_SQUARES = [
+CASE_SQUARES_128 = [
+    # 1D horizontal slice (ix=1)
+    (4, 1, 4),
+    (9, 1, 9),
+    (16, 1, 16),
+    (25, 1, 25),
+    (36, 1, 36),
+    (64, 1, 64),
+    (100, 1, 100),
+    # 2D square (ix=iy)
+    (4, 2, 2),
+    (9, 3, 3),
+    (16, 4, 4),
+    (25, 5, 5),
+    (36, 6, 6),
+    (64, 8, 8),
+    (100, 10, 10),
+    # 1D vertical slice (iy=1)
+    (4, 4, 1),
+    (9, 9, 1),
+    (16, 16, 1),
+    (25, 25, 1),
+    (36, 36, 1),
+    (64, 64, 1),
+    (100, 100, 1)
+]
+
+CASE_SQUARES_192 = [
     # 1D horizontal slice (ix=1)
     (4, 1, 4),
     (9, 1, 9),
@@ -99,7 +126,6 @@ CASE_SQUARES = [
     (64, 1, 64),
     (100, 1, 100),
     (144, 1, 144),
-    (225, 1, 225),
     # 2D square (ix=iy)
     (4, 2, 2),
     (9, 3, 3),
@@ -109,7 +135,6 @@ CASE_SQUARES = [
     (64, 8, 8),
     (100, 10, 10),
     (144, 12, 12),
-    (225, 15, 15),
     # 1D vertical slice (iy=1)
     (4, 4, 1),
     (9, 9, 1),
@@ -118,8 +143,7 @@ CASE_SQUARES = [
     (36, 36, 1),
     (64, 64, 1),
     (100, 100, 1),
-    (144, 144, 1),
-    (225, 225, 1)
+    (144, 144, 1)
 ]
 
 CASE_SMALL = [
@@ -315,7 +339,8 @@ CASE_ALL = [
 
 DOMAIN_DECOMP_CASE_SETS = {
     "custom": CASE_CUSTOM,
-    "squares": CASE_SQUARES,
+    "squares_128": CASE_SQUARES_128,
+    "squares_192": CASE_SQUARES_192,
     "small": CASE_SMALL,
     "small_full": CASE_SMALL_FULL,
     "medium": CASE_MEDIUM,
