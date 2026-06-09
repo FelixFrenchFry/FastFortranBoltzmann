@@ -146,6 +146,39 @@ CASE_SQUARES_192 = [
     (144, 144, 1)
 ]
 
+CASE_SQUARES_225 = [
+    # 1D horizontal slice (ix=1)
+    (4, 1, 4),
+    (9, 1, 9),
+    (16, 1, 16),
+    (25, 1, 25),
+    (36, 1, 36),
+    (64, 1, 64),
+    (100, 1, 100),
+    (144, 1, 144),
+    (225, 1, 225),
+    # 2D square (ix=iy)
+    (4, 2, 2),
+    (9, 3, 3),
+    (16, 4, 4),
+    (25, 5, 5),
+    (36, 6, 6),
+    (64, 8, 8),
+    (100, 10, 10),
+    (144, 12, 12),
+    (225, 15, 15),
+    # 1D vertical slice (iy=1)
+    (4, 4, 1),
+    (9, 9, 1),
+    (16, 16, 1),
+    (25, 25, 1),
+    (36, 36, 1),
+    (64, 64, 1),
+    (100, 100, 1),
+    (144, 144, 1),
+    (225, 225, 1)
+]
+
 CASE_SMALL = [
     (4, 1, 4),
     (6, 1, 6),
@@ -341,6 +374,7 @@ DOMAIN_DECOMP_CASE_SETS = {
     "custom": CASE_CUSTOM,
     "squares_128": CASE_SQUARES_128,
     "squares_192": CASE_SQUARES_192,
+    "squares_225": CASE_SQUARES_225,
     "small": CASE_SMALL,
     "small_full": CASE_SMALL_FULL,
     "medium": CASE_MEDIUM,
@@ -561,7 +595,7 @@ def run_case(exe, runs, n_x, n_y, case_num, n_cases, images, ix, iy, pin):
 
     for run_num in range(1, runs + 1):
         if run_num > 1:
-            time.sleep(10.0) # extra time to clean up resources and cool down
+            time.sleep(3.0) # extra time to clean up resources and cool down
 
         step_ms, mlups, execution_time, output = run_once(exe, images, ix, iy, run_num, pin)
 
