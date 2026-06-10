@@ -5,7 +5,7 @@ module export
     use hardware_info, only: hardware_info_t, write_hardware_metadata
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, C_X, C_Y, C_X_FP, C_Y_FP, W, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, FP, FP_DTYPE, &
-        USE_UNROLLED_KERNELS, USE_UNIVERSAL_KERNELS, &
+        USE_UNROLLED_KERNELS, &
         RHO_0, OMEGA, U_MAX, N_SIN, U_WALL, U_LID, RHO_IN, RHO_OUT, sim_mode_to_string
     implicit none
 
@@ -179,7 +179,6 @@ contains
         write(unit, '(A,I0,A)') '  "N_DIRS": ', N_DIRS, ','
         write(unit, '(A)') ""
         write(unit, '(A,A,A)') '  "use_unrolled_kernels": ', trim(logical_to_json(USE_UNROLLED_KERNELS)), ','
-        write(unit, '(A,A,A)') '  "use_universal_kernels": ', trim(logical_to_json(USE_UNIVERSAL_KERNELS)), ','
         write(unit, '(A)') ""
 #ifdef FFB_FP64
         write(unit, '(A)') '  "FFB_FP64": true,'
@@ -190,11 +189,6 @@ contains
         write(unit, '(A)') '  "FFB_DENSITY_CHECKS": true,'
 #else
         write(unit, '(A)') '  "FFB_DENSITY_CHECKS": false,'
-#endif
-#ifdef FFB_BOUNDARY_CHECKS
-        write(unit, '(A)') '  "FFB_BOUNDARY_CHECKS": true,'
-#else
-        write(unit, '(A)') '  "FFB_BOUNDARY_CHECKS": false,'
 #endif
         write(unit, '(A)') '  "FFB_DISTRIBUTED_COARRAYS": true,'
         write(unit, '(A)') ""

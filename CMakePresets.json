@@ -15,8 +15,7 @@
         "CMAKE_Fortran_COMPILER": "ifx",
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_Fortran_FLAGS": "",
-        "FFB_DENSITY_CHECKS": "ON",
-        "FFB_BOUNDARY_CHECKS": "ON"
+        "FFB_DENSITY_CHECKS": "ON"
       }
     },
     {
@@ -29,8 +28,7 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_Fortran_FLAGS": "",
         "FFB_FP64": "ON",
-        "FFB_DENSITY_CHECKS": "ON",
-        "FFB_BOUNDARY_CHECKS": "ON"
+        "FFB_DENSITY_CHECKS": "ON"
       }
     },
     {
