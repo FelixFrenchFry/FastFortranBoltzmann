@@ -85,8 +85,8 @@ contains
             exchange_plan%top = .not. domain_info%at_top_boundary
 
         case (SIM_POISEUILLE_FLOW)
-            exchange_plan%left = .not. domain_info%at_left_boundary
-            exchange_plan%right = .not. domain_info%at_right_boundary
+            exchange_plan%left = .true.
+            exchange_plan%right = .true.
             exchange_plan%bottom = .not. domain_info%at_bottom_boundary
             exchange_plan%top = .not. domain_info%at_top_boundary
             exchange_plan%macro_left = domain_info%at_left_boundary
