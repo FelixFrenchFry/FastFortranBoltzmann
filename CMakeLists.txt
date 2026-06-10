@@ -20,7 +20,6 @@ set(CMAKE_Fortran_EXTENSIONS OFF)
 # build feature options
 option(FFB_FP64 "Usage of real64 for floating point values enabled" OFF)
 option(FFB_DENSITY_CHECKS "Run-time density checks enabled" OFF)
-option(FFB_BOUNDARY_CHECKS "Run-time boundary condition checks enabled" OFF)
 set(FFB_EXPORT_NUM "" CACHE STRING "Export run directory name")
 set(FFB_SETTINGS_DEFINITIONS "" CACHE STRING "Fortran preprocessor overrides for source/settings.f90")
 
@@ -77,9 +76,6 @@ if(FFB_FP64)
 endif()
 if(FFB_DENSITY_CHECKS)
     target_compile_definitions(FFB PRIVATE FFB_DENSITY_CHECKS)
-endif()
-if(FFB_BOUNDARY_CHECKS)
-    target_compile_definitions(FFB PRIVATE FFB_BOUNDARY_CHECKS)
 endif()
 
 target_link_options(FFB PRIVATE

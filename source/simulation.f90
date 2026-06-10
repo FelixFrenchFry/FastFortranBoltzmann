@@ -5,17 +5,12 @@ module simulation
     use exchange, only: halo_buffers_t, BUF_MACRO_LEFT, BUF_MACRO_RIGHT
     use settings, only: N_DIRS, C_X, C_Y, C_X_FP, C_Y_FP, W, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
-        USE_UNROLLED_KERNELS, USE_UNIVERSAL_KERNELS, &
+        USE_UNROLLED_KERNELS, &
         RHO_0, OMEGA, U_WALL, U_LID, RHO_IN, RHO_OUT
-    use shear_wave, only: prepare_shear_wave_halos_SW, fuzed_pull_streaming_collision_local_SW, &
-        fuzed_pull_streaming_collision_local_unrolled_SW
-    use couette_flow, only: prepare_couette_flow_halos_CF, fuzed_pull_streaming_collision_local_CF, &
-        fuzed_pull_streaming_collision_local_unrolled_CF
-    use poiseuille_flow, only: prepare_poiseuille_flow_halos_PF, update_poiseuille_flow_macro_strips_PF, &
-        fuzed_pull_streaming_collision_local_PF, &
-        fuzed_pull_streaming_collision_local_unrolled_PF
-    use sliding_lid, only: prepare_sliding_lid_halos_SL, fuzed_pull_streaming_collision_local_SL, &
-        fuzed_pull_streaming_collision_local_unrolled_SL
+    use shear_wave, only: prepare_shear_wave_halos_SW
+    use couette_flow, only: prepare_couette_flow_halos_CF
+    use poiseuille_flow, only: prepare_poiseuille_flow_halos_PF, update_poiseuille_flow_macro_strips_PF
+    use sliding_lid, only: prepare_sliding_lid_halos_SL
     implicit none
 
 contains
@@ -38,134 +33,51 @@ contains
         real(FP), intent(inout) :: u_x(n_x_local, n_y_local)
         real(FP), intent(inout) :: u_y(n_x_local, n_y_local)
 
-        ! single sim step based on selected sim mode
+        ! prepare sim-mode-specific boundary halos before universal pull streaming
         select case (SIM_MODE)
         case (SIM_SHEAR_WAVE) ! shear wave
-            if (USE_UNIVERSAL_KERNELS) then
-                call prepare_shear_wave_halos_SW( &
-                    domain_info%n_images_x, domain_info%n_images_y, n_x_local, n_y_local, f)
-                if (USE_UNROLLED_KERNELS) then
-                    call fuzed_pull_streaming_collision_local_unrolled_universal( &
-                        n_x_local, n_y_local, &
-                        write_macro_fields, OMEGA, f, f_next, rho, u_x, u_y)
-                else
-                    call fuzed_pull_streaming_collision_local_universal( &
-                        n_x_local, n_y_local, &
-                        write_macro_fields, OMEGA, f, f_next, rho, u_x, u_y)
-                end if
-            else if (USE_UNROLLED_KERNELS) then
-                call fuzed_pull_streaming_collision_local_unrolled_SW( &
-                    n_x_local, n_y_local, &
-                    write_macro_fields, OMEGA, f, f_next, rho, u_x, u_y)
-            else
-                call fuzed_pull_streaming_collision_local_SW( &
-                    n_x_local, n_y_local, &
-                    write_macro_fields, OMEGA, f, f_next, rho, u_x, u_y)
-            end if
+            call prepare_shear_wave_halos_SW( &
+                domain_info%n_images_x, domain_info%n_images_y, n_x_local, n_y_local, f)
+
         case (SIM_COUETTE_FLOW) ! couette flow
-            if (USE_UNIVERSAL_KERNELS) then
-                call prepare_couette_flow_halos_CF( &
-                    domain_info%n_images_x, n_x_local, n_y_local, &
-                    domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
-                    RHO_0, U_WALL, f)
-                if (USE_UNROLLED_KERNELS) then
-                    call fuzed_pull_streaming_collision_local_unrolled_universal( &
-                        n_x_local, n_y_local, &
-                        write_macro_fields, OMEGA, f, f_next, rho, u_x, u_y)
-                else
-                    call fuzed_pull_streaming_collision_local_universal( &
-                        n_x_local, n_y_local, &
-                        write_macro_fields, OMEGA, f, f_next, rho, u_x, u_y)
-                end if
-            else if (USE_UNROLLED_KERNELS) then
-                call fuzed_pull_streaming_collision_local_unrolled_CF( &
-                    n_x_local, n_y_local, &
-                    domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
-                    write_macro_fields, RHO_0, OMEGA, U_WALL, &
-                    f, f_next, rho, u_x, u_y)
-            else
-                call fuzed_pull_streaming_collision_local_CF( &
-                    n_x_local, n_y_local, &
-                    domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
-                    write_macro_fields, RHO_0, OMEGA, U_WALL, &
-                    f, f_next, rho, u_x, u_y)
-            end if
+            call prepare_couette_flow_halos_CF( &
+                domain_info%n_images_x, n_x_local, n_y_local, &
+                domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
+                RHO_0, U_WALL, f)
+
         case (SIM_POISEUILLE_FLOW) ! poiseuille flow
-            if (USE_UNIVERSAL_KERNELS) then
-                call prepare_poiseuille_flow_halos_PF( &
-                    n_x_local, n_y_local, &
-                    domain_info%at_left_boundary, domain_info%at_right_boundary, &
-                    domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
-                    RHO_IN, RHO_OUT, &
-                    f, halo_buffers%recv_macro_left, halo_buffers%recv_macro_right)
-                call update_poiseuille_flow_macro_strips_PF( &
-                    n_x_local, n_y_local, &
-                    domain_info%at_left_boundary, domain_info%at_right_boundary, f, &
-                    halo_buffers%window(:,:,BUF_MACRO_LEFT), halo_buffers%window(:,:,BUF_MACRO_RIGHT))
-                if (USE_UNROLLED_KERNELS) then
-                    call fuzed_pull_streaming_collision_local_unrolled_universal( &
-                        n_x_local, n_y_local, &
-                        write_macro_fields, OMEGA, f, f_next, rho, u_x, u_y)
-                else
-                    call fuzed_pull_streaming_collision_local_universal( &
-                        n_x_local, n_y_local, &
-                        write_macro_fields, OMEGA, f, f_next, rho, u_x, u_y)
-                end if
-            else if (USE_UNROLLED_KERNELS) then
-                call fuzed_pull_streaming_collision_local_unrolled_PF( &
-                    n_x_local, n_y_local, &
-                    domain_info%at_left_boundary, domain_info%at_right_boundary, &
-                    domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
-                    write_macro_fields, OMEGA, &
-                    RHO_IN, RHO_OUT, &
-                    f, f_next, rho, u_x, u_y, &
-                    halo_buffers%recv_macro_left, halo_buffers%recv_macro_right, &
-                    halo_buffers%window(:,:,BUF_MACRO_LEFT), halo_buffers%window(:,:,BUF_MACRO_RIGHT))
-            else
-                call fuzed_pull_streaming_collision_local_PF( &
-                    n_x_local, n_y_local, &
-                    domain_info%at_left_boundary, domain_info%at_right_boundary, &
-                    domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
-                    write_macro_fields, OMEGA, &
-                    RHO_IN, RHO_OUT, &
-                    f, f_next, rho, u_x, u_y, &
-                    halo_buffers%recv_macro_left, halo_buffers%recv_macro_right, &
-                    halo_buffers%window(:,:,BUF_MACRO_LEFT), halo_buffers%window(:,:,BUF_MACRO_RIGHT))
-            end if
+            call prepare_poiseuille_flow_halos_PF( &
+                n_x_local, n_y_local, &
+                domain_info%at_left_boundary, domain_info%at_right_boundary, &
+                domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
+                RHO_IN, RHO_OUT, &
+                f, halo_buffers%recv_macro_left, halo_buffers%recv_macro_right)
+            call update_poiseuille_flow_macro_strips_PF( &
+                n_x_local, n_y_local, &
+                domain_info%at_left_boundary, domain_info%at_right_boundary, f, &
+                halo_buffers%window(:,:,BUF_MACRO_LEFT), halo_buffers%window(:,:,BUF_MACRO_RIGHT))
+
         case (SIM_SLIDING_LID) ! sliding lid
-            if (USE_UNIVERSAL_KERNELS) then
-                call prepare_sliding_lid_halos_SL( &
-                    n_x_local, n_y_local, &
-                    domain_info%at_left_boundary, domain_info%at_right_boundary, &
-                    domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
-                    RHO_0, U_LID, f)
-                if (USE_UNROLLED_KERNELS) then
-                    call fuzed_pull_streaming_collision_local_unrolled_universal( &
-                        n_x_local, n_y_local, &
-                        write_macro_fields, OMEGA, f, f_next, rho, u_x, u_y)
-                else
-                    call fuzed_pull_streaming_collision_local_universal( &
-                        n_x_local, n_y_local, &
-                        write_macro_fields, OMEGA, f, f_next, rho, u_x, u_y)
-                end if
-            else if (USE_UNROLLED_KERNELS) then
-                call fuzed_pull_streaming_collision_local_unrolled_SL( &
-                    n_x_local, n_y_local, &
-                    domain_info%at_left_boundary, domain_info%at_right_boundary, &
-                    domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
-                    write_macro_fields, RHO_0, OMEGA, &
-                    U_LID, f, f_next, rho, u_x, u_y)
-            else
-                call fuzed_pull_streaming_collision_local_SL( &
-                    n_x_local, n_y_local, &
-                    domain_info%at_left_boundary, domain_info%at_right_boundary, &
-                    domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
-                    write_macro_fields, RHO_0, OMEGA, &
-                    U_LID, f, f_next, rho, u_x, u_y)
-            end if
+            call prepare_sliding_lid_halos_SL( &
+                n_x_local, n_y_local, &
+                domain_info%at_left_boundary, domain_info%at_right_boundary, &
+                domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
+                RHO_0, U_LID, f)
+
         case default
             error stop "error: unknown sim mode in execute_local_sim_step()"
         end select
+
+        ! universal pull streaming + collision kernel for all sim modes
+        if (USE_UNROLLED_KERNELS) then
+            call fuzed_pull_streaming_collision_local_unrolled_universal( &
+                n_x_local, n_y_local, &
+                write_macro_fields, OMEGA, f, f_next, rho, u_x, u_y)
+        else
+            call fuzed_pull_streaming_collision_local_universal( &
+                n_x_local, n_y_local, &
+                write_macro_fields, OMEGA, f, f_next, rho, u_x, u_y)
+        end if
     end subroutine execute_local_sim_step
 
 
