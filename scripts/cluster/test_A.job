@@ -113,7 +113,7 @@ elif [ "$EXECUTION_MODE" = "sweep" ]; then
     python3 -u scripts/benchmark_sweep.py \
         --exe "$EXE" \
         --runs 5 \
-        --case squares_192 \
+        --case custom \
         --skip 0 \
         --pin numa_spread
 
