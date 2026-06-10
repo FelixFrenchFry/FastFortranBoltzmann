@@ -1,7 +1,7 @@
-NOTE: benchmarks recorded at commit 4d749ce
+NOTE: benchmarks recorded at commit 4d749ce, simulating the sliding lid scenario
 
 --------------------------------------------------------------------------------
---- [ 2 x AMD EPYC 9454, 1 node, core scatter ] --------------------------------
+--- [ 2 x AMD EPYC 9454, 1 node, core_scatter ] --------------------------------
 --------------------------------------------------------------------------------
 images  grid      local domain     halo      MLUPS median   speedup   efficiency
 4       1 x 4     14400 x 3600     0.07 %       532.505      1.00     100.00 %
