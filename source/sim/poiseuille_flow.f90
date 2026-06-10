@@ -456,8 +456,6 @@ contains
         ! ---------
         ! temp
         integer(int32) :: x, y
-        real(FP) :: pressure_left(n_y_local, 3)
-        real(FP) :: pressure_right(n_y_local, 3)
 
         ! bottom bounce-back boundary, written into the halo row used by pull streaming
         if (at_bottom_boundary) then
@@ -480,40 +478,37 @@ contains
         ! pressure-periodic inlet, written into the halo column used by pull streaming
         if (at_left_boundary) then
             do y = 1, n_y_local
-                pressure_left(y, 1) = pressure_periodic_distribution( &
+                f(0, y, 2) = pressure_periodic_distribution( &
                     2_int32, f(0, y, 2), macro_left(y, 1), macro_left(y, 2), macro_left(y, 3), rho_in)
-                pressure_left(y, 2) = pressure_periodic_distribution( &
+                f(0, y, 6) = pressure_periodic_distribution( &
                     6_int32, f(0, y, 6), macro_left(y, 1), macro_left(y, 2), macro_left(y, 3), rho_in)
-                pressure_left(y, 3) = pressure_periodic_distribution( &
+                f(0, y, 9) = pressure_periodic_distribution( &
                     9_int32, f(0, y, 9), macro_left(y, 1), macro_left(y, 2), macro_left(y, 3), rho_in)
             end do
 
-            do y = 1, n_y_local
-                f(0, y, 2) = pressure_left(y, 1)
-                f(0, y-1, 6) = pressure_left(y, 2)
-                f(0, y+1, 9) = pressure_left(y, 3)
-            end do
+            f(0, 0, 6) = pressure_periodic_distribution( &
+                6_int32, f(0, 0, 6), macro_left(1, 1), macro_left(1, 2), macro_left(1, 3), rho_in)
+            f(0, n_y_local+1, 9) = pressure_periodic_distribution( &
+                9_int32, f(0, n_y_local+1, 9), macro_left(n_y_local, 1), &
+                macro_left(n_y_local, 2), macro_left(n_y_local, 3), rho_in)
         end if
 
         ! pressure-periodic outlet, written into the halo column used by pull streaming
         if (at_right_boundary) then
             do y = 1, n_y_local
-                pressure_right(y, 1) = pressure_periodic_distribution( &
-                    4_int32, f(n_x_local+1, y, 4), &
-                    macro_right(y, 1), macro_right(y, 2), macro_right(y, 3), rho_out)
-                pressure_right(y, 2) = pressure_periodic_distribution( &
-                    7_int32, f(n_x_local+1, y, 7), &
-                    macro_right(y, 1), macro_right(y, 2), macro_right(y, 3), rho_out)
-                pressure_right(y, 3) = pressure_periodic_distribution( &
-                    8_int32, f(n_x_local+1, y, 8), &
-                    macro_right(y, 1), macro_right(y, 2), macro_right(y, 3), rho_out)
+                f(n_x_local+1, y, 4) = pressure_periodic_distribution( &
+                    4_int32, f(n_x_local+1, y, 4), macro_right(y, 1), macro_right(y, 2), macro_right(y, 3), rho_out)
+                f(n_x_local+1, y, 7) = pressure_periodic_distribution( &
+                    7_int32, f(n_x_local+1, y, 7), macro_right(y, 1), macro_right(y, 2), macro_right(y, 3), rho_out)
+                f(n_x_local+1, y, 8) = pressure_periodic_distribution( &
+                    8_int32, f(n_x_local+1, y, 8), macro_right(y, 1), macro_right(y, 2), macro_right(y, 3), rho_out)
             end do
 
-            do y = 1, n_y_local
-                f(n_x_local+1, y, 4) = pressure_right(y, 1)
-                f(n_x_local+1, y-1, 7) = pressure_right(y, 2)
-                f(n_x_local+1, y+1, 8) = pressure_right(y, 3)
-            end do
+            f(n_x_local+1, 0, 7) = pressure_periodic_distribution( &
+                7_int32, f(n_x_local+1, 0, 7), macro_right(1, 1), macro_right(1, 2), macro_right(1, 3), rho_out)
+            f(n_x_local+1, n_y_local+1, 8) = pressure_periodic_distribution( &
+                8_int32, f(n_x_local+1, n_y_local+1, 8), macro_right(n_y_local, 1), &
+                macro_right(n_y_local, 2), macro_right(n_y_local, 3), rho_out)
         end if
     end subroutine prepare_poiseuille_flow_halos_PF
 

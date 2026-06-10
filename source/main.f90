@@ -11,7 +11,7 @@ program main
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
         EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, EXPORT_INTERVAL, &
         EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE, EXPORT_NUM, INTERACTIVE_PROGRESS, &
-        PROGRESS_INTERVAL, RHO_0, U_MAX, N_SIN
+        PROGRESS_INTERVAL, RHO_0, U_MAX, N_SIN, RHO_IN, RHO_OUT
     use reporting, only: print_run_summary, print_launch_timestamp, print_progress_status, print_finish_timestamp, &
         print_execution_summary
     use simulation, only: execute_local_sim_step
@@ -99,19 +99,19 @@ program main
     end if
 
     if (SIM_MODE == SIM_POISEUILLE_FLOW) then
-        halo_buffers%window(:, 1, BUF_MACRO_LEFT) = RHO_0
+        halo_buffers%window(:, 1, BUF_MACRO_LEFT) = RHO_IN
         halo_buffers%window(:, 2, BUF_MACRO_LEFT) = 0.0_FP
         halo_buffers%window(:, 3, BUF_MACRO_LEFT) = 0.0_FP
 
-        halo_buffers%window(:, 1, BUF_MACRO_RIGHT) = RHO_0
+        halo_buffers%window(:, 1, BUF_MACRO_RIGHT) = RHO_OUT
         halo_buffers%window(:, 2, BUF_MACRO_RIGHT) = 0.0_FP
         halo_buffers%window(:, 3, BUF_MACRO_RIGHT) = 0.0_FP
 
-        halo_buffers%recv_macro_left(:, 1) = RHO_0
+        halo_buffers%recv_macro_left(:, 1) = RHO_IN
         halo_buffers%recv_macro_left(:, 2) = 0.0_FP
         halo_buffers%recv_macro_left(:, 3) = 0.0_FP
 
-        halo_buffers%recv_macro_right(:, 1) = RHO_0
+        halo_buffers%recv_macro_right(:, 1) = RHO_OUT
         halo_buffers%recv_macro_right(:, 2) = 0.0_FP
         halo_buffers%recv_macro_right(:, 3) = 0.0_FP
     end if

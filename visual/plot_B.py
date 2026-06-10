@@ -12,8 +12,8 @@ import numpy as np
 
 # run config
 # options "shear_wave" (1), "couette_flow" (2), "poiseuille_flow" (3), "sliding_lid" (4)
-SIM_MODE = 2
-RUN_NAME = "run_001_CF"
+SIM_MODE = 3
+RUN_NAME = "run_001_PF"
 DATA_NAME = "velocity_mag"
 
 _MODE_MAP = {1: "shear_wave", 2: "couette_flow", 3: "poiseuille_flow", 4: "sliding_lid"}
