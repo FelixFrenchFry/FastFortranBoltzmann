@@ -25,6 +25,7 @@ module hardware_info
         ! machine info
         character(len=:), allocatable :: cpu_model
         character(len=:), allocatable :: logical_threads
+        character(len=:), allocatable :: slurm_nodes
 
         ! build info
         character(len=:), allocatable :: compiler
@@ -45,6 +46,10 @@ contains
         ! output
         type(hardware_info_t), intent(out) :: info
 
+        ! locals
+        character(len=256) :: line
+        integer :: exitstat
+
         call set_unknown_hardware_info(info)
 
         call read_command_output( &
@@ -53,6 +58,13 @@ contains
         call read_command_output( &
             "sh -c ""grep -c '^processor' /proc/cpuinfo""", &
             info%logical_threads)
+
+        call get_environment_variable("SLURM_NNODES", line, status=exitstat)
+        if (exitstat == 0 .and. len_trim(line) > 0) then
+            info%slurm_nodes = trim(adjustl(line))
+        else
+            info%slurm_nodes = "1"
+        end if
 
         info%compiler = trim(compiler_id) // " " // trim(compiler_version)
 
@@ -72,7 +84,8 @@ contains
 
         print '(A)', "--- [ hardware ] ----------------------------------------------------------"
         print '(A,T27,A,A)', "cpu model", "= ", trim(info%cpu_model)
-        print '(A,T27,A,A)', "logical threads", "= ", trim(info%logical_threads)
+        print '(A,T27,A,A)', "logical threads/node", "= ", trim(info%logical_threads)
+        print '(A,T27,A,A)', "compute nodes", "= ", trim(info%slurm_nodes)
         print '(A,T27,A,A)', "compiler", "= ", trim(info%compiler)
         print '(A,T27,A,A)', "flags", "= ", trim(info%compiler_flags)
     end subroutine print_hardware_summary
@@ -87,7 +100,8 @@ contains
 
         write(unit, '(A)') '  "hardware": {'
         write(unit, '(A,A,A)') '    "cpu_model": "', json_escape(info%cpu_model), '",'
-        write(unit, '(A,A,A)') '    "logical_threads": ', trim(integer_text_to_json(info%logical_threads)), ','
+        write(unit, '(A,A,A)') '    "logical_threads_per_node": ', trim(integer_text_to_json(info%logical_threads)), ','
+        write(unit, '(A,A,A)') '    "compute_nodes": ', trim(integer_text_to_json(info%slurm_nodes)), ','
         write(unit, '(A,A,A)') '    "compiler": "', json_escape(info%compiler), '",'
         write(unit, '(A,A,A)') '    "compiler_flags": "', json_escape(info%compiler_flags), '"'
         write(unit, '(A)') '  },'
@@ -103,6 +117,7 @@ contains
 
         info%cpu_model = unknown_value
         info%logical_threads = unknown_value
+        info%slurm_nodes = unknown_value
         info%compiler = unknown_value
         info%compiler_flags = unknown_value
     end subroutine set_unknown_hardware_info
