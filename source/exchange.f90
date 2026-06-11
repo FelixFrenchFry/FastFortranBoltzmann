@@ -47,7 +47,7 @@ module exchange
         logical :: bottom
         logical :: top
 
-        ! macro exchange for poiseuille flow
+        ! pressure-periodic macro halos for poiseuille flow
         logical :: macro_left
         logical :: macro_right
 
@@ -57,7 +57,6 @@ module exchange
 
         real(real64) :: halo_sync_seconds
         real(real64) :: halo_transfer_seconds
-        real(real64) :: macro_exchange_seconds
 
     end type exchange_timing_t
 
@@ -161,7 +160,6 @@ contains
 
         exchange_timing%halo_sync_seconds = 0.0_real64
         exchange_timing%halo_transfer_seconds = 0.0_real64
-        exchange_timing%macro_exchange_seconds = 0.0_real64
 
         call system_clock(clock_section_start)
 
@@ -243,7 +241,7 @@ contains
             end if
 
             call system_clock(clock_section_end)
-            call add_elapsed_seconds(exchange_timing%macro_exchange_seconds, clock_section_start, clock_section_end)
+            call add_elapsed_seconds(exchange_timing%halo_transfer_seconds, clock_section_start, clock_section_end)
         end if
 
         call timed_sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)

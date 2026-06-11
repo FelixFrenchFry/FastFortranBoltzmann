@@ -20,7 +20,7 @@ set(CMAKE_Fortran_EXTENSIONS OFF)
 # build feature options
 option(FFB_FP64 "Usage of real64 for floating point values enabled" OFF)
 option(FFB_DENSITY_CHECKS "Run-time density checks enabled" OFF)
-set(FFB_EXPORT_NUM "" CACHE STRING "Export run directory name")
+set(FFB_EXPORT_NUM "" CACHE STRING "Export run directory name under output/")
 set(FFB_SETTINGS_DEFINITIONS "" CACHE STRING "Fortran preprocessor overrides for source/settings.f90")
 
 # executables in build/bin

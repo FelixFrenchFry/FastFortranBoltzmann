@@ -27,7 +27,6 @@ TIMING_CATEGORIES = (
     "halo exchange",
     "halo sync",
     "halo transfer",
-    "macro exchange",
     "other",
     "total",
 )
