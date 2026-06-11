@@ -45,10 +45,9 @@ program main
     real(real64) :: halo_exchange_seconds
     real(real64) :: halo_sync_seconds
     real(real64) :: halo_transfer_seconds
-    real(real64) :: macro_exchange_seconds
     real(real64) :: measured_seconds
     real(real64) :: other_seconds
-    real(real64) :: execution_time_values(7)[*]
+    real(real64) :: execution_time_values(6)[*]
     integer(int32) :: image_id
     integer(int32) :: timing_image_id
 
@@ -155,7 +154,6 @@ program main
     halo_exchange_seconds = 0.0_real64
     halo_sync_seconds = 0.0_real64
     halo_transfer_seconds = 0.0_real64
-    macro_exchange_seconds = 0.0_real64
 
     call system_clock(clock_start, clock_rate)
 
@@ -181,7 +179,6 @@ program main
             real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
         halo_sync_seconds = halo_sync_seconds + exchange_timing%halo_sync_seconds
         halo_transfer_seconds = halo_transfer_seconds + exchange_timing%halo_transfer_seconds
-        macro_exchange_seconds = macro_exchange_seconds + exchange_timing%macro_exchange_seconds
 
         call system_clock(clock_section_start)
         if (read_from_a) then
@@ -232,21 +229,20 @@ program main
     execution_time_values(2) = halo_exchange_seconds
     execution_time_values(3) = halo_sync_seconds
     execution_time_values(4) = halo_transfer_seconds
-    execution_time_values(5) = macro_exchange_seconds
-    execution_time_values(6) = other_seconds
-    execution_time_values(7) = elapsed_seconds
+    execution_time_values(5) = other_seconds
+    execution_time_values(6) = elapsed_seconds
 
     sync all
 
     if (this_image() == 1) then
         timing_image_id = 1
         do image_id = 2, domain_info%n_images
-            if (execution_time_values(7)[image_id] > execution_time_values(7)[timing_image_id]) then
+            if (execution_time_values(6)[image_id] > execution_time_values(6)[timing_image_id]) then
                 timing_image_id = image_id
             end if
         end do
 
-        elapsed_seconds = execution_time_values(7)[timing_image_id]
+        elapsed_seconds = execution_time_values(6)[timing_image_id]
         seconds_per_step = elapsed_seconds / real(N_STEPS, real64)
         mlups = real(N_CELLS, real64) * real(N_STEPS, real64) / elapsed_seconds / 1.0e6_real64
 
@@ -254,7 +250,6 @@ program main
             execution_time_values(1)[timing_image_id], execution_time_values(2)[timing_image_id], &
             execution_time_values(3)[timing_image_id], execution_time_values(4)[timing_image_id], &
             execution_time_values(5)[timing_image_id], execution_time_values(6)[timing_image_id], &
-            execution_time_values(7)[timing_image_id], &
             seconds_per_step, mlups)
     end if
 

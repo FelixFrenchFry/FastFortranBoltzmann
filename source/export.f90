@@ -197,8 +197,7 @@ contains
         write(unit, '(A,A)') '    "total_GB": ', trim(real64_to_json(real(total_buffer_bytes, real64) * gb_per_byte))
         write(unit, '(A)') '  },'
         write(unit, '(A)') ""
-        write(unit, '(A)') '  "output_dir_name": "output",'
-        write(unit, '(A,A,A)') '  "export_num": "', trim(export_num), '",'
+        write(unit, '(A,A,A)') '  "output_dir": "', trim(output_path), '",'
         write(unit, '(A,A,A)') '  "file_dtype": "', FP_DTYPE, '"'
         write(unit, '(A)') "}"
 
