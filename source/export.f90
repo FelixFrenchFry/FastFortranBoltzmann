@@ -46,15 +46,10 @@ contains
 
 
     subroutine export_selected_data_distributed( &
-        domain_info, export_rho, export_u_x, export_u_y, export_u_mag, &
-        export_num, suffix_num, rho, u_x, u_y &
+        domain_info, export_num, suffix_num, rho, u_x, u_y &
         )
         ! read-only inputs
         type(domain_t), intent(in) :: domain_info
-        logical, intent(in) :: export_rho
-        logical, intent(in) :: export_u_x
-        logical, intent(in) :: export_u_y
-        logical, intent(in) :: export_u_mag
         character(len=*), intent(in) :: export_num
         integer(int32), intent(in) :: suffix_num
         real(FP), intent(in) :: rho(:,:)
@@ -64,34 +59,24 @@ contains
         ! temp
         real(FP), allocatable :: velocity_mag(:,:)
 
-        ! export selected scalar fields
-        if (export_rho) then
-            call export_scalar_field_distributed( &
-                domain_info, rho, "density", export_num, suffix_num)
-        end if
+        ! export macro scalar fields
+        call export_scalar_field_distributed( &
+            domain_info, rho, "density", export_num, suffix_num)
+        call export_scalar_field_distributed( &
+            domain_info, u_x, "velocity_x", export_num, suffix_num)
+        call export_scalar_field_distributed( &
+            domain_info, u_y, "velocity_y", export_num, suffix_num)
 
-        if (export_u_x) then
-            call export_scalar_field_distributed( &
-                domain_info, u_x, "velocity_x", export_num, suffix_num)
-        end if
-
-        if (export_u_y) then
-            call export_scalar_field_distributed( &
-                domain_info, u_y, "velocity_y", export_num, suffix_num)
-        end if
-
-        if (export_u_mag) then
-            allocate(velocity_mag(size(u_x, 1), size(u_x, 2)))
-            velocity_mag = sqrt(u_x * u_x + u_y * u_y) ! element-wise sqrt of velocity magnitude
-            call export_scalar_field_distributed( &
-                domain_info, velocity_mag, "velocity_mag", export_num, suffix_num)
-        end if
+        allocate(velocity_mag(size(u_x, 1), size(u_x, 2)))
+        velocity_mag = sqrt(u_x * u_x + u_y * u_y) ! element-wise sqrt of velocity magnitude
+        call export_scalar_field_distributed( &
+            domain_info, velocity_mag, "velocity_mag", export_num, suffix_num)
     end subroutine export_selected_data_distributed
 
 
     subroutine export_metadata( &
         machine_info, domain_info, sim_mode, &
-        export_rho, export_u_x, export_u_y, export_u_mag, export_interval, export_num, &
+        export_macros, export_interval, export_num, &
         export_initial_state, export_final_state, dist_function_buffers_bytes, macro_field_buffers_bytes, &
         total_buffer_bytes, total_bytes_per_cell &
         )
@@ -99,10 +84,7 @@ contains
         type(hardware_info_t), intent(in) :: machine_info
         type(domain_t), intent(in) :: domain_info
         integer(int32), intent(in) :: sim_mode
-        logical, intent(in) :: export_rho
-        logical, intent(in) :: export_u_x
-        logical, intent(in) :: export_u_y
-        logical, intent(in) :: export_u_mag
+        logical, intent(in) :: export_macros
         integer(int32), intent(in) :: export_interval
         character(len=*), intent(in) :: export_num
         logical, intent(in) :: export_initial_state
@@ -180,22 +162,18 @@ contains
         write(unit, '(A)') ""
         write(unit, '(A,A,A)') '  "use_unrolled_kernels": ', trim(logical_to_json(USE_UNROLLED_KERNELS)), ','
         write(unit, '(A)') ""
-#ifdef FFB_FP64
+    #ifdef FFB_FP64
         write(unit, '(A)') '  "FFB_FP64": true,'
-#else
+    #else
         write(unit, '(A)') '  "FFB_FP64": false,'
-#endif
-#ifdef FFB_DENSITY_CHECKS
+    #endif
+    #ifdef FFB_DENSITY_CHECKS
         write(unit, '(A)') '  "FFB_DENSITY_CHECKS": true,'
-#else
+    #else
         write(unit, '(A)') '  "FFB_DENSITY_CHECKS": false,'
-#endif
-        write(unit, '(A)') '  "FFB_DISTRIBUTED_COARRAYS": true,'
+    #endif
         write(unit, '(A)') ""
-        write(unit, '(A,A,A)') '  "export_rho": ', trim(logical_to_json(export_rho)), ','
-        write(unit, '(A,A,A)') '  "export_u_x": ', trim(logical_to_json(export_u_x)), ','
-        write(unit, '(A,A,A)') '  "export_u_y": ', trim(logical_to_json(export_u_y)), ','
-        write(unit, '(A,A,A)') '  "export_u_mag": ', trim(logical_to_json(export_u_mag)), ','
+        write(unit, '(A,A,A)') '  "export_macros": ', trim(logical_to_json(export_macros)), ','
         write(unit, '(A,I0,A)') '  "export_interval": ', export_interval, ','
         write(unit, '(A,A,A)') '  "export_initial_state": ', trim(logical_to_json(export_initial_state)), ','
         write(unit, '(A,A,A)') '  "export_final_state": ', trim(logical_to_json(export_final_state)), ','
@@ -334,11 +312,11 @@ contains
         ! output
         character(len=32) :: text
 
-#ifdef FFB_FP64
+    #ifdef FFB_FP64
         write(text, '(ES24.16)') value
-#else
+    #else
         write(text, '(ES16.8)') value
-#endif
+    #endif
         text = adjustl(text)
     end function real_to_json
 
@@ -407,5 +385,6 @@ contains
 
         close(unit)
     end subroutine write_binary_field
+
 
 end module export
