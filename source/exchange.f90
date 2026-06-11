@@ -301,6 +301,10 @@ contains
             ! locals
             integer(int32) :: i
 
+            if (neighbor_image == int(this_image(), int32)) then
+                return
+            end if
+
             do i = 1, n_neighbor_images
                 if (neighbor_images(i) == neighbor_image) then
                     return
