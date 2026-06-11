@@ -185,12 +185,16 @@ contains
 
 
     subroutine print_execution_summary( &
-        kernel_compute_seconds, halo_exchange_seconds, other_seconds, &
-        elapsed_seconds, seconds_per_step, mlups &
+        kernel_compute_seconds, halo_exchange_seconds, halo_sync_seconds, &
+        halo_transfer_seconds, macro_exchange_seconds, other_seconds, elapsed_seconds, &
+        seconds_per_step, mlups &
         )
         ! inputs
         real(real64), intent(in) :: kernel_compute_seconds
         real(real64), intent(in) :: halo_exchange_seconds
+        real(real64), intent(in) :: halo_sync_seconds
+        real(real64), intent(in) :: halo_transfer_seconds
+        real(real64), intent(in) :: macro_exchange_seconds
         real(real64), intent(in) :: other_seconds
         real(real64), intent(in) :: elapsed_seconds
         real(real64), intent(in) :: seconds_per_step
@@ -202,6 +206,9 @@ contains
 
         call print_execution_time_row("kernel compute", kernel_compute_seconds, elapsed_seconds)
         call print_execution_time_row("halo exchange", halo_exchange_seconds, elapsed_seconds)
+        call print_execution_time_row("halo sync", halo_sync_seconds, elapsed_seconds)
+        call print_execution_time_row("halo transfer", halo_transfer_seconds, elapsed_seconds)
+        call print_execution_time_row("macro exchange", macro_exchange_seconds, elapsed_seconds)
         call print_execution_time_row("other", other_seconds, elapsed_seconds)
         call print_execution_time_row("total", elapsed_seconds, elapsed_seconds)
 

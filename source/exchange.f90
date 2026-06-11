@@ -1,6 +1,6 @@
 module exchange
     ! imports
-    use iso_fortran_env, only: int32
+    use iso_fortran_env, only: int32, int64, real64
     use domain, only: domain_t
     use settings, only: N_DIRS, FP, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID
@@ -9,6 +9,7 @@ module exchange
 
     public :: halo_buffers_t
     public :: exchange_plan_t
+    public :: exchange_timing_t
     public :: allocate_halo_buffers
     public :: BUF_SEND_LEFT
     public :: BUF_SEND_RIGHT
@@ -51,6 +52,14 @@ module exchange
         logical :: macro_right
 
     end type exchange_plan_t
+
+    type :: exchange_timing_t
+
+        real(real64) :: halo_sync_seconds
+        real(real64) :: halo_transfer_seconds
+        real(real64) :: macro_exchange_seconds
+
+    end type exchange_timing_t
 
 contains
 
@@ -126,23 +135,35 @@ contains
 
 
     subroutine exchange_halos( &
-        domain_info, halo_buffers, n_x_local, n_y_local, f, exchange_plan &
+        domain_info, halo_buffers, n_x_local, n_y_local, f, exchange_plan, clock_rate, exchange_timing &
         )
         ! inputs
         type(domain_t), intent(in) :: domain_info
         integer(int32), intent(in) :: n_x_local
         integer(int32), intent(in) :: n_y_local
         type(exchange_plan_t), intent(in) :: exchange_plan
+        integer(int64), intent(in) :: clock_rate
 
         ! read/write inputs
         type(halo_buffers_t), intent(inout) :: halo_buffers
         real(FP), intent(inout) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS)[*]
 
+        ! output
+        type(exchange_timing_t), intent(out) :: exchange_timing
+
         ! locals
+        integer(int64) :: clock_section_start
+        integer(int64) :: clock_section_end
         integer(int32) :: n_x_neighbor_images
         integer(int32) :: n_y_neighbor_images
         integer(int32) :: x_neighbor_images(4)
         integer(int32) :: y_neighbor_images(2)
+
+        exchange_timing%halo_sync_seconds = 0.0_real64
+        exchange_timing%halo_transfer_seconds = 0.0_real64
+        exchange_timing%macro_exchange_seconds = 0.0_real64
+
+        call system_clock(clock_section_start)
 
         n_x_neighbor_images = 0
         n_y_neighbor_images = 0
@@ -184,9 +205,14 @@ contains
             halo_buffers%window(:, 3, BUF_SEND_RIGHT) = f(n_x_local, 1:n_y_local, 9)
         end if
 
-        call sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
+        call system_clock(clock_section_end)
+        call add_elapsed_seconds(exchange_timing%halo_transfer_seconds, clock_section_start, clock_section_end)
+
+        call timed_sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
 
         ! exchange packed left/right halos through staging buffers
+        call system_clock(clock_section_start)
+
         if (exchange_plan%left) then
             halo_buffers%recv_left(:, :) = halo_buffers%window(:, :, BUF_SEND_RIGHT)[domain_info%left_image_id]
             f(0, 1:n_y_local, 2) = halo_buffers%recv_left(:, 1)
@@ -201,17 +227,27 @@ contains
             f(n_x_local+1, 1:n_y_local, 8) = halo_buffers%recv_right(:, 3)
         end if
 
+        call system_clock(clock_section_end)
+        call add_elapsed_seconds(exchange_timing%halo_transfer_seconds, clock_section_start, clock_section_end)
+
         ! pressure-periodic macros for poiseuille flow
-        if (exchange_plan%macro_left) then
-            halo_buffers%recv_macro_left(:, :) = halo_buffers%window(:, :, BUF_MACRO_RIGHT)[domain_info%left_image_id]
+        if (exchange_plan%macro_left .or. exchange_plan%macro_right) then
+            call system_clock(clock_section_start)
+
+            if (exchange_plan%macro_left) then
+                halo_buffers%recv_macro_left(:, :) = halo_buffers%window(:, :, BUF_MACRO_RIGHT)[domain_info%left_image_id]
+            end if
+
+            if (exchange_plan%macro_right) then
+                halo_buffers%recv_macro_right(:, :) = halo_buffers%window(:, :, BUF_MACRO_LEFT)[domain_info%right_image_id]
+            end if
+
+            call system_clock(clock_section_end)
+            call add_elapsed_seconds(exchange_timing%macro_exchange_seconds, clock_section_start, clock_section_end)
         end if
 
-        if (exchange_plan%macro_right) then
-            halo_buffers%recv_macro_right(:, :) = halo_buffers%window(:, :, BUF_MACRO_LEFT)[domain_info%right_image_id]
-        end if
-
-        call sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
-        call sync_neighbor_images(y_neighbor_images, n_y_neighbor_images)
+        call timed_sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
+        call timed_sync_neighbor_images(y_neighbor_images, n_y_neighbor_images)
 
         ! ---------
         ! | 7 3 6 |
@@ -219,6 +255,8 @@ contains
         ! | 8 5 9 |
         ! ---------
         ! exchange contiguous bottom/top halos directly, including corners
+        call system_clock(clock_section_start)
+
         if (exchange_plan%bottom) then
             f(0:n_x_local+1, 0, 3) = f(0:n_x_local+1, n_y_local, 3)[domain_info%bottom_image_id]
             f(0:n_x_local+1, 0, 6) = f(0:n_x_local+1, n_y_local, 6)[domain_info%bottom_image_id]
@@ -231,9 +269,26 @@ contains
             f(0:n_x_local+1, n_y_local+1, 9) = f(0:n_x_local+1, 1, 9)[domain_info%top_image_id]
         end if
 
-        call sync_neighbor_images(y_neighbor_images, n_y_neighbor_images)
+        call system_clock(clock_section_end)
+        call add_elapsed_seconds(exchange_timing%halo_transfer_seconds, clock_section_start, clock_section_end)
+
+        call timed_sync_neighbor_images(y_neighbor_images, n_y_neighbor_images)
 
     contains
+
+        subroutine add_elapsed_seconds( &
+            total_seconds, section_start, section_end &
+            )
+            ! inputs
+            integer(int64), intent(in) :: section_start
+            integer(int64), intent(in) :: section_end
+
+            ! read/write inputs
+            real(real64), intent(inout) :: total_seconds
+
+            total_seconds = total_seconds + real(section_end - section_start, real64) / real(clock_rate, real64)
+        end subroutine add_elapsed_seconds
+
 
         subroutine add_neighbor_image( &
             neighbor_images, n_neighbor_images, neighbor_image &
@@ -277,6 +332,24 @@ contains
                 sync images(neighbor_images(1:n_neighbor_images))
             end if
         end subroutine sync_neighbor_images
+
+
+        subroutine timed_sync_neighbor_images( &
+            neighbor_images, n_neighbor_images &
+            )
+            ! inputs
+            integer(int32), intent(in) :: neighbor_images(:)
+            integer(int32), intent(in) :: n_neighbor_images
+
+            if (n_neighbor_images == 0) then
+                return
+            end if
+
+            call system_clock(clock_section_start)
+            call sync_neighbor_images(neighbor_images, n_neighbor_images)
+            call system_clock(clock_section_end)
+            call add_elapsed_seconds(exchange_timing%halo_sync_seconds, clock_section_start, clock_section_end)
+        end subroutine timed_sync_neighbor_images
     end subroutine exchange_halos
 
 
