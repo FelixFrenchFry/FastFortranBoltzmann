@@ -2,7 +2,8 @@ program main
     ! imports
     use iso_fortran_env, only: int32, int64, real64
     use domain, only: domain_t, initialize_domain
-    use exchange, only: halo_buffers_t, exchange_plan_t, BUF_MACRO_LEFT, BUF_MACRO_RIGHT, allocate_halo_buffers, build_exchange_plan, exchange_halos
+    use exchange, only: halo_buffers_t, exchange_plan_t, exchange_timing_t, &
+        BUF_MACRO_LEFT, BUF_MACRO_RIGHT, allocate_halo_buffers, build_exchange_plan, exchange_halos
     use export, only: should_export_step, export_selected_data_distributed, export_metadata
     use hardware_info, only: hardware_info_t, collect_hardware_info
     use initialization, only: apply_condition_shear_wave_local, &
@@ -23,6 +24,7 @@ program main
     type(domain_t) :: domain_info
     type(halo_buffers_t) :: halo_buffers
     type(exchange_plan_t) :: exchange_plan
+    type(exchange_timing_t) :: exchange_timing
     type(hardware_info_t) :: machine_info
 
     ! metrics
@@ -41,9 +43,12 @@ program main
     real(real64) :: total_bytes_per_cell
     real(real64) :: kernel_compute_seconds
     real(real64) :: halo_exchange_seconds
+    real(real64) :: halo_sync_seconds
+    real(real64) :: halo_transfer_seconds
+    real(real64) :: macro_exchange_seconds
     real(real64) :: measured_seconds
     real(real64) :: other_seconds
-    real(real64) :: execution_time_values(4)[*]
+    real(real64) :: execution_time_values(7)[*]
     integer(int32) :: image_id
     integer(int32) :: timing_image_id
 
@@ -148,6 +153,9 @@ program main
 
     kernel_compute_seconds = 0.0_real64
     halo_exchange_seconds = 0.0_real64
+    halo_sync_seconds = 0.0_real64
+    halo_transfer_seconds = 0.0_real64
+    macro_exchange_seconds = 0.0_real64
 
     call system_clock(clock_start, clock_rate)
 
@@ -161,14 +169,19 @@ program main
         call system_clock(clock_section_start)
         if (read_from_a) then
             call exchange_halos( &
-                domain_info, halo_buffers, domain_info%n_x, domain_info%n_y, f_a, exchange_plan)
+                domain_info, halo_buffers, domain_info%n_x, domain_info%n_y, f_a, &
+                exchange_plan, clock_rate, exchange_timing)
         else
             call exchange_halos( &
-                domain_info, halo_buffers, domain_info%n_x, domain_info%n_y, f_b, exchange_plan)
+                domain_info, halo_buffers, domain_info%n_x, domain_info%n_y, f_b, &
+                exchange_plan, clock_rate, exchange_timing)
         end if
         call system_clock(clock_section_end)
         halo_exchange_seconds = halo_exchange_seconds + &
             real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
+        halo_sync_seconds = halo_sync_seconds + exchange_timing%halo_sync_seconds
+        halo_transfer_seconds = halo_transfer_seconds + exchange_timing%halo_transfer_seconds
+        macro_exchange_seconds = macro_exchange_seconds + exchange_timing%macro_exchange_seconds
 
         call system_clock(clock_section_start)
         if (read_from_a) then
@@ -217,26 +230,31 @@ program main
 
     execution_time_values(1) = kernel_compute_seconds
     execution_time_values(2) = halo_exchange_seconds
-    execution_time_values(3) = other_seconds
-    execution_time_values(4) = elapsed_seconds
+    execution_time_values(3) = halo_sync_seconds
+    execution_time_values(4) = halo_transfer_seconds
+    execution_time_values(5) = macro_exchange_seconds
+    execution_time_values(6) = other_seconds
+    execution_time_values(7) = elapsed_seconds
 
     sync all
 
     if (this_image() == 1) then
         timing_image_id = 1
         do image_id = 2, domain_info%n_images
-            if (execution_time_values(4)[image_id] > execution_time_values(4)[timing_image_id]) then
+            if (execution_time_values(7)[image_id] > execution_time_values(7)[timing_image_id]) then
                 timing_image_id = image_id
             end if
         end do
 
-        elapsed_seconds = execution_time_values(4)[timing_image_id]
+        elapsed_seconds = execution_time_values(7)[timing_image_id]
         seconds_per_step = elapsed_seconds / real(N_STEPS, real64)
         mlups = real(N_CELLS, real64) * real(N_STEPS, real64) / elapsed_seconds / 1.0e6_real64
 
         call print_execution_summary( &
             execution_time_values(1)[timing_image_id], execution_time_values(2)[timing_image_id], &
             execution_time_values(3)[timing_image_id], execution_time_values(4)[timing_image_id], &
+            execution_time_values(5)[timing_image_id], execution_time_values(6)[timing_image_id], &
+            execution_time_values(7)[timing_image_id], &
             seconds_per_step, mlups)
     end if
 

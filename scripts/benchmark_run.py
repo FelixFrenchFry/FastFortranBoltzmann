@@ -25,6 +25,9 @@ MAX_RUNS = 999
 TIMING_CATEGORIES = (
     "kernel compute",
     "halo exchange",
+    "halo sync",
+    "halo transfer",
+    "macro exchange",
     "other",
     "total",
 )
