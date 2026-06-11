@@ -20,7 +20,7 @@ contains
 
     subroutine print_run_summary( &
         machine_info, domain_info, sim_mode, &
-        export_macros, export_interval, export_endpoint_states, &
+        export_macros, export_endpoint_states, export_interval, &
         export_num, dist_function_buffers_bytes, macro_field_buffers_bytes, &
         total_buffer_bytes, total_bytes_per_cell &
         )
@@ -29,8 +29,8 @@ contains
         type(domain_t), intent(in) :: domain_info
         integer(int32), intent(in) :: sim_mode
         logical, intent(in) :: export_macros
-        integer(int32), intent(in) :: export_interval
         logical, intent(in) :: export_endpoint_states
+        integer(int32), intent(in) :: export_interval
         character(len=*), intent(in) :: export_num
         integer(int64), intent(in) :: dist_function_buffers_bytes
         integer(int64), intent(in) :: macro_field_buffers_bytes
@@ -80,8 +80,8 @@ contains
         print '(A,T27,A,I0)',    "N_STEPS", "= ", N_STEPS
         print '(A,T27,A,L1)',    "use_unrolled_kernels", "= ", USE_UNROLLED_KERNELS
         print '(A,T27,A,L1)',    "export_macros", "= ", export_macros
-        print '(A,T27,A,I0)',    "export_interval", "= ", export_interval
         print '(A,T27,A,L1)',    "export_endpoint_states", "= ", export_endpoint_states
+        print '(A,T27,A,I0)',    "export_interval", "= ", export_interval
         print '(A,T27,A,A)',     "output_dir_name", "= ", "output"
         print '(A,T27,A,A)',     "export_num", "= ", export_num
 
