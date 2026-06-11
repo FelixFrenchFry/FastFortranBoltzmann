@@ -18,12 +18,12 @@ module export
 contains
 
     pure function should_export_step( &
-        step, export_interval, export_endpoint_states &
+        step, export_endpoint_states, export_interval &
         ) result(write_step)
         ! read-only inputs
         integer(int32), intent(in) :: step
-        integer(int32), intent(in) :: export_interval
         logical, intent(in) :: export_endpoint_states
+        integer(int32), intent(in) :: export_interval
 
         ! output
         logical :: write_step
@@ -75,8 +75,8 @@ contains
 
     subroutine export_metadata( &
         machine_info, domain_info, sim_mode, &
-        export_macros, export_interval, export_num, &
-        export_endpoint_states, dist_function_buffers_bytes, macro_field_buffers_bytes, &
+        export_macros, export_endpoint_states, export_interval, export_num, &
+        dist_function_buffers_bytes, macro_field_buffers_bytes, &
         total_buffer_bytes, total_bytes_per_cell &
         )
         ! read-only inputs
@@ -84,9 +84,9 @@ contains
         type(domain_t), intent(in) :: domain_info
         integer(int32), intent(in) :: sim_mode
         logical, intent(in) :: export_macros
+        logical, intent(in) :: export_endpoint_states
         integer(int32), intent(in) :: export_interval
         character(len=*), intent(in) :: export_num
-        logical, intent(in) :: export_endpoint_states
         integer(int64), intent(in) :: dist_function_buffers_bytes
         integer(int64), intent(in) :: macro_field_buffers_bytes
         integer(int64), intent(in) :: total_buffer_bytes
@@ -172,8 +172,8 @@ contains
     #endif
         write(unit, '(A)') ""
         write(unit, '(A,A,A)') '  "export_macros": ', trim(logical_to_json(export_macros)), ','
-        write(unit, '(A,I0,A)') '  "export_interval": ', export_interval, ','
         write(unit, '(A,A,A)') '  "export_endpoint_states": ', trim(logical_to_json(export_endpoint_states)), ','
+        write(unit, '(A,I0,A)') '  "export_interval": ', export_interval, ','
         write(unit, '(A)') ""
         write(unit, '(A)') '  "domain_decomposition": {'
         write(unit, '(A,I0,A)') '    "coarray_images": ', domain_info%n_images, ','

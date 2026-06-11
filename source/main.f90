@@ -10,8 +10,8 @@ program main
         apply_condition_couette_flow_local, apply_condition_poiseuille_flow_local, apply_condition_sliding_lid_local
     use settings, only: N_STEPS, N_CELLS, N_DIRS, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
-        EXPORT_MACROS, EXPORT_INTERVAL, &
-        EXPORT_ENDPOINT_STATES, EXPORT_NUM, INTERACTIVE_PROGRESS, &
+        EXPORT_MACROS, EXPORT_ENDPOINT_STATES, EXPORT_INTERVAL, &
+        EXPORT_NUM, INTERACTIVE_PROGRESS, &
         PROGRESS_INTERVAL, RHO_0, U_MAX, N_SIN, RHO_IN, RHO_OUT
     use reporting, only: print_run_summary, print_launch_timestamp, print_progress_status, print_finish_timestamp, &
         print_execution_summary
@@ -125,7 +125,7 @@ program main
     if (this_image() == 1) then
         call print_run_summary( &
             machine_info, domain_info, SIM_MODE, &
-            EXPORT_MACROS, EXPORT_INTERVAL, EXPORT_ENDPOINT_STATES, &
+            EXPORT_MACROS, EXPORT_ENDPOINT_STATES, EXPORT_INTERVAL, &
             EXPORT_NUM, dist_function_buffers_bytes, macro_field_buffers_bytes, &
             total_buffer_bytes, total_bytes_per_cell)
     end if
@@ -133,14 +133,14 @@ program main
     ! export metadata
     if (this_image() == 1) then
         call export_metadata(machine_info, domain_info, SIM_MODE, &
-            EXPORT_MACROS, EXPORT_INTERVAL, &
-            EXPORT_NUM, EXPORT_ENDPOINT_STATES, dist_function_buffers_bytes, &
+            EXPORT_MACROS, EXPORT_ENDPOINT_STATES, EXPORT_INTERVAL, &
+            EXPORT_NUM, dist_function_buffers_bytes, &
             macro_field_buffers_bytes, total_buffer_bytes, total_bytes_per_cell)
     end if
 
     ! export initial condition
-    if (EXPORT_MACROS .and. should_export_step(0_int32, EXPORT_INTERVAL, &
-        EXPORT_ENDPOINT_STATES)) then
+    if (EXPORT_MACROS .and. should_export_step(0_int32, EXPORT_ENDPOINT_STATES, &
+        EXPORT_INTERVAL)) then
         call export_selected_data_distributed(domain_info, EXPORT_NUM, 0_int32, rho, u_x, u_y)
     end if
 
@@ -163,7 +163,7 @@ program main
     do step = 1, N_STEPS
 
         ! only store density and velocity if required in this step
-        write_macro_fields = should_export_step(step, EXPORT_INTERVAL, EXPORT_ENDPOINT_STATES) .and. &
+        write_macro_fields = should_export_step(step, EXPORT_ENDPOINT_STATES, EXPORT_INTERVAL) .and. &
             EXPORT_MACROS
 
         call system_clock(clock_section_start)
@@ -200,8 +200,8 @@ program main
         read_from_a = .not. read_from_a
 
         ! export selected field
-        if (EXPORT_MACROS .and. should_export_step(step, EXPORT_INTERVAL, &
-            EXPORT_ENDPOINT_STATES)) then
+        if (EXPORT_MACROS .and. should_export_step(step, EXPORT_ENDPOINT_STATES, &
+            EXPORT_INTERVAL)) then
             call export_selected_data_distributed(domain_info, EXPORT_NUM, step, rho, u_x, u_y)
         end if
 
