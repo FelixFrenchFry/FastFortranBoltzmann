@@ -66,19 +66,13 @@ module settings
 
     ! export settings
 #ifdef FFB_USE_CMAKE_SETTINGS
-    logical, parameter :: EXPORT_RHO = FFB_EXPORT_RHO
-    logical, parameter :: EXPORT_U_X = FFB_EXPORT_U_X
-    logical, parameter :: EXPORT_U_Y = FFB_EXPORT_U_Y
-    logical, parameter :: EXPORT_U_MAG = FFB_EXPORT_U_MAG
+    logical, parameter :: EXPORT_MACROS = FFB_EXPORT_MACROS
     integer(int32), parameter :: EXPORT_INTERVAL = FFB_EXPORT_INTERVAL
     logical, parameter :: EXPORT_INITIAL_STATE = FFB_EXPORT_INITIAL_STATE
     logical, parameter :: EXPORT_FINAL_STATE = FFB_EXPORT_FINAL_STATE
     character(len=*), parameter :: EXPORT_NUM = FFB_EXPORT_NUM
 #else
-    logical, parameter :: EXPORT_RHO = .false.
-    logical, parameter :: EXPORT_U_X = .false.
-    logical, parameter :: EXPORT_U_Y = .false.
-    logical, parameter :: EXPORT_U_MAG = .false.
+    logical, parameter :: EXPORT_MACROS = .false.
     integer(int32), parameter :: EXPORT_INTERVAL = 10000
     logical, parameter :: EXPORT_INITIAL_STATE = .true.
     logical, parameter :: EXPORT_FINAL_STATE = .true.

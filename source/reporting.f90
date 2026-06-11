@@ -20,7 +20,7 @@ contains
 
     subroutine print_run_summary( &
         machine_info, domain_info, sim_mode, &
-        export_rho, export_u_x, export_u_y, export_u_mag, export_interval, export_initial_state, &
+        export_macros, export_interval, export_initial_state, &
         export_final_state, export_num, dist_function_buffers_bytes, macro_field_buffers_bytes, &
         total_buffer_bytes, total_bytes_per_cell &
         )
@@ -28,10 +28,7 @@ contains
         type(hardware_info_t), intent(in) :: machine_info
         type(domain_t), intent(in) :: domain_info
         integer(int32), intent(in) :: sim_mode
-        logical, intent(in) :: export_rho
-        logical, intent(in) :: export_u_x
-        logical, intent(in) :: export_u_y
-        logical, intent(in) :: export_u_mag
+        logical, intent(in) :: export_macros
         integer(int32), intent(in) :: export_interval
         logical, intent(in) :: export_initial_state
         logical, intent(in) :: export_final_state
@@ -83,11 +80,7 @@ contains
         print '(A,T27,A,I0)',    "N_Y_TOTAL", "= ", N_Y
         print '(A,T27,A,I0)',    "N_STEPS", "= ", N_STEPS
         print '(A,T27,A,L1)',    "use_unrolled_kernels", "= ", USE_UNROLLED_KERNELS
-        print '(A,T27,A,L1)',    "distributed_coarrays", "= ", .true.
-        print '(A,T27,A,L1)',    "export_rho", "= ", export_rho
-        print '(A,T27,A,L1)',    "export_u_x", "= ", export_u_x
-        print '(A,T27,A,L1)',    "export_u_y", "= ", export_u_y
-        print '(A,T27,A,L1)',    "export_u_mag", "= ", export_u_mag
+        print '(A,T27,A,L1)',    "export_macros", "= ", export_macros
         print '(A,T27,A,I0)',    "export_interval", "= ", export_interval
         print '(A,T27,A,L1)',    "export_initial_state", "= ", export_initial_state
         print '(A,T27,A,L1)',    "export_final_state", "= ", export_final_state

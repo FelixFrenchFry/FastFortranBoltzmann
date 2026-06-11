@@ -9,7 +9,7 @@ program main
         apply_condition_couette_flow_local, apply_condition_poiseuille_flow_local, apply_condition_sliding_lid_local
     use settings, only: N_STEPS, N_CELLS, N_DIRS, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
-        EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, EXPORT_INTERVAL, &
+        EXPORT_MACROS, EXPORT_INTERVAL, &
         EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE, EXPORT_NUM, INTERACTIVE_PROGRESS, &
         PROGRESS_INTERVAL, RHO_0, U_MAX, N_SIN, RHO_IN, RHO_OUT
     use reporting, only: print_run_summary, print_launch_timestamp, print_progress_status, print_finish_timestamp, &
@@ -120,7 +120,7 @@ program main
     if (this_image() == 1) then
         call print_run_summary( &
             machine_info, domain_info, SIM_MODE, &
-            EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, EXPORT_INTERVAL, EXPORT_INITIAL_STATE, &
+            EXPORT_MACROS, EXPORT_INTERVAL, EXPORT_INITIAL_STATE, &
             EXPORT_FINAL_STATE, EXPORT_NUM, dist_function_buffers_bytes, macro_field_buffers_bytes, &
             total_buffer_bytes, total_bytes_per_cell)
     end if
@@ -128,16 +128,15 @@ program main
     ! export metadata
     if (this_image() == 1) then
         call export_metadata(machine_info, domain_info, SIM_MODE, &
-            EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, EXPORT_INTERVAL, &
+            EXPORT_MACROS, EXPORT_INTERVAL, &
             EXPORT_NUM, EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE, dist_function_buffers_bytes, &
             macro_field_buffers_bytes, total_buffer_bytes, total_bytes_per_cell)
     end if
 
     ! export initial condition
-    if (should_export_step(0_int32, EXPORT_INTERVAL, &
+    if (EXPORT_MACROS .and. should_export_step(0_int32, EXPORT_INTERVAL, &
         EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE)) then
-        call export_selected_data_distributed(domain_info, EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, &
-            EXPORT_NUM, 0_int32, rho, u_x, u_y)
+        call export_selected_data_distributed(domain_info, EXPORT_NUM, 0_int32, rho, u_x, u_y)
     end if
 
     ! print sim launch timestamp
@@ -157,7 +156,7 @@ program main
 
         ! only store density and velocity if required in this step
         write_macro_fields = should_export_step(step, EXPORT_INTERVAL, EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE) .and. &
-            (EXPORT_RHO .or. EXPORT_U_X .or. EXPORT_U_Y .or. EXPORT_U_MAG)
+            EXPORT_MACROS
 
         call system_clock(clock_section_start)
         if (read_from_a) then
@@ -188,10 +187,9 @@ program main
         read_from_a = .not. read_from_a
 
         ! export selected field
-        if (should_export_step(step, EXPORT_INTERVAL, &
+        if (EXPORT_MACROS .and. should_export_step(step, EXPORT_INTERVAL, &
             EXPORT_INITIAL_STATE, EXPORT_FINAL_STATE)) then
-            call export_selected_data_distributed(domain_info, EXPORT_RHO, EXPORT_U_X, EXPORT_U_Y, EXPORT_U_MAG, &
-                EXPORT_NUM, step, rho, u_x, u_y)
+            call export_selected_data_distributed(domain_info, EXPORT_NUM, step, rho, u_x, u_y)
         end if
 
         ! print sim progress info
