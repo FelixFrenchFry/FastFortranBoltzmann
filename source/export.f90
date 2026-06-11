@@ -18,13 +18,12 @@ module export
 contains
 
     pure function should_export_step( &
-        step, export_interval, export_initial_state, export_final_state &
+        step, export_interval, export_endpoint_states &
         ) result(write_step)
         ! read-only inputs
         integer(int32), intent(in) :: step
         integer(int32), intent(in) :: export_interval
-        logical, intent(in) :: export_initial_state
-        logical, intent(in) :: export_final_state
+        logical, intent(in) :: export_endpoint_states
 
         ! output
         logical :: write_step
@@ -33,14 +32,14 @@ contains
         if (export_interval <= 0) then
             write_step = .false.
 
-        ! optional output at initial state
+        ! optional output at initial endpoint state
         else if (step == 0) then
-            write_step = export_initial_state
+            write_step = export_endpoint_states
 
-        ! regular interval output plus optional output at final state
+        ! regular interval output plus optional output at final endpoint state
         else
             write_step = mod(step, export_interval) == 0 .or. &
-                (export_final_state .and. step == N_STEPS)
+                (export_endpoint_states .and. step == N_STEPS)
         end if
     end function should_export_step
 
@@ -77,7 +76,7 @@ contains
     subroutine export_metadata( &
         machine_info, domain_info, sim_mode, &
         export_macros, export_interval, export_num, &
-        export_initial_state, export_final_state, dist_function_buffers_bytes, macro_field_buffers_bytes, &
+        export_endpoint_states, dist_function_buffers_bytes, macro_field_buffers_bytes, &
         total_buffer_bytes, total_bytes_per_cell &
         )
         ! read-only inputs
@@ -87,8 +86,7 @@ contains
         logical, intent(in) :: export_macros
         integer(int32), intent(in) :: export_interval
         character(len=*), intent(in) :: export_num
-        logical, intent(in) :: export_initial_state
-        logical, intent(in) :: export_final_state
+        logical, intent(in) :: export_endpoint_states
         integer(int64), intent(in) :: dist_function_buffers_bytes
         integer(int64), intent(in) :: macro_field_buffers_bytes
         integer(int64), intent(in) :: total_buffer_bytes
@@ -175,8 +173,7 @@ contains
         write(unit, '(A)') ""
         write(unit, '(A,A,A)') '  "export_macros": ', trim(logical_to_json(export_macros)), ','
         write(unit, '(A,I0,A)') '  "export_interval": ', export_interval, ','
-        write(unit, '(A,A,A)') '  "export_initial_state": ', trim(logical_to_json(export_initial_state)), ','
-        write(unit, '(A,A,A)') '  "export_final_state": ', trim(logical_to_json(export_final_state)), ','
+        write(unit, '(A,A,A)') '  "export_endpoint_states": ', trim(logical_to_json(export_endpoint_states)), ','
         write(unit, '(A)') ""
         write(unit, '(A)') '  "domain_decomposition": {'
         write(unit, '(A,I0,A)') '    "coarray_images": ', domain_info%n_images, ','

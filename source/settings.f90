@@ -68,14 +68,12 @@ module settings
 #ifdef FFB_USE_CMAKE_SETTINGS
     logical, parameter :: EXPORT_MACROS = FFB_EXPORT_MACROS
     integer(int32), parameter :: EXPORT_INTERVAL = FFB_EXPORT_INTERVAL
-    logical, parameter :: EXPORT_INITIAL_STATE = FFB_EXPORT_INITIAL_STATE
-    logical, parameter :: EXPORT_FINAL_STATE = FFB_EXPORT_FINAL_STATE
+    logical, parameter :: EXPORT_ENDPOINT_STATES = FFB_EXPORT_ENDPOINT_STATES
     character(len=*), parameter :: EXPORT_NUM = FFB_EXPORT_NUM
 #else
     logical, parameter :: EXPORT_MACROS = .false.
     integer(int32), parameter :: EXPORT_INTERVAL = 10000
-    logical, parameter :: EXPORT_INITIAL_STATE = .true.
-    logical, parameter :: EXPORT_FINAL_STATE = .true.
+    logical, parameter :: EXPORT_ENDPOINT_STATES = .true.
     character(len=*), parameter :: EXPORT_NUM = "run_000"
 #endif
 
