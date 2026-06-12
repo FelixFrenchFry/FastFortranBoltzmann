@@ -12,8 +12,8 @@ import numpy as np
 
 # run config
 # options "shear_wave" (1), "couette_flow" (2), "poiseuille_flow" (3), "sliding_lid" (4)
-SIM_MODE = 3
-RUN_NAME = "run_001_PF"
+SIM_MODE = 4
+RUN_NAME = "run_002_SL"
 DATA_NAME_X = "velocity_x"
 
 _MODE_MAP = {1: "shear_wave", 2: "couette_flow", 3: "poiseuille_flow", 4: "sliding_lid"}
@@ -54,7 +54,8 @@ def get_steps(config: dict) -> list[int]:
     step_stride = config["export_interval"] if STEP_STRIDE is None else STEP_STRIDE
 
     steps = list(range(step_start, step_end + 1, step_stride))
-    if config["export_final_state"] and step_end not in steps:
+    export_endpoint_states = config.get("export_endpoint_states", config.get("export_final_state", False))
+    if export_endpoint_states and step_end not in steps:
         steps.append(step_end)
 
     return steps
@@ -81,6 +82,9 @@ def load_field(path: Path, config: dict) -> np.ndarray:
 
 
 def is_data_exported(config: dict) -> bool:
+    if "export_macros" in config:
+        return bool(config["export_macros"])
+
     return bool(config.get("export_u_x", False)) and bool(config.get("export_u_y", False))
 
 
