@@ -15,7 +15,7 @@ from pathlib import Path
 
 NUMBER = r"(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)"
 STEP_RE = re.compile(rf"step time\s*[:=]\s*({NUMBER})\s*ms", re.IGNORECASE)
-MLUPS_RE = re.compile(rf"MLUPS\s*[:=]\s*({NUMBER})", re.IGNORECASE)
+BLUPS_RE = re.compile(rf"BLUPS\s*[:=]\s*({NUMBER})", re.IGNORECASE)
 TIMING_SPREAD_RE = re.compile(
     rf"^(kernel compute|halo sync|halo transfer|other|total)\s*"
     rf"\|\s*({NUMBER})\s*"
@@ -210,7 +210,7 @@ def run_once(exe, images, ix, iy, run_num, pin):
 
     return (
         parse_last(STEP_RE, output, "step time"),
-        parse_last(MLUPS_RE, output, "MLUPS"),
+        parse_last(BLUPS_RE, output, "BLUPS"),
         parse_timing_spread(output),
         output,
     )
@@ -288,7 +288,7 @@ def main():
     if n_y % args.iy != 0:
         sys.exit("error: N_Y must be divisible by --iy")
 
-    mlups_values = []
+    blups_values = []
     timing_spreads = []
 
     print()
@@ -307,27 +307,27 @@ def main():
         if run_num > 1:
             time.sleep(3.0) # extra time to clean up resources and cool down
 
-        step_ms, mlups, timing_spread, output = run_once(
+        step_ms, blups, timing_spread, output = run_once(
             args.exe, args.images, args.ix, args.iy, run_num, args.pin)
 
         if run_num == 1:
             print_static_app_output(output)
             print_header(f"benchmark runs started at {runs_started_at}")
 
-        print(f"{run_num:03d} | avg step: {step_ms:.3f} ms | MLUPS: {mlups:.3f}")
+        print(f"{run_num:03d} | avg step: {step_ms:.3f} ms | BLUPS: {blups:.3f}")
 
-        mlups_values.append(mlups)
+        blups_values.append(blups)
         timing_spreads.append(timing_spread)
 
     print()
-    mlups_stats = get_stats(mlups_values, higher_is_better=True)
+    blups_stats = get_stats(blups_values, higher_is_better=True)
 
-    print_header("MLUPS metrics")
-    print_param("median", f"{mlups_stats['median']:.3f}")
-    print_param("best", f"{mlups_stats['best']:.3f}")
-    print_param("worst", f"{mlups_stats['worst']:.3f}")
-    print_param("mean", f"{mlups_stats['mean']:.3f}")
-    print_param("stddev", f"{mlups_stats['stddev_percent']:.3f} %")
+    print_header("BLUPS metrics")
+    print_param("median", f"{blups_stats['median']:.3f}")
+    print_param("best", f"{blups_stats['best']:.3f}")
+    print_param("worst", f"{blups_stats['worst']:.3f}")
+    print_param("mean", f"{blups_stats['mean']:.3f}")
+    print_param("stddev", f"{blups_stats['stddev_percent']:.3f} %")
 
     print_timing_spread_medians(timing_spreads)
 
