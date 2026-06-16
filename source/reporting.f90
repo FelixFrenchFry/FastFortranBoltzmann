@@ -184,16 +184,16 @@ contains
 
 
     subroutine print_execution_summary( &
-        best_seconds, worst_seconds, seconds_per_step, mlups &
+        best_seconds, worst_seconds, seconds_per_step, blups &
         )
         ! inputs
         real(real64), intent(in) :: best_seconds(:)
         real(real64), intent(in) :: worst_seconds(:)
         real(real64), intent(in) :: seconds_per_step
-        real(real64), intent(in) :: mlups
+        real(real64), intent(in) :: blups
         character(len=32) :: total_time_text
         character(len=32) :: step_time_text
-        character(len=32) :: mlups_text
+        character(len=32) :: blups_text
 
         if (size(best_seconds) < 5 .or. size(worst_seconds) < 5) then
             error stop "error: execution timing arrays are too small"
@@ -201,7 +201,7 @@ contains
 
         call format_compact_real(worst_seconds(5), total_time_text)
         call format_compact_real(seconds_per_step * 1000.0_real64, step_time_text)
-        call format_compact_real(mlups, mlups_text)
+        call format_compact_real(blups, blups_text)
 
         print '(A)', ""
         print '(A,T30,A,T33,A,T47,A,T50,A,T64,A,T67,A)', &
@@ -219,7 +219,7 @@ contains
         print '(A,T24,A,I0,A,I0,A,I0,A)', "sim size [X/Y/N]", "= [ ", N_X, " / ", N_Y, " / ", N_STEPS, " ]"
         print '(A,T24,A,A,A)',            "total time", "= ", trim(total_time_text), " sec"
         print '(A,T24,A,A,A)',            "step time", "= ", trim(step_time_text), " ms"
-        print '(A,T24,A,A)',              "MLUPS", "= ", trim(mlups_text)
+        print '(A,T24,A,A)',              "BLUPS", "= ", trim(blups_text)
     end subroutine print_execution_summary
 
 

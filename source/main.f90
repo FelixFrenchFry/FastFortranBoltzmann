@@ -45,7 +45,7 @@ program main
     integer(int64) :: total_buffer_bytes
     real(real64) :: elapsed_seconds
     real(real64) :: seconds_per_step
-    real(real64) :: mlups
+    real(real64) :: blups
     real(real64) :: total_bytes_per_cell
     real(real64) :: kernel_compute_seconds
     real(real64) :: halo_sync_seconds
@@ -250,11 +250,11 @@ program main
 
         elapsed_seconds = max_execution_time_values(TIMING_TOTAL)
         seconds_per_step = elapsed_seconds / real(N_STEPS, real64)
-        mlups = real(N_CELLS, real64) * real(N_STEPS, real64) / elapsed_seconds / 1.0e6_real64
+        blups = real(N_CELLS, real64) * real(N_STEPS, real64) / elapsed_seconds / 1.0e9_real64
 
         call print_execution_summary( &
             min_execution_time_values, max_execution_time_values, &
-            seconds_per_step, mlups)
+            seconds_per_step, blups)
     end if
 
 
