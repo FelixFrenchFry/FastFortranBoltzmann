@@ -14,13 +14,19 @@ from pathlib import Path
 
 
 NUMBER = r"(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)"
-STEP_RE = re.compile(rf"step time:\s*({NUMBER})\s*ms", re.IGNORECASE)
-MLUPS_RE = re.compile(rf"MLUPS:\s*({NUMBER})", re.IGNORECASE)
-EXECUTION_TIME_RE = re.compile(rf"^([a-z ]+?)\s*\|\s*({NUMBER})\s*\|\s*({NUMBER})\s*%", re.IGNORECASE | re.MULTILINE)
+STEP_RE = re.compile(rf"step time\s*[:=]\s*({NUMBER})\s*ms", re.IGNORECASE)
+MLUPS_RE = re.compile(rf"MLUPS\s*[:=]\s*({NUMBER})", re.IGNORECASE)
+TIMING_SPREAD_RE = re.compile(
+    rf"^(kernel compute|halo sync|halo transfer|other|total)\s*"
+    rf"\|\s*({NUMBER})\s*"
+    rf"\|\s*({NUMBER})\s*"
+    rf"\|\s*(?:(n/a)|({NUMBER}))\s*$",
+    re.IGNORECASE | re.MULTILINE,
+)
 LAUNCHED_RE = re.compile(r"^\[[0-9:]+\]\s+launched", re.MULTILINE)
 SIM_SIZE_RE = re.compile(r"^\s*integer\(int32\), parameter :: (N_[XY])\s*=\s*([0-9]+)", re.MULTILINE)
 CMAKE_CACHE_RE = re.compile(r"^([^#/\n][^:=\n]*):[^=\n]*=(.*)$", re.MULTILINE)
-HEADER_WIDTH = 75
+HEADER_WIDTH = 80
 MAX_RUNS = 999
 TIMING_CATEGORIES = (
     "kernel compute",
@@ -151,17 +157,18 @@ def parse_last(pattern, text, name):
     return float(matches[-1])
 
 
-def parse_execution_times(output):
+def parse_timing_spread(output):
     values = {}
-    for name, seconds, share in EXECUTION_TIME_RE.findall(output):
+    for name, best_seconds, worst_seconds, na_marker, worst_best in TIMING_SPREAD_RE.findall(output):
         values[name.strip().lower()] = {
-            "seconds": float(seconds),
-            "share": float(share),
+            "best_seconds": float(best_seconds),
+            "worst_seconds": float(worst_seconds),
+            "worst_best": None if na_marker else float(worst_best),
         }
 
     missing = [name for name in TIMING_CATEGORIES if name not in values]
     if missing:
-        raise RuntimeError("could not parse execution time table")
+        raise RuntimeError("could not parse timing spread table")
 
     return values
 
@@ -204,7 +211,7 @@ def run_once(exe, images, ix, iy, run_num, pin):
     return (
         parse_last(STEP_RE, output, "step time"),
         parse_last(MLUPS_RE, output, "MLUPS"),
-        parse_execution_times(output),
+        parse_timing_spread(output),
         output,
     )
 
@@ -232,16 +239,32 @@ def get_stats(values, higher_is_better):
     }
 
 
-def print_execution_time_stats(execution_times):
+def print_timing_spread_medians(timing_spreads):
     print()
-    print(f"{'execution time median':<40} | {'total [sec]':>14} | {'share [%]':>15}")
+    print(
+        f"{'image execution time spread':<28} |  {'best [sec]':>12}  |  {'worst [sec]':>12}  |"
+        f"{'worst/best':>16}"
+    )
     print("-" * HEADER_WIDTH)
 
     for category in TIMING_CATEGORIES:
-        seconds = [values[category]["seconds"] for values in execution_times]
-        shares = [values[category]["share"] for values in execution_times]
+        best_seconds = [values[category]["best_seconds"] for values in timing_spreads]
+        worst_seconds = [values[category]["worst_seconds"] for values in timing_spreads]
+        ratios = [
+            values[category]["worst_best"]
+            for values in timing_spreads
+            if values[category]["worst_best"] is not None
+        ]
 
-        print(f"{category:<40} | {statistics.median(seconds):14.3f} | {statistics.median(shares):13.3f} %")
+        if ratios:
+            ratio_text = f"{statistics.median(ratios):14.3f}"
+        else:
+            ratio_text = f"{'n/a':>14}"
+
+        print(
+            f"{category:<28} |  {statistics.median(best_seconds):12.3f}  |  "
+            f"{statistics.median(worst_seconds):12.3f}  |  {ratio_text}"
+        )
 
 
 def main():
@@ -266,7 +289,7 @@ def main():
         sys.exit("error: N_Y must be divisible by --iy")
 
     mlups_values = []
-    execution_times = []
+    timing_spreads = []
 
     print()
     print_header("benchmark script settings")
@@ -284,7 +307,7 @@ def main():
         if run_num > 1:
             time.sleep(3.0) # extra time to clean up resources and cool down
 
-        step_ms, mlups, execution_time, output = run_once(
+        step_ms, mlups, timing_spread, output = run_once(
             args.exe, args.images, args.ix, args.iy, run_num, args.pin)
 
         if run_num == 1:
@@ -294,7 +317,7 @@ def main():
         print(f"{run_num:03d} | avg step: {step_ms:.3f} ms | MLUPS: {mlups:.3f}")
 
         mlups_values.append(mlups)
-        execution_times.append(execution_time)
+        timing_spreads.append(timing_spread)
 
     print()
     mlups_stats = get_stats(mlups_values, higher_is_better=True)
@@ -306,7 +329,7 @@ def main():
     print_param("mean", f"{mlups_stats['mean']:.3f}")
     print_param("stddev", f"{mlups_stats['stddev_percent']:.3f} %")
 
-    print_execution_time_stats(execution_times)
+    print_timing_spread_medians(timing_spreads)
 
 
 if __name__ == "__main__":

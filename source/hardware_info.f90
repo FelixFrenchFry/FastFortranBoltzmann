@@ -82,7 +82,7 @@ contains
         ! inputs
         type(hardware_info_t), intent(in) :: info
 
-        print '(A)', "--- [ hardware ] ----------------------------------------------------------"
+        print '(A)', "--- [ hardware ] ---------------------------------------------------------------"
         print '(A,T27,A,A)', "cpu model", "= ", trim(info%cpu_model)
         print '(A,T27,A,A)', "logical threads/node", "= ", trim(info%logical_threads)
         print '(A,T27,A,A)', "compute nodes", "= ", trim(info%slurm_nodes)

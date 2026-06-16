@@ -18,9 +18,9 @@ module settings
     integer(int32), parameter :: N_Y = FFB_N_Y
     integer(int32), parameter :: N_STEPS = FFB_N_STEPS
 #else
-    integer(int32), parameter :: N_X = 14400
-    integer(int32), parameter :: N_Y = 14400
-    integer(int32), parameter :: N_STEPS = 300
+    integer(int32), parameter :: N_X = 2520
+    integer(int32), parameter :: N_Y = 2520
+    integer(int32), parameter :: N_STEPS = 1000
 #endif
     integer(int64), parameter :: N_CELLS = int(N_X, int64) * int(N_Y, int64)
     integer(int32), parameter :: N_DIRS = 9
@@ -37,7 +37,7 @@ module settings
     real(FP), parameter :: RHO_OUT = FFB_RHO_OUT
 #else
     real(FP), parameter :: RHO_0 = 1.0_FP
-    real(FP), parameter :: OMEGA = 1.5_FP
+    real(FP), parameter :: OMEGA = 1.1_FP
     real(FP), parameter :: U_MAX = 0.1_FP
     real(FP), parameter :: N_SIN = 2.0_FP
     real(FP), parameter :: U_WALL = 0.1_FP
