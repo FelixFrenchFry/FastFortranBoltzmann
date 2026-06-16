@@ -46,7 +46,7 @@ contains
         call print_hardware_summary(machine_info)
 
         print '(A)', ""
-        print '(A)', "--- [ simulation parameters ] ---------------------------------------------"
+        print '(A)', "--- [ simulation parameters ] --------------------------------------------------"
         print '(A,T27,A,A)',     "SIM_MODE", "= ", trim(sim_mode_to_string(sim_mode))
 
         select case (sim_mode)
@@ -74,7 +74,7 @@ contains
 
         ! parameter info
         print '(A)', ""
-        print '(A)', "--- [ other parameters ] --------------------------------------------------"
+        print '(A)', "--- [ other parameters ] -------------------------------------------------------"
         print '(A,T27,A,I0)',    "N_X_TOTAL", "= ", N_X
         print '(A,T27,A,I0)',    "N_Y_TOTAL", "= ", N_Y
         print '(A,T27,A,I0)',    "N_STEPS", "= ", N_STEPS
@@ -88,15 +88,15 @@ contains
         print '(A)', ""
 
         ! memory info
-        print '(A,T42,A,T45,A,T59,A,T62,A)', "memory usage", "|", "per cell [B]", "|", "all cells [GB]"
-        print '(A)', "---------------------------------------------------------------------------"
-        print '(A,T42,A,T45,I12,T59,A,T62,F14.3)', "dist function buffers", "|", &
+        print '(A,T47,A,T50,A,T64,A,T67,A)', "memory usage", "|", "per cell [B]", "|", "all cells [GB]"
+        print '(A)', "--------------------------------------------------------------------------------"
+        print '(A,T47,A,T50,I12,T64,A,T67,F14.3)', "dist function buffers", "|", &
             nint(real(dist_function_buffers_bytes, real64) / real(N_CELLS, real64), int64), "|", &
             real(dist_function_buffers_bytes, real64) * gb_per_byte
-        print '(A,T42,A,T45,I12,T59,A,T62,F14.3)', "macro field buffers", "|", &
+        print '(A,T47,A,T50,I12,T64,A,T67,F14.3)', "macro field buffers", "|", &
             nint(real(macro_field_buffers_bytes, real64) / real(N_CELLS, real64), int64), "|", &
             real(macro_field_buffers_bytes, real64) * gb_per_byte
-        print '(A,T42,A,T45,I12,T59,A,T62,F14.3)', "total", "|", &
+        print '(A,T47,A,T50,I12,T64,A,T67,F14.3)', "total", "|", &
             nint(total_bytes_per_cell, int64), "|", real(total_buffer_bytes, real64) * gb_per_byte
         print *
     end subroutine print_run_summary
@@ -108,7 +108,7 @@ contains
 
         call date_and_time(time=current_time)
         print '(A)', "[" // current_time(1:2) // ":" // current_time(3:4) // ":" // current_time(5:6) // "] &
-            launched -------------------------------------------------------"
+            launched ------------------------------------------------------------"
     end subroutine print_launch_timestamp
 
 
@@ -179,62 +179,98 @@ contains
 
         call date_and_time(time=current_time)
         print '(A)', "[" // current_time(1:2) // ":" // current_time(3:4) // ":" // current_time(5:6) // "] &
-            finished -------------------------------------------------------"
+            finished ------------------------------------------------------------"
     end subroutine print_finish_timestamp
 
 
     subroutine print_execution_summary( &
-        kernel_compute_seconds, halo_sync_seconds, halo_transfer_seconds, &
-        other_seconds, elapsed_seconds, seconds_per_step, mlups &
+        best_seconds, worst_seconds, seconds_per_step, mlups &
         )
         ! inputs
-        real(real64), intent(in) :: kernel_compute_seconds
-        real(real64), intent(in) :: halo_sync_seconds
-        real(real64), intent(in) :: halo_transfer_seconds
-        real(real64), intent(in) :: other_seconds
-        real(real64), intent(in) :: elapsed_seconds
+        real(real64), intent(in) :: best_seconds(:)
+        real(real64), intent(in) :: worst_seconds(:)
         real(real64), intent(in) :: seconds_per_step
         real(real64), intent(in) :: mlups
+        character(len=32) :: total_time_text
+        character(len=32) :: step_time_text
+        character(len=32) :: mlups_text
+
+        if (size(best_seconds) < 5 .or. size(worst_seconds) < 5) then
+            error stop "error: execution timing arrays are too small"
+        end if
+
+        call format_compact_real(worst_seconds(5), total_time_text)
+        call format_compact_real(seconds_per_step * 1000.0_real64, step_time_text)
+        call format_compact_real(mlups, mlups_text)
 
         print '(A)', ""
-        print '(A,T42,A,T46,A,T59,A,T67,A)', "execution time", "|", "total [sec]", "|", "share [%]"
-        print '(A)', "---------------------------------------------------------------------------"
+        print '(A,T30,A,T33,A,T47,A,T50,A,T64,A,T67,A)', &
+            "image execution time spread", "|", "  best [sec]", "|", " worst [sec]", "|", "    worst/best"
+        print '(A)', "--------------------------------------------------------------------------------"
 
-        call print_execution_time_row("kernel compute", kernel_compute_seconds, elapsed_seconds)
-        call print_execution_time_row("halo sync", halo_sync_seconds, elapsed_seconds)
-        call print_execution_time_row("halo transfer", halo_transfer_seconds, elapsed_seconds)
-        call print_execution_time_row("other", other_seconds, elapsed_seconds)
-        call print_execution_time_row("total", elapsed_seconds, elapsed_seconds)
+        call print_timing_spread_row("kernel compute", best_seconds(1), worst_seconds(1))
+        call print_timing_spread_row("halo sync", best_seconds(2), worst_seconds(2))
+        call print_timing_spread_row("halo transfer", best_seconds(3), worst_seconds(3))
+        call print_timing_spread_row("other", best_seconds(4), worst_seconds(4))
+        call print_timing_spread_row("total", best_seconds(5), worst_seconds(5))
 
         print '(A)', ""
-        print '(A)', "--- [ perf metrics ] ------------------------------------------------------"
-        print '(A,I0,A,I0,A,I0,A)', "sim size [X/Y/N]:      [ ", N_X, " / ", N_Y, " / ", N_STEPS, " ]"
-        print '(A,F12.3,A)',        "total time:     ", elapsed_seconds, " sec"
-        print '(A,F12.3,A)',        "step time:      ", seconds_per_step * 1000.0_real64, " ms"
-        print '(A,F12.3)',          "MLUPS:          ", mlups
+        print '(A)', "--- [ perf metrics ] -----------------------------------------------------------"
+        print '(A,T24,A,I0,A,I0,A,I0,A)', "sim size [X/Y/N]", "= [ ", N_X, " / ", N_Y, " / ", N_STEPS, " ]"
+        print '(A,T24,A,A,A)',            "total time", "= ", trim(total_time_text), " sec"
+        print '(A,T24,A,A,A)',            "step time", "= ", trim(step_time_text), " ms"
+        print '(A,T24,A,A)',              "MLUPS", "= ", trim(mlups_text)
     end subroutine print_execution_summary
 
 
-    subroutine print_execution_time_row( &
-        row_name, total_seconds, total_loop_seconds &
+    subroutine format_compact_real(value, value_text)
+        ! inputs
+        real(real64), intent(in) :: value
+
+        ! outputs
+        character(len=*), intent(out) :: value_text
+
+        ! temp
+        character(len=32) :: raw_text
+
+        write(raw_text, '(F0.3)') value
+        raw_text = adjustl(raw_text)
+
+        if (raw_text(1:1) == ".") then
+            value_text = "0" // trim(raw_text)
+        else if (len_trim(raw_text) >= 2 .and. raw_text(1:2) == "-.") then
+            value_text = "-0" // trim(raw_text(2:))
+        else
+            value_text = trim(raw_text)
+        end if
+    end subroutine format_compact_real
+
+
+    subroutine print_timing_spread_row( &
+        row_name, best_seconds, worst_seconds &
         )
         ! inputs
         character(len=*), intent(in) :: row_name
-        real(real64), intent(in) :: total_seconds
-        real(real64), intent(in) :: total_loop_seconds
+        real(real64), intent(in) :: best_seconds
+        real(real64), intent(in) :: worst_seconds
 
         ! temp
-        real(real64) :: time_share
+        real(real64) :: ratio
+        character(len=14) :: ratio_text
 
-        if (total_loop_seconds > 0.0_real64) then
-            time_share = 100.0_real64 * total_seconds / total_loop_seconds
+        if (best_seconds > 0.0_real64) then
+            ratio = worst_seconds / best_seconds
+            write(ratio_text, '(F14.3)') ratio
+        else if (worst_seconds <= best_seconds) then
+            ratio = 1.0_real64
+            write(ratio_text, '(F14.3)') ratio
         else
-            time_share = 0.0_real64
+            ratio_text = "           n/a"
         end if
 
-        print '(A,T42,A,T45,F12.3,T59,A,T64,F10.3,A)', &
-            row_name, "|", total_seconds, "|", time_share, " %"
-    end subroutine print_execution_time_row
+        print '(A,T30,A,T33,F12.3,T47,A,T50,F12.3,T64,A,T67,A14)', &
+            row_name, "|", best_seconds, "|", worst_seconds, "|", ratio_text
+    end subroutine print_timing_spread_row
 
 
 end module reporting

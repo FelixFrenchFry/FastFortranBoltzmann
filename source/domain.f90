@@ -125,6 +125,7 @@ contains
 
         ! locals
         real(real64) :: halo_cell_percent
+        character(len=32) :: halo_cell_percent_text
 
         if (this_image() /= 1) then
             return
@@ -134,15 +135,22 @@ contains
             real((domain_info%n_x + 2) * (domain_info%n_y + 2) - &
             domain_info%n_x * domain_info%n_y, real64) / &
             real(domain_info%n_x * domain_info%n_y, real64)
+        write(halo_cell_percent_text, '(F0.3)') halo_cell_percent
+        halo_cell_percent_text = adjustl(halo_cell_percent_text)
+        if (halo_cell_percent_text(1:1) == ".") then
+            halo_cell_percent_text = "0" // trim(halo_cell_percent_text)
+        else if (halo_cell_percent_text(1:2) == "-.") then
+            halo_cell_percent_text = "-0" // trim(halo_cell_percent_text(2:))
+        end if
 
         print '(A)', ""
-        print '(A)', "--- [ domain decomposition ] ----------------------------------------------"
-        print '(A,T27,I0)',       "coarray images:", domain_info%n_images
-        print '(A,T27,A,I0,A,I0,A)', "image grid [X/Y]:", "[ ", &
+        print '(A)', "--- [ domain decomposition ] ---------------------------------------------------"
+        print '(A,T27,A,I0)',       "coarray images", "= ", domain_info%n_images
+        print '(A,T27,A,A,I0,A,I0,A)', "image grid [X/Y]", "= ", "[ ", &
             domain_info%n_images_x, " / ", domain_info%n_images_y, " ]"
-        print '(A,T27,A,I0,A,I0,A)', "local domain [X/Y]:", "[ ", &
+        print '(A,T27,A,A,I0,A,I0,A)', "local domain [X/Y]", "= ", "[ ", &
             domain_info%n_x, " / ", domain_info%n_y, " ]"
-        print '(A,T24,F8.3,A)',   "halo cells:", halo_cell_percent, " %"
+        print '(A,T27,A,A,A)',   "halo cells", "= ", trim(halo_cell_percent_text), " %"
     end subroutine print_domain_summary
 
 

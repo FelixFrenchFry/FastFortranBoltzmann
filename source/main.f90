@@ -28,6 +28,12 @@ program main
     type(hardware_info_t) :: machine_info
 
     ! metrics
+    integer(int32), parameter :: TIMING_KERNEL_COMPUTE = 1
+    integer(int32), parameter :: TIMING_HALO_SYNC = 2
+    integer(int32), parameter :: TIMING_HALO_TRANSFER = 3
+    integer(int32), parameter :: TIMING_OTHER = 4
+    integer(int32), parameter :: TIMING_TOTAL = 5
+    integer(int32), parameter :: N_TIMING_VALUES = 5
     integer(int64) :: clock_start
     integer(int64) :: clock_end
     integer(int64) :: clock_rate
@@ -46,9 +52,11 @@ program main
     real(real64) :: halo_transfer_seconds
     real(real64) :: measured_seconds
     real(real64) :: other_seconds
-    real(real64) :: execution_time_values(5)[*]
+    real(real64) :: execution_time_values(N_TIMING_VALUES)[*]
+    real(real64) :: current_execution_time_values(N_TIMING_VALUES)
+    real(real64) :: min_execution_time_values(N_TIMING_VALUES)
+    real(real64) :: max_execution_time_values(N_TIMING_VALUES)
     integer(int32) :: image_id
-    integer(int32) :: timing_image_id
 
     ! allocate sim data structures
     real(FP), allocatable :: f_a(:, :, :)[:] ! distribution function buffer A
@@ -219,30 +227,33 @@ program main
     measured_seconds = kernel_compute_seconds + halo_sync_seconds + halo_transfer_seconds
     other_seconds = max(0.0_real64, elapsed_seconds - measured_seconds)
 
-    execution_time_values(1) = kernel_compute_seconds
-    execution_time_values(2) = halo_sync_seconds
-    execution_time_values(3) = halo_transfer_seconds
-    execution_time_values(4) = other_seconds
-    execution_time_values(5) = elapsed_seconds
+    execution_time_values(TIMING_KERNEL_COMPUTE) = kernel_compute_seconds
+    execution_time_values(TIMING_HALO_SYNC) = halo_sync_seconds
+    execution_time_values(TIMING_HALO_TRANSFER) = halo_transfer_seconds
+    execution_time_values(TIMING_OTHER) = other_seconds
+    execution_time_values(TIMING_TOTAL) = elapsed_seconds
 
     sync all
 
     if (this_image() == 1) then
-        timing_image_id = 1
-        do image_id = 2, domain_info%n_images
-            if (execution_time_values(5)[image_id] > execution_time_values(5)[timing_image_id]) then
-                timing_image_id = image_id
+        do image_id = 1, domain_info%n_images
+            current_execution_time_values = execution_time_values(:)[image_id]
+
+            if (image_id == 1) then
+                min_execution_time_values = current_execution_time_values
+                max_execution_time_values = current_execution_time_values
+            else
+                min_execution_time_values = min(min_execution_time_values, current_execution_time_values)
+                max_execution_time_values = max(max_execution_time_values, current_execution_time_values)
             end if
         end do
 
-        elapsed_seconds = execution_time_values(5)[timing_image_id]
+        elapsed_seconds = max_execution_time_values(TIMING_TOTAL)
         seconds_per_step = elapsed_seconds / real(N_STEPS, real64)
         mlups = real(N_CELLS, real64) * real(N_STEPS, real64) / elapsed_seconds / 1.0e6_real64
 
         call print_execution_summary( &
-            execution_time_values(1)[timing_image_id], execution_time_values(2)[timing_image_id], &
-            execution_time_values(3)[timing_image_id], execution_time_values(4)[timing_image_id], &
-            execution_time_values(5)[timing_image_id], &
+            min_execution_time_values, max_execution_time_values, &
             seconds_per_step, mlups)
     end if
 
