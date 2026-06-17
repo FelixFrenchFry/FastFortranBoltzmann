@@ -70,7 +70,7 @@ PINNING_PRESETS = {
 # settings
 DEFAULT_EXE = "build/release-fp32/bin/FFB"
 DEFAULT_RUNS = 5
-DEFAULT_PIN = "numa_spread"
+DEFAULT_PIN = "core_spread"
 SKIP = 0
 
 # domain decompositions (images, ix, iy)
