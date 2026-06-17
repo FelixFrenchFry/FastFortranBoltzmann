@@ -305,7 +305,7 @@ def main():
 
     for run_num in range(1, args.runs + 1):
         if run_num > 1:
-            time.sleep(3.0) # extra time to clean up resources and cool down
+            time.sleep(1.0) # extra time to clean up resources and cool down
 
         step_ms, blups, timing_spread, output = run_once(
             args.exe, args.images, args.ix, args.iy, run_num, args.pin)
