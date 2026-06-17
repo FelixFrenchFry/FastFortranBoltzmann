@@ -153,11 +153,37 @@ contains
         ! locals
         integer(int64) :: clock_section_start
         integer(int64) :: clock_section_end
+        integer(int32) :: n_x_neighbor_images
+        integer(int32) :: n_y_neighbor_images
+        integer(int32) :: x_neighbor_images(4)
+        integer(int32) :: y_neighbor_images(2)
 
         exchange_timing%halo_sync_seconds = 0.0_real64
         exchange_timing%halo_transfer_seconds = 0.0_real64
 
         call system_clock(clock_section_start)
+
+        n_x_neighbor_images = 0
+        n_y_neighbor_images = 0
+
+        if (exchange_plan%left) then
+            call add_neighbor_image(x_neighbor_images, n_x_neighbor_images, domain_info%left_image_id)
+        end if
+        if (exchange_plan%right) then
+            call add_neighbor_image(x_neighbor_images, n_x_neighbor_images, domain_info%right_image_id)
+        end if
+        if (exchange_plan%macro_left) then
+            call add_neighbor_image(x_neighbor_images, n_x_neighbor_images, domain_info%left_image_id)
+        end if
+        if (exchange_plan%macro_right) then
+            call add_neighbor_image(x_neighbor_images, n_x_neighbor_images, domain_info%right_image_id)
+        end if
+        if (exchange_plan%bottom) then
+            call add_neighbor_image(y_neighbor_images, n_y_neighbor_images, domain_info%bottom_image_id)
+        end if
+        if (exchange_plan%top) then
+            call add_neighbor_image(y_neighbor_images, n_y_neighbor_images, domain_info%top_image_id)
+        end if
 
         ! ---------
         ! | 7 3 6 |
@@ -180,7 +206,7 @@ contains
         call system_clock(clock_section_end)
         call add_elapsed_seconds(exchange_timing%halo_transfer_seconds, clock_section_start, clock_section_end)
 
-        if (domain_info%n_images_x > 1) call timed_sync_all()
+        call timed_sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
 
         ! exchange packed left/right halos through staging buffers
         call system_clock(clock_section_start)
@@ -218,7 +244,8 @@ contains
             call add_elapsed_seconds(exchange_timing%halo_transfer_seconds, clock_section_start, clock_section_end)
         end if
 
-        if (domain_info%n_images_x > 1 .or. domain_info%n_images_y > 1) call timed_sync_all()
+        call timed_sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
+        call timed_sync_neighbor_images(y_neighbor_images, n_y_neighbor_images)
 
         ! ---------
         ! | 7 3 6 |
@@ -243,7 +270,7 @@ contains
         call system_clock(clock_section_end)
         call add_elapsed_seconds(exchange_timing%halo_transfer_seconds, clock_section_start, clock_section_end)
 
-        if (domain_info%n_images_y > 1) call timed_sync_all()
+        call timed_sync_neighbor_images(y_neighbor_images, n_y_neighbor_images)
 
     contains
 
@@ -261,12 +288,70 @@ contains
         end subroutine add_elapsed_seconds
 
 
-        subroutine timed_sync_all()
+        subroutine add_neighbor_image( &
+            neighbor_images, n_neighbor_images, neighbor_image &
+            )
+            ! inputs
+            integer(int32), intent(in) :: neighbor_image
+
+            ! read/write inputs
+            integer(int32), intent(inout) :: neighbor_images(:)
+            integer(int32), intent(inout) :: n_neighbor_images
+
+            ! locals
+            integer(int32) :: i
+
+            if (neighbor_image == int(this_image(), int32)) then
+                return
+            end if
+
+            do i = 1, n_neighbor_images
+                if (neighbor_images(i) == neighbor_image) then
+                    return
+                end if
+            end do
+
+            n_neighbor_images = n_neighbor_images + 1
+            if (n_neighbor_images > size(neighbor_images)) then
+                error stop "error: exchange neighbor list is too small"
+            end if
+            neighbor_images(n_neighbor_images) = neighbor_image
+        end subroutine add_neighbor_image
+
+
+        subroutine sync_neighbor_images( &
+            neighbor_images, n_neighbor_images &
+            )
+            ! inputs
+            integer(int32), intent(in) :: neighbor_images(:)
+            integer(int32), intent(in) :: n_neighbor_images
+
+            if (n_neighbor_images == 0) then
+                return
+            else if (n_neighbor_images == 1) then
+                sync images(neighbor_images(1))
+            else
+                sync images(neighbor_images(1:n_neighbor_images))
+            end if
+        end subroutine sync_neighbor_images
+
+
+        subroutine timed_sync_neighbor_images( &
+            neighbor_images, n_neighbor_images &
+            )
+            ! inputs
+            integer(int32), intent(in) :: neighbor_images(:)
+            integer(int32), intent(in) :: n_neighbor_images
+
+            if (n_neighbor_images == 0) then
+                return
+            end if
+
             call system_clock(clock_section_start)
-            sync all
+            call sync_neighbor_images(neighbor_images, n_neighbor_images)
             call system_clock(clock_section_end)
             call add_elapsed_seconds(exchange_timing%halo_sync_seconds, clock_section_start, clock_section_end)
-        end subroutine timed_sync_all
+        end subroutine timed_sync_neighbor_images
     end subroutine exchange_halos
 
 
