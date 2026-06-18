@@ -1,0 +1,1596 @@
+NOTE: all benchmarks recorded at commit 0a50d22, simulating the sliding lid scenario
+with numa_spread MPI pinning on 4 nodes / 8 sockets of the Intel Xeon Platinum 8358
+
+--- [ benchmark summary ] ------------------------------------------------------
+--- [ 8 x Intel Xeon Platinum 8358, 4 nodes, numa_spread, fp64 ] ---------------
+--------------------------------------------------------------------------------
+images   decomp    subdomains     halo      BLUPS median   scaling    efficiency
+4        1 x 4     14400 x 3600   0.07 %    0.340           1.00      100.00 %
+6        1 x 6     14400 x 2400   0.10 %    0.484           1.42       94.90 %
+9        1 x 9     14400 x 1600   0.14 %    0.663           1.95       86.67 %
+12       1 x 12    14400 x 1200   0.18 %    0.889           2.61       87.16 %
+16       1 x 16    14400 x 900    0.24 %    1.126           3.31       82.79 %
+20       1 x 20    14400 x 720    0.29 %    1.202           3.54       70.71 %
+25       1 x 25    14400 x 576    0.36 %    1.189           3.50       55.95 %
+30       1 x 30    14400 x 480    0.43 %    1.251           3.68       49.06 %
+36       1 x 36    14400 x 400    0.51 %    1.321           3.89       43.17 %
+40       1 x 40    14400 x 360    0.57 %    1.285           3.78       37.79 %
+48       1 x 48    14400 x 300    0.68 %    1.315           3.87       32.23 %
+64       1 x 64    14400 x 225    0.90 %    1.338           3.94       24.60 %
+72       1 x 72    14400 x 200    1.01 %    1.500           4.41       24.51 %
+80       1 x 80    14400 x 180    1.12 %    1.641           4.83       24.13 %
+96       1 x 96    14400 x 150    1.35 %    1.957           5.76       23.98 %
+120      1 x 120   14400 x 120    1.68 %    2.414           7.10       23.67 %
+144      1 x 144   14400 x 100    2.01 %    2.807           8.26       22.93 %
+160      1 x 160   14400 x 90     2.24 %    3.013           8.86       22.15 %
+192      1 x 192   14400 x 75     2.68 %    3.533          10.39       21.65 %
+225      1 x 225   14400 x 64     3.14 %    3.924          11.54       20.52 %
+288      1 x 288   14400 x 50     4.01 %    3.692          10.86       15.08 %
+360      1 x 360   14400 x 40     5.01 %    3.491          10.27       11.41 %
+400      1 x 400   14400 x 36     5.57 %    3.746          11.02       11.02 %
+480      1 x 480   14400 x 30     6.68 %    4.257          12.52       10.43 %
+
+
+
+--- [ benchmark run measurements ] ---------------------------------------------
+--- [ 8 x Intel Xeon Platinum 8358, 4 nodes, numa_spread, fp64 ] ---------------
+--------------------------------------------------------------------------------
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 1 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 4
+image grid                = 1 x 4
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 4
+image grid [X/Y]          = [ 1 / 4 ]
+local domain [X/Y]        = [ 14400 / 3600 ]
+halo cells                = 0.069 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.881
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.857
+
+--- [ benchmark runs started at 2026-06-17 21:17:59 ] --------------------------
+001 | avg step: 596.983 ms | BLUPS: 0.347
+002 | avg step: 610.038 ms | BLUPS: 0.340
+003 | avg step: 610.979 ms | BLUPS: 0.339
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 0.340
+best                      = 0.347
+worst                     = 0.339
+mean                      = 0.342
+stddev                    = 1.275 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |       176.369  |       181.123  |           1.024
+halo sync                    |         0.875  |         4.985  |           5.736
+halo transfer                |         0.698  |         1.718  |           2.459
+other                        |         0.003  |         0.015  |           2.954
+total                        |       183.011  |       183.011  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 2 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 6
+image grid                = 1 x 6
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 6
+image grid [X/Y]          = [ 1 / 6 ]
+local domain [X/Y]        = [ 14400 / 2400 ]
+halo cells                = 0.097 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.889
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.866
+
+--- [ benchmark runs started at 2026-06-17 21:27:25 ] --------------------------
+001 | avg step: 428.039 ms | BLUPS: 0.484
+002 | avg step: 443.789 ms | BLUPS: 0.467
+003 | avg step: 419.830 ms | BLUPS: 0.494
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 0.484
+best                      = 0.494
+worst                     = 0.467
+mean                      = 0.482
+stddev                    = 2.834 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |       120.853  |       126.113  |           1.039
+halo sync                    |         0.711  |         5.222  |           7.015
+halo transfer                |         0.888  |         1.852  |           2.091
+other                        |         0.012  |         0.046  |           1.929
+total                        |       128.412  |       128.412  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 3 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 9
+image grid                = 1 x 9
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 9
+image grid [X/Y]          = [ 1 / 9 ]
+local domain [X/Y]        = [ 14400 / 1600 ]
+halo cells                = 0.139 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.901
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.878
+
+--- [ benchmark runs started at 2026-06-17 21:34:04 ] --------------------------
+001 | avg step: 312.840 ms | BLUPS: 0.663
+002 | avg step: 318.134 ms | BLUPS: 0.652
+003 | avg step: 312.837 ms | BLUPS: 0.663
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 0.663
+best                      = 0.663
+worst                     = 0.652
+mean                      = 0.659
+stddev                    = 0.963 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |        87.607  |        91.934  |           1.049
+halo sync                    |         1.066  |         4.818  |           4.359
+halo transfer                |         0.856  |         1.890  |           2.156
+other                        |         0.004  |         0.037  |           8.254
+total                        |        93.852  |        93.852  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 4 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 12
+image grid                = 1 x 12
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 12
+image grid [X/Y]          = [ 1 / 12 ]
+local domain [X/Y]        = [ 14400 / 1200 ]
+halo cells                = 0.181 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.914
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.890
+
+--- [ benchmark runs started at 2026-06-17 21:38:58 ] --------------------------
+001 | avg step: 233.290 ms | BLUPS: 0.889
+002 | avg step: 235.821 ms | BLUPS: 0.879
+003 | avg step: 233.204 ms | BLUPS: 0.889
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 0.889
+best                      = 0.889
+worst                     = 0.879
+mean                      = 0.886
+stddev                    = 0.652 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |        65.799  |        67.555  |           1.027
+halo sync                    |         0.755  |         2.690  |           3.562
+halo transfer                |         0.583  |         2.012  |           3.348
+other                        |         0.004  |         0.034  |           6.637
+total                        |        69.986  |        69.987  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 5 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 16
+image grid                = 1 x 16
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 16
+image grid [X/Y]          = [ 1 / 16 ]
+local domain [X/Y]        = [ 14400 / 900 ]
+halo cells                = 0.236 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.930
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.907
+
+--- [ benchmark runs started at 2026-06-17 21:42:41 ] --------------------------
+001 | avg step: 184.030 ms | BLUPS: 1.127
+002 | avg step: 196.968 ms | BLUPS: 1.053
+003 | avg step: 184.136 ms | BLUPS: 1.126
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 1.126
+best                      = 1.127
+worst                     = 1.053
+mean                      = 1.102
+stddev                    = 3.851 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |        50.039  |        52.662  |           1.052
+halo sync                    |         0.609  |         4.050  |           7.388
+halo transfer                |         0.825  |         2.129  |           2.579
+other                        |         0.006  |         0.035  |           5.482
+total                        |        55.240  |        55.241  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 6 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 20
+image grid                = 1 x 20
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 20
+image grid [X/Y]          = [ 1 / 20 ]
+local domain [X/Y]        = [ 14400 / 720 ]
+halo cells                = 0.292 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.947
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.924
+
+--- [ benchmark runs started at 2026-06-17 21:48:23 ] --------------------------
+001 | avg step: 171.065 ms | BLUPS: 1.212
+002 | avg step: 172.444 ms | BLUPS: 1.202
+003 | avg step: 173.265 ms | BLUPS: 1.197
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 1.202
+best                      = 1.212
+worst                     = 1.197
+mean                      = 1.204
+stddev                    = 0.635 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |        46.325  |        49.141  |           1.054
+halo sync                    |         0.605  |         3.854  |           5.819
+halo transfer                |         0.986  |         2.312  |           2.346
+other                        |         0.007  |         0.061  |           8.145
+total                        |        51.733  |        51.733  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 7 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 25
+image grid                = 1 x 25
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 25
+image grid [X/Y]          = [ 1 / 25 ]
+local domain [X/Y]        = [ 14400 / 576 ]
+halo cells                = 0.361 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           145  |          29.968
+macro field buffers                           |            24  |           4.977
+total                                         |           169  |          34.944
+
+--- [ benchmark runs started at 2026-06-17 21:51:13 ] --------------------------
+001 | avg step: 174.956 ms | BLUPS: 1.185
+002 | avg step: 173.981 ms | BLUPS: 1.192
+003 | avg step: 174.453 ms | BLUPS: 1.189
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 1.189
+best                      = 1.192
+worst                     = 1.185
+mean                      = 1.189
+stddev                    = 0.295 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |        37.415  |        49.541  |           1.320
+halo sync                    |         0.668  |        12.528  |          18.659
+halo transfer                |         1.064  |         2.347  |           2.258
+other                        |         0.010  |         0.169  |          14.248
+total                        |        52.335  |        52.336  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 8 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 30
+image grid                = 1 x 30
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 30
+image grid [X/Y]          = [ 1 / 30 ]
+local domain [X/Y]        = [ 14400 / 480 ]
+halo cells                = 0.431 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           145  |          29.988
+macro field buffers                           |            24  |           4.977
+total                                         |           169  |          34.965
+
+--- [ benchmark runs started at 2026-06-17 21:54:07 ] --------------------------
+001 | avg step: 165.798 ms | BLUPS: 1.251
+002 | avg step: 165.785 ms | BLUPS: 1.251
+003 | avg step: 167.328 ms | BLUPS: 1.239
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 1.251
+best                      = 1.251
+worst                     = 1.239
+mean                      = 1.247
+stddev                    = 0.556 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |        26.650  |        46.425  |           1.736
+halo sync                    |         0.729  |        21.312  |          29.252
+halo transfer                |         1.490  |         2.732  |           1.871
+other                        |         0.013  |         0.170  |          12.956
+total                        |        49.739  |        49.739  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 9 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 36
+image grid                = 1 x 36
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 36
+image grid [X/Y]          = [ 1 / 36 ]
+local domain [X/Y]        = [ 14400 / 400 ]
+halo cells                = 0.514 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           145  |          30.013
+macro field buffers                           |            24  |           4.977
+total                                         |           169  |          34.990
+
+--- [ benchmark runs started at 2026-06-17 21:56:55 ] --------------------------
+001 | avg step: 164.283 ms | BLUPS: 1.262
+002 | avg step: 155.990 ms | BLUPS: 1.329
+003 | avg step: 156.956 ms | BLUPS: 1.321
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 1.321
+best                      = 1.329
+worst                     = 1.262
+mean                      = 1.304
+stddev                    = 2.806 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |        37.035  |        43.144  |           1.157
+halo sync                    |         1.066  |         7.370  |           8.127
+halo transfer                |         1.095  |         3.210  |           2.932
+other                        |         0.018  |         0.131  |          10.052
+total                        |        47.085  |        47.087  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 10 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 40
+image grid                = 1 x 40
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 40
+image grid [X/Y]          = [ 1 / 40 ]
+local domain [X/Y]        = [ 14400 / 360 ]
+halo cells                = 0.570 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           145  |          30.030
+macro field buffers                           |            24  |           4.977
+total                                         |           169  |          35.007
+
+--- [ benchmark runs started at 2026-06-17 21:59:38 ] --------------------------
+001 | avg step: 155.018 ms | BLUPS: 1.338
+002 | avg step: 161.336 ms | BLUPS: 1.285
+003 | avg step: 162.921 ms | BLUPS: 1.273
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 1.285
+best                      = 1.338
+worst                     = 1.273
+mean                      = 1.299
+stddev                    = 2.663 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |        38.476  |        44.300  |           1.151
+halo sync                    |         1.334  |         8.050  |           4.248
+halo transfer                |         1.225  |         3.380  |           2.839
+other                        |         0.025  |         0.107  |           4.227
+total                        |        48.399  |        48.401  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 11 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 48
+image grid                = 1 x 48
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 48
+image grid [X/Y]          = [ 1 / 48 ]
+local domain [X/Y]        = [ 14400 / 300 ]
+halo cells                = 0.681 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           145  |          30.063
+macro field buffers                           |            24  |           4.977
+total                                         |           169  |          35.040
+
+--- [ benchmark runs started at 2026-06-17 22:02:26 ] --------------------------
+001 | avg step: 156.474 ms | BLUPS: 1.325
+002 | avg step: 157.668 ms | BLUPS: 1.315
+003 | avg step: 159.462 ms | BLUPS: 1.300
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 1.315
+best                      = 1.325
+worst                     = 1.300
+mean                      = 1.313
+stddev                    = 0.958 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |        36.457  |        42.336  |           1.138
+halo sync                    |         1.344  |         8.692  |           6.542
+halo transfer                |         1.412  |         3.797  |           2.658
+other                        |         0.032  |         0.189  |           5.878
+total                        |        47.299  |        47.300  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 12 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 64
+image grid                = 1 x 64
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 64
+image grid [X/Y]          = [ 1 / 64 ]
+local domain [X/Y]        = [ 14400 / 225 ]
+halo cells                = 0.903 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           145  |          30.129
+macro field buffers                           |            24  |           4.977
+total                                         |           169  |          35.106
+
+--- [ benchmark runs started at 2026-06-17 22:05:12 ] --------------------------
+001 | avg step: 156.344 ms | BLUPS: 1.326
+002 | avg step: 154.936 ms | BLUPS: 1.338
+003 | avg step: 154.963 ms | BLUPS: 1.338
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 1.338
+best                      = 1.338
+worst                     = 1.326
+mean                      = 1.334
+stddev                    = 0.519 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |        34.230  |        40.347  |           1.165
+halo sync                    |         2.409  |        11.002  |           3.956
+halo transfer                |         1.358  |         3.709  |           2.731
+other                        |         0.040  |         0.191  |           5.631
+total                        |        46.486  |        46.489  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 13 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 72
+image grid                = 1 x 72
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 2
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 72
+image grid [X/Y]          = [ 1 / 72 ]
+local domain [X/Y]        = [ 14400 / 200 ]
+halo cells                = 1.014 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           145  |          30.163
+macro field buffers                           |            24  |           4.977
+total                                         |           169  |          35.139
+
+--- [ benchmark runs started at 2026-06-17 22:08:00 ] --------------------------
+001 | avg step: 137.928 ms | BLUPS: 1.503
+002 | avg step: 139.966 ms | BLUPS: 1.481
+003 | avg step: 138.210 ms | BLUPS: 1.500
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 1.500
+best                      = 1.503
+worst                     = 1.481
+mean                      = 1.495
+stddev                    = 0.798 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |        10.356  |        35.001  |           3.386
+halo sync                    |         2.743  |        29.563  |          10.754
+halo transfer                |         0.967  |         3.737  |           3.890
+other                        |         0.047  |         0.419  |           8.918
+total                        |        41.459  |        41.463  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 14 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 80
+image grid                = 1 x 80
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 2
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 80
+image grid [X/Y]          = [ 1 / 80 ]
+local domain [X/Y]        = [ 14400 / 180 ]
+halo cells                = 1.125 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           146  |          30.196
+macro field buffers                           |            24  |           4.977
+total                                         |           170  |          35.172
+
+--- [ benchmark runs started at 2026-06-17 22:10:41 ] --------------------------
+001 | avg step: 125.546 ms | BLUPS: 1.652
+002 | avg step: 127.948 ms | BLUPS: 1.621
+003 | avg step: 126.380 ms | BLUPS: 1.641
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 1.641
+best                      = 1.652
+worst                     = 1.621
+mean                      = 1.638
+stddev                    = 0.959 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |         8.963  |        31.064  |           3.467
+halo sync                    |         2.959  |        27.154  |           9.135
+halo transfer                |         1.061  |         3.748  |           3.635
+other                        |         0.050  |         0.770  |          15.451
+total                        |        37.912  |        37.914  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 15 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 96
+image grid                = 1 x 96
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 2
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 96
+image grid [X/Y]          = [ 1 / 96 ]
+local domain [X/Y]        = [ 14400 / 150 ]
+halo cells                = 1.347 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           146  |          30.262
+macro field buffers                           |            24  |           4.977
+total                                         |           170  |          35.239
+
+--- [ benchmark runs started at 2026-06-17 22:13:11 ] --------------------------
+001 | avg step: 105.004 ms | BLUPS: 1.975
+002 | avg step: 105.941 ms | BLUPS: 1.957
+003 | avg step: 106.086 ms | BLUPS: 1.955
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 1.957
+best                      = 1.975
+worst                     = 1.955
+mean                      = 1.962
+stddev                    = 0.561 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |         7.760  |        24.914  |           3.215
+halo sync                    |         3.207  |        21.864  |           6.818
+halo transfer                |         1.249  |         3.767  |           3.035
+other                        |         0.066  |         1.209  |          18.801
+total                        |        31.779  |        31.782  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 16 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 120
+image grid                = 1 x 120
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 2
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 120
+image grid [X/Y]          = [ 1 / 120 ]
+local domain [X/Y]        = [ 14400 / 120 ]
+halo cells                = 1.681 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           146  |          30.362
+macro field buffers                           |            24  |           4.977
+total                                         |           170  |          35.338
+
+--- [ benchmark runs started at 2026-06-17 22:15:23 ] --------------------------
+001 | avg step: 85.715 ms | BLUPS: 2.419
+002 | avg step: 86.389 ms | BLUPS: 2.400
+003 | avg step: 85.904 ms | BLUPS: 2.414
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 2.414
+best                      = 2.419
+worst                     = 2.400
+mean                      = 2.411
+stddev                    = 0.408 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |         8.921  |        19.008  |           2.131
+halo sync                    |         2.961  |        13.248  |           4.404
+halo transfer                |         1.556  |         4.132  |           2.666
+other                        |         0.086  |         1.148  |          13.544
+total                        |        25.767  |        25.771  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 17 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 144
+image grid                = 1 x 144
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 3
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 144
+image grid [X/Y]          = [ 1 / 144 ]
+local domain [X/Y]        = [ 14400 / 100 ]
+halo cells                = 2.014 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           147  |          30.461
+macro field buffers                           |            24  |           4.977
+total                                         |           171  |          35.438
+
+--- [ benchmark runs started at 2026-06-17 22:21:31 ] --------------------------
+001 | avg step: 73.883 ms | BLUPS: 2.807
+002 | avg step: 73.505 ms | BLUPS: 2.821
+003 | avg step: 74.059 ms | BLUPS: 2.800
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 2.807
+best                      = 2.821
+worst                     = 2.800
+mean                      = 2.809
+stddev                    = 0.381 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |         5.157  |        15.665  |           3.037
+halo sync                    |         2.740  |        14.844  |           5.623
+halo transfer                |         1.014  |         4.044  |           3.988
+other                        |         0.092  |         0.972  |          10.515
+total                        |        22.163  |        22.165  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 18 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 160
+image grid                = 1 x 160
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 3
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 160
+image grid [X/Y]          = [ 1 / 160 ]
+local domain [X/Y]        = [ 14400 / 90 ]
+halo cells                = 2.236 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           147  |          30.528
+macro field buffers                           |            24  |           4.977
+total                                         |           171  |          35.504
+
+--- [ benchmark runs started at 2026-06-17 22:23:22 ] --------------------------
+001 | avg step: 68.819 ms | BLUPS: 3.013
+002 | avg step: 69.020 ms | BLUPS: 3.004
+003 | avg step: 68.256 ms | BLUPS: 3.038
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 3.013
+best                      = 3.038
+worst                     = 3.004
+mean                      = 3.018
+stddev                    = 0.584 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |         5.232  |        14.519  |           2.751
+halo sync                    |         2.294  |        12.934  |           5.773
+halo transfer                |         1.274  |         4.063  |           3.165
+other                        |         0.101  |         0.865  |           9.272
+total                        |        20.643  |        20.646  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 19 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 192
+image grid                = 1 x 192
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 3
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 192
+image grid [X/Y]          = [ 1 / 192 ]
+local domain [X/Y]        = [ 14400 / 75 ]
+halo cells                = 2.681 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           148  |          30.660
+macro field buffers                           |            24  |           4.977
+total                                         |           172  |          35.637
+
+--- [ benchmark runs started at 2026-06-17 22:28:25 ] --------------------------
+001 | avg step: 57.689 ms | BLUPS: 3.594
+002 | avg step: 59.554 ms | BLUPS: 3.482
+003 | avg step: 58.684 ms | BLUPS: 3.533
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 3.533
+best                      = 3.594
+worst                     = 3.482
+mean                      = 3.536
+stddev                    = 1.586 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |         7.146  |        11.301  |           1.645
+halo sync                    |         2.163  |         7.595  |           3.543
+halo transfer                |         1.437  |         4.206  |           2.926
+other                        |         0.138  |         0.558  |           4.386
+total                        |        17.602  |        17.605  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 20 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 225
+image grid                = 1 x 225
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 4
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 225
+image grid [X/Y]          = [ 1 / 225 ]
+local domain [X/Y]        = [ 14400 / 64 ]
+halo cells                = 3.139 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           149  |          30.797
+macro field buffers                           |            24  |           4.977
+total                                         |           173  |          35.774
+
+--- [ benchmark runs started at 2026-06-17 22:30:02 ] --------------------------
+001 | avg step: 52.843 ms | BLUPS: 3.924
+002 | avg step: 52.895 ms | BLUPS: 3.920
+003 | avg step: 52.538 ms | BLUPS: 3.947
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 3.924
+best                      = 3.947
+worst                     = 3.920
+mean                      = 3.930
+stddev                    = 0.371 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |         3.739  |         9.751  |           2.616
+halo sync                    |         2.067  |        10.030  |           4.854
+halo transfer                |         1.213  |         4.094  |           3.408
+other                        |         0.149  |         0.802  |           5.351
+total                        |        15.851  |        15.853  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 21 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 288
+image grid                = 1 x 288
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 4
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 288
+image grid [X/Y]          = [ 1 / 288 ]
+local domain [X/Y]        = [ 14400 / 50 ]
+halo cells                = 4.014 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           150  |          31.059
+macro field buffers                           |            24  |           4.977
+total                                         |           174  |          36.035
+
+--- [ benchmark runs started at 2026-06-17 22:31:45 ] --------------------------
+001 | avg step: 56.165 ms | BLUPS: 3.692
+002 | avg step: 55.608 ms | BLUPS: 3.729
+003 | avg step: 57.894 ms | BLUPS: 3.582
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 3.692
+best                      = 3.729
+worst                     = 3.582
+mean                      = 3.668
+stddev                    = 2.085 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |         3.280  |        11.198  |           3.423
+halo sync                    |         2.838  |        11.135  |           3.842
+halo transfer                |         0.928  |         3.761  |           4.055
+other                        |         0.169  |         1.653  |           9.786
+total                        |        16.845  |        16.849  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 22 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 360
+image grid                = 1 x 360
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 4
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 360
+image grid [X/Y]          = [ 1 / 360 ]
+local domain [X/Y]        = [ 14400 / 40 ]
+halo cells                = 5.015 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           151  |          31.357
+macro field buffers                           |            24  |           4.977
+total                                         |           175  |          36.334
+
+--- [ benchmark runs started at 2026-06-17 22:33:21 ] --------------------------
+001 | avg step: 58.876 ms | BLUPS: 3.522
+002 | avg step: 59.856 ms | BLUPS: 3.464
+003 | avg step: 59.400 ms | BLUPS: 3.491
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 3.491
+best                      = 3.522
+worst                     = 3.464
+mean                      = 3.492
+stddev                    = 0.831 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |         2.325  |        13.143  |           5.638
+halo sync                    |         1.323  |        12.903  |           9.694
+halo transfer                |         0.875  |         3.604  |           4.117
+other                        |         0.156  |         2.376  |          14.792
+total                        |        17.815  |        17.820  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 23 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 400
+image grid                = 1 x 400
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 4
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 400
+image grid [X/Y]          = [ 1 / 400 ]
+local domain [X/Y]        = [ 14400 / 36 ]
+halo cells                = 5.570 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           152  |          31.523
+macro field buffers                           |            24  |           4.977
+total                                         |           176  |          36.500
+
+--- [ benchmark runs started at 2026-06-17 22:35:10 ] --------------------------
+001 | avg step: 54.848 ms | BLUPS: 3.781
+002 | avg step: 55.358 ms | BLUPS: 3.746
+003 | avg step: 55.384 ms | BLUPS: 3.744
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 3.746
+best                      = 3.781
+worst                     = 3.744
+mean                      = 3.757
+stddev                    = 0.554 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |         2.189  |         9.959  |           4.549
+halo sync                    |         2.585  |        12.419  |           4.815
+halo transfer                |         1.021  |         4.009  |           3.902
+other                        |         0.186  |         1.708  |          10.294
+total                        |        16.603  |        16.607  |           1.000
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 24 / 24
+executable                = build/release-fp64-native/bin/FFB
+runs                      = 3
+images                    = 480
+image grid                = 1 x 480
+sim size                  = 14400 x 14400
+mpi pinning preset        = numa_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=numa I_MPI_PIN_ORDER=spread
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 4
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_000
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 480
+image grid [X/Y]          = [ 1 / 480 ]
+local domain [X/Y]        = [ 14400 / 30 ]
+halo cells                = 6.681 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           154  |          31.855
+macro field buffers                           |            24  |           4.977
+total                                         |           178  |          36.832
+
+--- [ benchmark runs started at 2026-06-17 22:36:58 ] --------------------------
+001 | avg step: 48.707 ms | BLUPS: 4.257
+002 | avg step: 48.367 ms | BLUPS: 4.287
+003 | avg step: 48.763 ms | BLUPS: 4.252
+
+--- [ BLUPS metrics ] ----------------------------------------------------------
+median                    = 4.257
+best                      = 4.287
+worst                     = 4.252
+mean                      = 4.265
+stddev                    = 0.444 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |         2.326  |         8.115  |           3.532
+halo sync                    |         2.107  |        10.707  |           5.081
+halo transfer                |         0.728  |         4.265  |           5.862
+other                        |         0.236  |         1.617  |           7.183
+total                        |        14.607  |        14.612  |           1.000
