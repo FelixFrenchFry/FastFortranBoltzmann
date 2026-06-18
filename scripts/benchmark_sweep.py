@@ -673,7 +673,7 @@ def run_case(exe, runs, n_x, n_y, case_num, n_cases, images, ix, iy, pin):
 
     for run_num in range(1, runs + 1):
         if run_num > 1:
-            time.sleep(1.0) # extra time to clean up resources and cool down
+            time.sleep(3.0) # extra time to clean up resources and cool down
 
         step_ms, blups, timing_spread, output = run_once(exe, images, ix, iy, run_num, pin)
 
