@@ -18,9 +18,9 @@ module settings
     integer(int32), parameter :: N_Y = FFB_N_Y
     integer(int32), parameter :: N_STEPS = FFB_N_STEPS
 #else
-    integer(int32), parameter :: N_X = 14400
-    integer(int32), parameter :: N_Y = 14400
-    integer(int32), parameter :: N_STEPS = 300
+    integer(int32), parameter :: N_X = 2520
+    integer(int32), parameter :: N_Y = 2520
+    integer(int32), parameter :: N_STEPS = 1000
 #endif
     integer(int64), parameter :: N_CELLS = int(N_X, int64) * int(N_Y, int64)
     integer(int32), parameter :: N_DIRS = 9
@@ -54,7 +54,7 @@ module settings
 #ifdef FFB_USE_CMAKE_SETTINGS
     integer(int32), parameter :: SIM_MODE = FFB_SIM_MODE ! selected sim mode
 #else
-    integer(int32), parameter :: SIM_MODE = 4 ! selected sim mode
+    integer(int32), parameter :: SIM_MODE = 1 ! selected sim mode
 #endif
 
     ! algorithm selection
