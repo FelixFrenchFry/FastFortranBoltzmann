@@ -60,7 +60,7 @@ module settings
 #ifdef FFB_USE_CMAKE_SETTINGS
     integer(int32), parameter :: SIM_MODE = FFB_SIM_MODE ! selected sim mode
 #else
-    integer(int32), parameter :: SIM_MODE = 1 ! selected sim mode
+    integer(int32), parameter :: SIM_MODE = 4 ! selected sim mode
 #endif
 
     ! algorithm selection
@@ -149,5 +149,30 @@ contains
             name = "unknown_sim_mode"
         end select
     end function sim_mode_to_string
+
+
+    pure function calculate_reynolds( &
+        sim_mode &
+        ) result(reynolds)
+        ! inputs
+        integer(int32), intent(in) :: sim_mode
+
+        ! output
+        real(FP) :: reynolds
+
+        ! temp
+        real(FP) :: nu_lattice
+
+        nu_lattice = (1.0_FP / OMEGA - 0.5_FP) / 3.0_FP
+
+        select case (sim_mode)
+        case (SIM_COUETTE_FLOW)
+            reynolds = U_WALL * real(N_Y, FP) / nu_lattice
+        case (SIM_SLIDING_LID)
+            reynolds = U_LID * real(N_Y, FP) / nu_lattice
+        case default
+            reynolds = 0.0_FP
+        end select
+    end function calculate_reynolds
 
 end module settings
