@@ -10,6 +10,11 @@ presets=(
   release-fp64-native
 )
 
+targets=(
+  FFB
+  FFB_DXY
+)
+
 rm -rf build
 
 for preset in "${presets[@]}"; do
@@ -19,5 +24,5 @@ for preset in "${presets[@]}"; do
 
   echo
   echo "----- [ building preset: ${preset} ] -----"
-  cmake --build --preset "${preset}"
+  cmake --build --preset "${preset}" --target "${targets[@]}"
 done

@@ -2,14 +2,14 @@ module simulation
     ! imports
     use iso_fortran_env, only: int32
     use domain, only: domain_t
-    use exchange, only: halo_buffers_t, BUF_MACRO_LEFT, BUF_MACRO_RIGHT
+    use exchange, only: halo_buffers_t
     use settings, only: N_DIRS, C_X, C_Y, C_X_FP, C_Y_FP, W, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
         USE_UNROLLED_KERNELS, &
         RHO_0, OMEGA, U_WALL, U_LID, RHO_IN, RHO_OUT
     use shear_wave, only: prepare_shear_wave_halos_SW
     use couette_flow, only: prepare_couette_flow_halos_CF
-    use poiseuille_flow, only: prepare_poiseuille_flow_halos_PF, update_poiseuille_flow_macro_strips_PF
+    use poiseuille_flow, only: prepare_poiseuille_flow_halos_PF
     use sliding_lid, only: prepare_sliding_lid_halos_SL
     implicit none
 
@@ -24,11 +24,11 @@ contains
         integer(int32), intent(in) :: n_x_local
         integer(int32), intent(in) :: n_y_local
         logical, intent(in) :: write_macro_fields
-        real(FP), intent(inout) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
+        real(FP), intent(inout) :: f(N_DIRS, 0:n_x_local+1, 0:n_y_local+1)
 
         ! write destinations
         type(halo_buffers_t), intent(inout) :: halo_buffers
-        real(FP), intent(inout) :: f_next(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
+        real(FP), intent(inout) :: f_next(N_DIRS, 0:n_x_local+1, 0:n_y_local+1)
         real(FP), intent(inout) :: rho(n_x_local, n_y_local)
         real(FP), intent(inout) :: u_x(n_x_local, n_y_local)
         real(FP), intent(inout) :: u_y(n_x_local, n_y_local)
@@ -52,11 +52,6 @@ contains
                 domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
                 RHO_IN, RHO_OUT, &
                 f, halo_buffers%recv_macro_left, halo_buffers%recv_macro_right)
-            call update_poiseuille_flow_macro_strips_PF( &
-                n_x_local, n_y_local, &
-                domain_info%at_left_boundary, domain_info%at_right_boundary, f, &
-                halo_buffers%window(:,:,BUF_MACRO_LEFT), halo_buffers%window(:,:,BUF_MACRO_RIGHT))
-
         case (SIM_SLIDING_LID) ! sliding lid
             call prepare_sliding_lid_halos_SL( &
                 n_x_local, n_y_local, &
@@ -89,10 +84,10 @@ contains
         integer(int32), intent(in) :: n_y_local
         logical, intent(in) :: write_macro_fields
         real(FP), intent(in) :: omega
-        real(FP), intent(in) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
+        real(FP), intent(in) :: f(N_DIRS, 0:n_x_local+1, 0:n_y_local+1)
 
         ! write destinations
-        real(FP), intent(inout) :: f_next(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
+        real(FP), intent(inout) :: f_next(N_DIRS, 0:n_x_local+1, 0:n_y_local+1)
         real(FP), intent(inout) :: rho(n_x_local, n_y_local)
         real(FP), intent(inout) :: u_x(n_x_local, n_y_local)
         real(FP), intent(inout) :: u_y(n_x_local, n_y_local)
@@ -130,7 +125,7 @@ contains
                     src_x = x - C_X(i)
                     src_y = y - C_Y(i)
 
-                    f_pulled(i) = f(src_x, src_y, i)
+                    f_pulled(i) = f(i, src_x, src_y)
 
                     rho_val = rho_val + f_pulled(i)
                     u_x_val = u_x_val + f_pulled(i) * C_X_FP(i)
@@ -169,7 +164,7 @@ contains
 
                     ! relax towards equilibrium and write to destination channel
                     f_next_val = f_pulled(i) + omega * (f_eq_val - f_pulled(i))
-                    f_next(x, y, i) = f_next_val
+                    f_next(i, x, y) = f_next_val
                 end do
             end do
         end do
@@ -184,10 +179,10 @@ contains
         integer(int32), intent(in) :: n_y_local
         logical, intent(in) :: write_macro_fields
         real(FP), intent(in) :: omega
-        real(FP), intent(in) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
+        real(FP), intent(in) :: f(N_DIRS, 0:n_x_local+1, 0:n_y_local+1)
 
         ! write destinations
-        real(FP), intent(inout) :: f_next(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
+        real(FP), intent(inout) :: f_next(N_DIRS, 0:n_x_local+1, 0:n_y_local+1)
         real(FP), intent(inout) :: rho(n_x_local, n_y_local)
         real(FP), intent(inout) :: u_x(n_x_local, n_y_local)
         real(FP), intent(inout) :: u_y(n_x_local, n_y_local)
@@ -219,15 +214,15 @@ contains
                 ! ---------
                 ! pull streamed distribution functions from source cells
                 ! (boundaries handled separately in sim-mode-specific halo preparation step)
-                f_1 = f(x, y, 1)
-                f_2 = f(x - 1, y, 2)
-                f_3 = f(x, y - 1, 3)
-                f_4 = f(x + 1, y, 4)
-                f_5 = f(x, y + 1, 5)
-                f_6 = f(x - 1, y - 1, 6)
-                f_7 = f(x + 1, y - 1, 7)
-                f_8 = f(x + 1, y + 1, 8)
-                f_9 = f(x - 1, y + 1, 9)
+                f_1 = f(1, x, y)
+                f_2 = f(2, x - 1, y)
+                f_3 = f(3, x, y - 1)
+                f_4 = f(4, x + 1, y)
+                f_5 = f(5, x, y + 1)
+                f_6 = f(6, x - 1, y - 1)
+                f_7 = f(7, x + 1, y - 1)
+                f_8 = f(8, x + 1, y + 1)
+                f_9 = f(9, x - 1, y + 1)
 
                 rho_val = f_1 + f_2 + f_3 + f_4 + f_5 + f_6 + f_7 + f_8 + f_9
                 u_x_val = f_2 - f_4 + f_6 - f_7 - f_8 + f_9
@@ -253,49 +248,49 @@ contains
 
                 ! collide and stream locally
                 ! 1: (0, 0)
-                f_next(x, y, 1) = f_1 + omega * ((4.0_FP/9.0_FP) * rho_val * ( &
+                f_next(1, x, y) = f_1 + omega * ((4.0_FP/9.0_FP) * rho_val * ( &
                     1.0_FP - 1.5_FP * u_squ) - f_1)
 
                 ! 2: (1, 0)
-                f_next(x, y, 2) = f_2 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
+                f_next(2, x, y) = f_2 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
                     1.0_FP + 3.0_FP * u_x_val + 4.5_FP * u_x_val * u_x_val - &
                     1.5_FP * u_squ) - f_2)
 
                 ! 3: (0, 1)
-                f_next(x, y, 3) = f_3 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
+                f_next(3, x, y) = f_3 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
                     1.0_FP + 3.0_FP * u_y_val + 4.5_FP * u_y_val * u_y_val - &
                     1.5_FP * u_squ) - f_3)
 
                 ! 4: (-1, 0)
-                f_next(x, y, 4) = f_4 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
+                f_next(4, x, y) = f_4 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
                     1.0_FP - 3.0_FP * u_x_val + 4.5_FP * u_x_val * u_x_val - &
                     1.5_FP * u_squ) - f_4)
 
                 ! 5: (0, -1)
-                f_next(x, y, 5) = f_5 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
+                f_next(5, x, y) = f_5 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
                     1.0_FP - 3.0_FP * u_y_val + 4.5_FP * u_y_val * u_y_val - &
                     1.5_FP * u_squ) - f_5)
 
                 ! 6: (1, 1)
-                f_next(x, y, 6) = f_6 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
+                f_next(6, x, y) = f_6 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
                     1.0_FP + 3.0_FP * (u_x_val + u_y_val) + &
                     4.5_FP * (u_x_val + u_y_val) * (u_x_val + u_y_val) - &
                     1.5_FP * u_squ) - f_6)
 
                 ! 7: (-1, 1)
-                f_next(x, y, 7) = f_7 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
+                f_next(7, x, y) = f_7 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
                     1.0_FP + 3.0_FP * (-u_x_val + u_y_val) + &
                     4.5_FP * (-u_x_val + u_y_val) * (-u_x_val + u_y_val) - &
                     1.5_FP * u_squ) - f_7)
 
                 ! 8: (-1, -1)
-                f_next(x, y, 8) = f_8 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
+                f_next(8, x, y) = f_8 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
                     1.0_FP - 3.0_FP * (u_x_val + u_y_val) + &
                     4.5_FP * (u_x_val + u_y_val) * (u_x_val + u_y_val) - &
                     1.5_FP * u_squ) - f_8)
 
                 ! 9: (1, -1)
-                f_next(x, y, 9) = f_9 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
+                f_next(9, x, y) = f_9 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
                     1.0_FP + 3.0_FP * (u_x_val - u_y_val) + &
                     4.5_FP * (u_x_val - u_y_val) * (u_x_val - u_y_val) - &
                     1.5_FP * u_squ) - f_9)

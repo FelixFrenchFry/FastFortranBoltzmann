@@ -12,6 +12,12 @@ module settings
     character(len=*), parameter :: FP_DTYPE = "real32"
 #endif
 
+#ifdef FFB_DIST_FUNC_LAYOUT
+    character(len=*), parameter :: DIST_FUNC_LAYOUT = FFB_DIST_FUNC_LAYOUT
+#else
+    character(len=*), parameter :: DIST_FUNC_LAYOUT = "xyd"
+#endif
+
     ! sim size and duration
 #ifdef FFB_USE_CMAKE_SETTINGS
     integer(int32), parameter :: N_X = FFB_N_X

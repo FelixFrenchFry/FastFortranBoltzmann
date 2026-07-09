@@ -26,58 +26,91 @@ set(FFB_SETTINGS_DEFINITIONS "" CACHE STRING "Fortran preprocessor overrides for
 # executables in build/bin
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
-add_executable(FFB
+set(FFB_SHARED_SOURCES
     source/domain.f90
-    source/exchange.f90
     source/export.f90
     source/hardware_info.f90
-    source/initialization.f90
     source/reporting.f90
-    source/main.f90
     source/settings.f90
-    source/simulation.f90
-    source/sim/couette_flow.f90
-    source/sim/poiseuille_flow.f90
-    source/sim/shear_wave.f90
-    source/sim/sliding_lid.f90
+)
+
+set(FFB_XYD_SOURCES
+    source/layouts/xyd/exchange.f90
+    source/layouts/xyd/initialization.f90
+    source/layouts/xyd/main.f90
+    source/layouts/xyd/simulation.f90
+    source/layouts/xyd/modes/couette_flow.f90
+    source/layouts/xyd/modes/poiseuille_flow.f90
+    source/layouts/xyd/modes/shear_wave.f90
+    source/layouts/xyd/modes/sliding_lid.f90
+)
+
+set(FFB_DXY_SOURCES
+    source/layouts/dxy/exchange.f90
+    source/layouts/dxy/initialization.f90
+    source/layouts/dxy/main.f90
+    source/layouts/dxy/simulation.f90
+    source/layouts/dxy/modes/couette_flow.f90
+    source/layouts/dxy/modes/poiseuille_flow.f90
+    source/layouts/dxy/modes/shear_wave.f90
+    source/layouts/dxy/modes/sliding_lid.f90
 )
 
 string(TOUPPER "${CMAKE_BUILD_TYPE}" FFB_BUILD_TYPE_UPPER)
 set(FFB_ACTIVE_FORTRAN_FLAGS "${CMAKE_Fortran_FLAGS} ${CMAKE_Fortran_FLAGS_${FFB_BUILD_TYPE_UPPER}}")
 string(STRIP "${FFB_ACTIVE_FORTRAN_FLAGS}" FFB_ACTIVE_FORTRAN_FLAGS)
 
-# debug flags for ifx
-target_compile_options(FFB PRIVATE
-    -coarray=distributed
-    -fpp
-    -warn all
-    -standard-semantics
-    $<$<CONFIG:Debug>:-O0>
-    $<$<CONFIG:Debug>:-g>
-    $<$<CONFIG:Debug>:-traceback>
-    $<$<CONFIG:Debug>:-check all>
-)
-
-target_compile_definitions(FFB PRIVATE
-    "FFB_COMPILER_ID=\"${CMAKE_Fortran_COMPILER_ID}\""
-    "FFB_COMPILER_VERSION=\"${CMAKE_Fortran_COMPILER_VERSION}\""
-    "FFB_FORTRAN_FLAGS=\"${FFB_ACTIVE_FORTRAN_FLAGS}\""
-    ${FFB_SETTINGS_DEFINITIONS}
-)
-
-if(NOT FFB_EXPORT_NUM STREQUAL "")
-    target_compile_definitions(FFB PRIVATE
-        "FFB_EXPORT_NUM=\"${FFB_EXPORT_NUM}\""
+function(configure_ffb_target target_name dist_func_layout)
+    set_target_properties(${target_name} PROPERTIES
+        Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/mod/${target_name}"
     )
-endif()
 
-if(FFB_FP64)
-    target_compile_definitions(FFB PRIVATE FFB_FP64)
-endif()
-if(FFB_DENSITY_CHECKS)
-    target_compile_definitions(FFB PRIVATE FFB_DENSITY_CHECKS)
-endif()
+    # debug flags for ifx
+    target_compile_options(${target_name} PRIVATE
+        -coarray=distributed
+        -fpp
+        -warn all
+        -standard-semantics
+        $<$<CONFIG:Debug>:-O0>
+        $<$<CONFIG:Debug>:-g>
+        $<$<CONFIG:Debug>:-traceback>
+        $<$<CONFIG:Debug>:-check all>
+    )
 
-target_link_options(FFB PRIVATE
-    -coarray=distributed
+    target_compile_definitions(${target_name} PRIVATE
+        "FFB_COMPILER_ID=\"${CMAKE_Fortran_COMPILER_ID}\""
+        "FFB_COMPILER_VERSION=\"${CMAKE_Fortran_COMPILER_VERSION}\""
+        "FFB_FORTRAN_FLAGS=\"${FFB_ACTIVE_FORTRAN_FLAGS}\""
+        "FFB_DIST_FUNC_LAYOUT=\"${dist_func_layout}\""
+        ${FFB_SETTINGS_DEFINITIONS}
+    )
+
+    if(NOT FFB_EXPORT_NUM STREQUAL "")
+        target_compile_definitions(${target_name} PRIVATE
+            "FFB_EXPORT_NUM=\"${FFB_EXPORT_NUM}\""
+        )
+    endif()
+
+    if(FFB_FP64)
+        target_compile_definitions(${target_name} PRIVATE FFB_FP64)
+    endif()
+    if(FFB_DENSITY_CHECKS)
+        target_compile_definitions(${target_name} PRIVATE FFB_DENSITY_CHECKS)
+    endif()
+
+    target_link_options(${target_name} PRIVATE
+        -coarray=distributed
+    )
+endfunction()
+
+add_executable(FFB
+    ${FFB_SHARED_SOURCES}
+    ${FFB_XYD_SOURCES}
 )
+configure_ffb_target(FFB "xyd")
+
+add_executable(FFB_DXY
+    ${FFB_SHARED_SOURCES}
+    ${FFB_DXY_SOURCES}
+)
+configure_ffb_target(FFB_DXY "dxy")
