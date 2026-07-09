@@ -3,11 +3,13 @@ program main
     use iso_fortran_env, only: int32, int64, real64
     use domain, only: domain_t, initialize_domain
     use exchange, only: halo_buffers_t, exchange_plan_t, exchange_timing_t, &
-        BUF_MACRO_LEFT, BUF_MACRO_RIGHT, allocate_halo_buffers, build_exchange_plan, exchange_halos
+        BUF_MACRO_LEFT, BUF_MACRO_RIGHT, allocate_halo_buffers, build_exchange_plan, exchange_halos, &
+        exchange_poiseuille_macro_halos
     use export, only: should_export_step, export_selected_data_distributed, export_metadata
     use hardware_info, only: hardware_info_t, collect_hardware_info
     use initialization, only: apply_condition_shear_wave_local, &
         apply_condition_couette_flow_local, apply_condition_poiseuille_flow_local, apply_condition_sliding_lid_local
+    use poiseuille_flow, only: prepare_poiseuille_flow_halos_PF, update_poiseuille_flow_macro_strips_PF
     use settings, only: N_STEPS, N_CELLS, N_DIRS, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
         EXPORT_MACROS, EXPORT_ENDPOINT_STATES, EXPORT_INTERVAL, &
@@ -74,8 +76,8 @@ program main
         call collect_hardware_info(machine_info)
     end if
 
-    allocate(f_a(0:domain_info%n_x+1, 0:domain_info%n_y+1, N_DIRS)[*])
-    allocate(f_b(0:domain_info%n_x+1, 0:domain_info%n_y+1, N_DIRS)[*])
+    allocate(f_a(N_DIRS, 0:domain_info%n_x+1, 0:domain_info%n_y+1)[*])
+    allocate(f_b(N_DIRS, 0:domain_info%n_x+1, 0:domain_info%n_y+1)[*])
     read_from_a = .true.
     allocate(rho(domain_info%n_x, domain_info%n_y))
     allocate(u_x(domain_info%n_x, domain_info%n_y))
@@ -181,6 +183,42 @@ program main
         end if
         halo_sync_seconds = halo_sync_seconds + exchange_timing%halo_sync_seconds
         halo_transfer_seconds = halo_transfer_seconds + exchange_timing%halo_transfer_seconds
+
+        if (SIM_MODE == SIM_POISEUILLE_FLOW) then
+            ! macro strips are computed from the current buffer after its halos are well-defined
+            call system_clock(clock_section_start)
+            if (read_from_a) then
+                call prepare_poiseuille_flow_halos_PF( &
+                    domain_info%n_x, domain_info%n_y, &
+                    domain_info%at_left_boundary, domain_info%at_right_boundary, &
+                    domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
+                    RHO_IN, RHO_OUT, &
+                    f_a, halo_buffers%recv_macro_left, halo_buffers%recv_macro_right)
+                call update_poiseuille_flow_macro_strips_PF( &
+                    domain_info%n_x, domain_info%n_y, &
+                    domain_info%at_left_boundary, domain_info%at_right_boundary, f_a, &
+                    halo_buffers%window(:,:,BUF_MACRO_LEFT), halo_buffers%window(:,:,BUF_MACRO_RIGHT))
+            else
+                call prepare_poiseuille_flow_halos_PF( &
+                    domain_info%n_x, domain_info%n_y, &
+                    domain_info%at_left_boundary, domain_info%at_right_boundary, &
+                    domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
+                    RHO_IN, RHO_OUT, &
+                    f_b, halo_buffers%recv_macro_left, halo_buffers%recv_macro_right)
+                call update_poiseuille_flow_macro_strips_PF( &
+                    domain_info%n_x, domain_info%n_y, &
+                    domain_info%at_left_boundary, domain_info%at_right_boundary, f_b, &
+                    halo_buffers%window(:,:,BUF_MACRO_LEFT), halo_buffers%window(:,:,BUF_MACRO_RIGHT))
+            end if
+            call system_clock(clock_section_end)
+            kernel_compute_seconds = kernel_compute_seconds + &
+                real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
+
+            call exchange_poiseuille_macro_halos( &
+                domain_info, halo_buffers, exchange_plan, clock_rate, exchange_timing)
+            halo_sync_seconds = halo_sync_seconds + exchange_timing%halo_sync_seconds
+            halo_transfer_seconds = halo_transfer_seconds + exchange_timing%halo_transfer_seconds
+        end if
 
         call system_clock(clock_section_start)
         if (read_from_a) then

@@ -23,6 +23,7 @@ module exchange
     integer(int32), parameter :: BUF_MACRO_RIGHT = 4
     public :: build_exchange_plan
     public :: exchange_halos
+    public :: exchange_poiseuille_macro_halos
 
     type :: halo_buffers_t
 
@@ -172,12 +173,6 @@ contains
         if (exchange_plan%right) then
             call add_neighbor_image(x_neighbor_images, n_x_neighbor_images, domain_info%right_image_id)
         end if
-        if (exchange_plan%macro_left) then
-            call add_neighbor_image(x_neighbor_images, n_x_neighbor_images, domain_info%left_image_id)
-        end if
-        if (exchange_plan%macro_right) then
-            call add_neighbor_image(x_neighbor_images, n_x_neighbor_images, domain_info%right_image_id)
-        end if
         if (exchange_plan%bottom) then
             call add_neighbor_image(y_neighbor_images, n_y_neighbor_images, domain_info%bottom_image_id)
         end if
@@ -227,22 +222,6 @@ contains
 
         call system_clock(clock_section_end)
         call add_elapsed_seconds(exchange_timing%halo_transfer_seconds, clock_section_start, clock_section_end)
-
-        ! pressure-periodic macros for poiseuille flow
-        if (exchange_plan%macro_left .or. exchange_plan%macro_right) then
-            call system_clock(clock_section_start)
-
-            if (exchange_plan%macro_left) then
-                halo_buffers%recv_macro_left(:, :) = halo_buffers%window(:, :, BUF_MACRO_RIGHT)[domain_info%left_image_id]
-            end if
-
-            if (exchange_plan%macro_right) then
-                halo_buffers%recv_macro_right(:, :) = halo_buffers%window(:, :, BUF_MACRO_LEFT)[domain_info%right_image_id]
-            end if
-
-            call system_clock(clock_section_end)
-            call add_elapsed_seconds(exchange_timing%halo_transfer_seconds, clock_section_start, clock_section_end)
-        end if
 
         call timed_sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
         call timed_sync_neighbor_images(y_neighbor_images, n_y_neighbor_images)
@@ -353,6 +332,139 @@ contains
             call add_elapsed_seconds(exchange_timing%halo_sync_seconds, clock_section_start, clock_section_end)
         end subroutine timed_sync_neighbor_images
     end subroutine exchange_halos
+
+
+    subroutine exchange_poiseuille_macro_halos( &
+        domain_info, halo_buffers, exchange_plan, clock_rate, exchange_timing &
+        )
+        ! inputs
+        type(domain_t), intent(in) :: domain_info
+        type(exchange_plan_t), intent(in) :: exchange_plan
+        integer(int64), intent(in) :: clock_rate
+
+        ! read/write inputs
+        type(halo_buffers_t), intent(inout) :: halo_buffers
+
+        ! output
+        type(exchange_timing_t), intent(out) :: exchange_timing
+
+        ! locals
+        integer(int64) :: clock_section_start
+        integer(int64) :: clock_section_end
+        integer(int32) :: n_x_neighbor_images
+        integer(int32) :: x_neighbor_images(2)
+
+        exchange_timing%halo_sync_seconds = 0.0_real64
+        exchange_timing%halo_transfer_seconds = 0.0_real64
+
+        n_x_neighbor_images = 0
+
+        if (exchange_plan%macro_left) then
+            call add_neighbor_image(x_neighbor_images, n_x_neighbor_images, domain_info%left_image_id)
+        end if
+        if (exchange_plan%macro_right) then
+            call add_neighbor_image(x_neighbor_images, n_x_neighbor_images, domain_info%right_image_id)
+        end if
+
+        call timed_sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
+
+        ! pressure-periodic macros for poiseuille flow
+        call system_clock(clock_section_start)
+
+        if (exchange_plan%macro_left) then
+            halo_buffers%recv_macro_left(:, :) = halo_buffers%window(:, :, BUF_MACRO_RIGHT)[domain_info%left_image_id]
+        end if
+
+        if (exchange_plan%macro_right) then
+            halo_buffers%recv_macro_right(:, :) = halo_buffers%window(:, :, BUF_MACRO_LEFT)[domain_info%right_image_id]
+        end if
+
+        call system_clock(clock_section_end)
+        call add_elapsed_seconds(exchange_timing%halo_transfer_seconds, clock_section_start, clock_section_end)
+
+        call timed_sync_neighbor_images(x_neighbor_images, n_x_neighbor_images)
+
+    contains
+
+        subroutine add_elapsed_seconds( &
+            total_seconds, section_start, section_end &
+            )
+            ! inputs
+            integer(int64), intent(in) :: section_start
+            integer(int64), intent(in) :: section_end
+
+            ! read/write inputs
+            real(real64), intent(inout) :: total_seconds
+
+            total_seconds = total_seconds + real(section_end - section_start, real64) / real(clock_rate, real64)
+        end subroutine add_elapsed_seconds
+
+
+        subroutine add_neighbor_image( &
+            neighbor_images, n_neighbor_images, neighbor_image &
+            )
+            ! inputs
+            integer(int32), intent(in) :: neighbor_image
+
+            ! read/write inputs
+            integer(int32), intent(inout) :: neighbor_images(:)
+            integer(int32), intent(inout) :: n_neighbor_images
+
+            ! locals
+            integer(int32) :: i
+
+            if (neighbor_image == int(this_image(), int32)) then
+                return
+            end if
+
+            do i = 1, n_neighbor_images
+                if (neighbor_images(i) == neighbor_image) then
+                    return
+                end if
+            end do
+
+            n_neighbor_images = n_neighbor_images + 1
+            if (n_neighbor_images > size(neighbor_images)) then
+                error stop "error: exchange neighbor list is too small"
+            end if
+            neighbor_images(n_neighbor_images) = neighbor_image
+        end subroutine add_neighbor_image
+
+
+        subroutine sync_neighbor_images( &
+            neighbor_images, n_neighbor_images &
+            )
+            ! inputs
+            integer(int32), intent(in) :: neighbor_images(:)
+            integer(int32), intent(in) :: n_neighbor_images
+
+            if (n_neighbor_images == 0) then
+                return
+            else if (n_neighbor_images == 1) then
+                sync images(neighbor_images(1))
+            else
+                sync images(neighbor_images(1:n_neighbor_images))
+            end if
+        end subroutine sync_neighbor_images
+
+
+        subroutine timed_sync_neighbor_images( &
+            neighbor_images, n_neighbor_images &
+            )
+            ! inputs
+            integer(int32), intent(in) :: neighbor_images(:)
+            integer(int32), intent(in) :: n_neighbor_images
+
+            if (n_neighbor_images == 0) then
+                return
+            end if
+
+            call system_clock(clock_section_start)
+            call sync_neighbor_images(neighbor_images, n_neighbor_images)
+            call system_clock(clock_section_end)
+            call add_elapsed_seconds(exchange_timing%halo_sync_seconds, clock_section_start, clock_section_end)
+        end subroutine timed_sync_neighbor_images
+    end subroutine exchange_poiseuille_macro_halos
 
 
 end module exchange
