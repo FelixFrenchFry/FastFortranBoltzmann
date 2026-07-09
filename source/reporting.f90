@@ -6,7 +6,8 @@ module reporting
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, &
         DIST_FUNC_LAYOUT, USE_UNROLLED_KERNELS, &
-        RHO_0, OMEGA, U_MAX, N_SIN, U_WALL, U_LID, RHO_IN, RHO_OUT, sim_mode_to_string
+        RHO_0, OMEGA, U_MAX, N_SIN, U_WALL, U_LID, RHO_IN, RHO_OUT, sim_mode_to_string, &
+        calculate_reynolds
     implicit none
     private
 
@@ -59,6 +60,7 @@ contains
             print '(A,T27,A,F8.6)', "rho_0", "= ", RHO_0
             print '(A,T27,A,F8.6)', "omega", "= ", OMEGA
             print '(A,T27,A,F8.6)', "u_wall", "= ", U_WALL
+            print '(A,T27,A,F0.6)', "reynolds", "= ", calculate_reynolds(sim_mode)
         case (SIM_POISEUILLE_FLOW)
             print '(A,T27,A,F8.6)', "rho_0", "= ", RHO_0
             print '(A,T27,A,F8.6)', "omega", "= ", OMEGA
@@ -68,6 +70,7 @@ contains
             print '(A,T27,A,F8.6)', "rho_0", "= ", RHO_0
             print '(A,T27,A,F8.6)', "omega", "= ", OMEGA
             print '(A,T27,A,F8.6)', "u_lid", "= ", U_LID
+            print '(A,T27,A,F0.6)', "reynolds", "= ", calculate_reynolds(sim_mode)
         case default
             error stop "error: unknown sim mode in print_run_summary()"
         end select

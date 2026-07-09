@@ -6,7 +6,8 @@ module export
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, N_DIRS, C_X, C_Y, C_X_FP, C_Y_FP, W, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, FP, FP_DTYPE, &
         DIST_FUNC_LAYOUT, USE_UNROLLED_KERNELS, &
-        RHO_0, OMEGA, U_MAX, N_SIN, U_WALL, U_LID, RHO_IN, RHO_OUT, sim_mode_to_string
+        RHO_0, OMEGA, U_MAX, N_SIN, U_WALL, U_LID, RHO_IN, RHO_OUT, sim_mode_to_string, &
+        calculate_reynolds
     implicit none
 
     private
@@ -134,6 +135,7 @@ contains
             write(unit, '(A,A,A)') '  "rho_0": ', trim(real_to_json(RHO_0)), ','
             write(unit, '(A,A,A)') '  "omega": ', trim(real_to_json(OMEGA)), ','
             write(unit, '(A,A,A)') '  "u_wall": ', trim(real_to_json(U_WALL)), ','
+            write(unit, '(A,A,A)') '  "reynolds": ', trim(real_to_json(calculate_reynolds(sim_mode))), ','
 
         case (SIM_POISEUILLE_FLOW)
             write(unit, '(A,A,A)') '  "rho_0": ', trim(real_to_json(RHO_0)), ','
@@ -146,6 +148,7 @@ contains
             write(unit, '(A,A,A)') '  "rho_0": ', trim(real_to_json(RHO_0)), ','
             write(unit, '(A,A,A)') '  "omega": ', trim(real_to_json(OMEGA)), ','
             write(unit, '(A,A,A)') '  "u_lid": ', trim(real_to_json(U_LID)), ','
+            write(unit, '(A,A,A)') '  "reynolds": ', trim(real_to_json(calculate_reynolds(sim_mode))), ','
 
         case default
             error stop "error: unknown sim mode in export_metadata()"

@@ -20,6 +20,12 @@ _MODE_MAP = {1: "shear_wave", 2: "couette_flow", 3: "poiseuille_flow", 4: "slidi
 _SIM_MODE_RESOLVED = _MODE_MAP.get(SIM_MODE, SIM_MODE)
 DATA_NAME_Y = "velocity_y"
 PLOT_NAME = "velocity_mag_streamlines"
+_SIM_METADATA_KEYS = {
+    "shear_wave": ["rho_0", "omega", "u_max", "n_sin"],
+    "couette_flow": ["rho_0", "omega", "u_wall", "reynolds"],
+    "poiseuille_flow": ["rho_0", "omega", "rho_in", "rho_out"],
+    "sliding_lid": ["rho_0", "omega", "u_lid", "reynolds"],
+}
 
 # step config
 STEP_START = 0
@@ -88,6 +94,47 @@ def is_data_exported(config: dict) -> bool:
     return bool(config.get("export_u_x", False)) and bool(config.get("export_u_y", False))
 
 
+def format_metadata_value(value) -> str:
+    if isinstance(value, bool):
+        return str(value).lower()
+    if isinstance(value, float):
+        return f"{value:.6f}"
+
+    return str(value)
+
+
+def format_metadata_entries(config: dict, keys: list[str]) -> list[str]:
+    return [f"{key}={format_metadata_value(config[key])}" for key in keys if key in config]
+
+
+def get_metadata_text(config: dict) -> str:
+    sim_mode = config.get("SIM_MODE", _SIM_MODE_RESOLVED)
+    sim_mode = _MODE_MAP.get(sim_mode, sim_mode)
+    sim_entries = format_metadata_entries(config, _SIM_METADATA_KEYS.get(sim_mode, []))
+    grid_entries = [
+        f"N_X_TOTAL={format_metadata_value(config['N_X'])}",
+        f"N_Y_TOTAL={format_metadata_value(config['N_Y'])}",
+    ]
+
+    return " | ".join(sim_entries + grid_entries)
+
+
+def add_metadata_text(fig, config: dict):
+    metadata_text = get_metadata_text(config)
+    if not metadata_text:
+        return None
+
+    return fig.text(
+        0.5,
+        0.018,
+        metadata_text,
+        ha="center",
+        va="bottom",
+        fontsize=6.5,
+        color="0.15",
+    )
+
+
 def get_color_limit(steps: list[int], config: dict) -> float:
     if COLOR_LIMIT is not None:
         return float(COLOR_LIMIT)
@@ -123,7 +170,8 @@ def plot_step(step: int, config: dict, color_limit: float) -> None:
     u_y_plot = u_y[::STREAM_STRIDE, ::STREAM_STRIDE]
     velocity_mag_plot = velocity_mag[::STREAM_STRIDE, ::STREAM_STRIDE]
 
-    fig, ax = plt.subplots(figsize=(8, 5))
+    fig, ax = plt.subplots(figsize=(8, 5.55))
+    fig.subplots_adjust(bottom=0.13)
     stream = ax.streamplot(
         x_grid,
         y_grid,
@@ -144,9 +192,15 @@ def plot_step(step: int, config: dict, color_limit: float) -> None:
     ax.set_xlim(0, config["N_X"])
     ax.set_ylim(0, config["N_Y"])
     ax.set_aspect("equal")
+    metadata_text = add_metadata_text(fig, config)
 
     output_path = PLOT_DIR / f"{PLOT_NAME}{format_step_suffix(step)}.png"
-    fig.savefig(output_path, dpi=200, bbox_inches="tight")
+    fig.savefig(
+        output_path,
+        dpi=200,
+        bbox_inches="tight",
+        bbox_extra_artists=[metadata_text] if metadata_text is not None else None,
+    )
     plt.close(fig)
 
     print(f"saved plot: {output_path}")
