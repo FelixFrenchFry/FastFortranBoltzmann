@@ -217,14 +217,22 @@ contains
         call system_clock(clock_section_start)
 
         if (exchange_plan%left) then
-            halo_buffers%recv_left(:, :) = halo_buffers%window(:, :, BUF_SEND_RIGHT)[domain_info%left_image_id]
+            if (domain_info%left_image_id == domain_info%image_id) then ! read from own image when I_X=1
+                halo_buffers%recv_left(:, :) = halo_buffers%window(:, :, BUF_SEND_RIGHT)
+            else
+                halo_buffers%recv_left(:, :) = halo_buffers%window(:, :, BUF_SEND_RIGHT)[domain_info%left_image_id]
+            end if
             f(2, 0, 1:n_y_local) = halo_buffers%recv_left(:, 1)
             f(6, 0, 1:n_y_local) = halo_buffers%recv_left(:, 2)
             f(9, 0, 1:n_y_local) = halo_buffers%recv_left(:, 3)
         end if
 
         if (exchange_plan%right) then
-            halo_buffers%recv_right(:, :) = halo_buffers%window(:, :, BUF_SEND_LEFT)[domain_info%right_image_id]
+            if (domain_info%right_image_id == domain_info%image_id) then ! read from own image when I_X=1
+                halo_buffers%recv_right(:, :) = halo_buffers%window(:, :, BUF_SEND_LEFT)
+            else
+                halo_buffers%recv_right(:, :) = halo_buffers%window(:, :, BUF_SEND_LEFT)[domain_info%right_image_id]
+            end if
             f(4, n_x_local+1, 1:n_y_local) = halo_buffers%recv_right(:, 1)
             f(7, n_x_local+1, 1:n_y_local) = halo_buffers%recv_right(:, 2)
             f(8, n_x_local+1, 1:n_y_local) = halo_buffers%recv_right(:, 3)
@@ -264,14 +272,22 @@ contains
         call system_clock(clock_section_start)
 
         if (exchange_plan%bottom) then
-            halo_buffers%recv_bottom(:, :) = halo_buffers%window_y(:, :, BUF_SEND_TOP)[domain_info%bottom_image_id]
+            if (domain_info%bottom_image_id == domain_info%image_id) then ! read from own image when I_Y=1
+                halo_buffers%recv_bottom(:, :) = halo_buffers%window_y(:, :, BUF_SEND_TOP)
+            else
+                halo_buffers%recv_bottom(:, :) = halo_buffers%window_y(:, :, BUF_SEND_TOP)[domain_info%bottom_image_id]
+            end if
             f(3, 0:n_x_local+1, 0) = halo_buffers%recv_bottom(:, 1)
             f(6, 0:n_x_local+1, 0) = halo_buffers%recv_bottom(:, 2)
             f(7, 0:n_x_local+1, 0) = halo_buffers%recv_bottom(:, 3)
         end if
 
         if (exchange_plan%top) then
-            halo_buffers%recv_top(:, :) = halo_buffers%window_y(:, :, BUF_SEND_BOTTOM)[domain_info%top_image_id]
+            if (domain_info%top_image_id == domain_info%image_id) then ! read from own image when I_Y=1
+                halo_buffers%recv_top(:, :) = halo_buffers%window_y(:, :, BUF_SEND_BOTTOM)
+            else
+                halo_buffers%recv_top(:, :) = halo_buffers%window_y(:, :, BUF_SEND_BOTTOM)[domain_info%top_image_id]
+            end if
             f(5, 0:n_x_local+1, n_y_local+1) = halo_buffers%recv_top(:, 1)
             f(8, 0:n_x_local+1, n_y_local+1) = halo_buffers%recv_top(:, 2)
             f(9, 0:n_x_local+1, n_y_local+1) = halo_buffers%recv_top(:, 3)
@@ -403,11 +419,19 @@ contains
         call system_clock(clock_section_start)
 
         if (exchange_plan%macro_left) then
-            halo_buffers%recv_macro_left(:, :) = halo_buffers%window(:, :, BUF_MACRO_RIGHT)[domain_info%left_image_id]
+            if (domain_info%left_image_id == domain_info%image_id) then ! read from own image when I_X=1
+                halo_buffers%recv_macro_left(:, :) = halo_buffers%window(:, :, BUF_MACRO_RIGHT)
+            else
+                halo_buffers%recv_macro_left(:, :) = halo_buffers%window(:, :, BUF_MACRO_RIGHT)[domain_info%left_image_id]
+            end if
         end if
 
         if (exchange_plan%macro_right) then
-            halo_buffers%recv_macro_right(:, :) = halo_buffers%window(:, :, BUF_MACRO_LEFT)[domain_info%right_image_id]
+            if (domain_info%right_image_id == domain_info%image_id) then ! read from own image when I_X=1
+                halo_buffers%recv_macro_right(:, :) = halo_buffers%window(:, :, BUF_MACRO_LEFT)
+            else
+                halo_buffers%recv_macro_right(:, :) = halo_buffers%window(:, :, BUF_MACRO_LEFT)[domain_info%right_image_id]
+            end if
         end if
 
         call system_clock(clock_section_end)
