@@ -15,7 +15,7 @@ from pathlib import Path
 
 NUMBER = r"(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)"
 STEP_RE = re.compile(rf"step time\s*[:=]\s*({NUMBER})\s*ms", re.IGNORECASE)
-BLUPS_RE = re.compile(rf"BLUPS\s*[:=]\s*({NUMBER})", re.IGNORECASE)
+MLUPS_RE = re.compile(rf"MLUPS\s*[:=]\s*({NUMBER})", re.IGNORECASE)
 TIMING_SPREAD_RE = re.compile(
     rf"^(kernel compute|halo sync|halo transfer|other|total)\s*"
     rf"\|\s*({NUMBER})\s*"
@@ -210,7 +210,7 @@ def run_once(exe, images, ix, iy, run_num, pin):
 
     return (
         parse_last(STEP_RE, output, "step time"),
-        parse_last(BLUPS_RE, output, "BLUPS"),
+        parse_last(MLUPS_RE, output, "MLUPS"),
         parse_timing_spread(output),
         output,
     )
@@ -257,7 +257,7 @@ def print_timing_spread_medians(timing_spreads):
         ]
 
         if ratios:
-            ratio_text = f"{statistics.median(ratios):14.3f}"
+            ratio_text = f"{statistics.median(ratios):13.2f}x"
         else:
             ratio_text = f"{'n/a':>14}"
 
@@ -288,7 +288,7 @@ def main():
     if n_y % args.iy != 0:
         sys.exit("error: N_Y must be divisible by --iy")
 
-    blups_values = []
+    mlups_values = []
     timing_spreads = []
 
     print()
@@ -307,27 +307,31 @@ def main():
         if run_num > 1:
             time.sleep(3.0) # extra time to clean up resources and cool down
 
-        step_ms, blups, timing_spread, output = run_once(
+        step_ms, mlups, timing_spread, output = run_once(
             args.exe, args.images, args.ix, args.iy, run_num, args.pin)
+        total_seconds = timing_spread["total"]["worst_seconds"]
 
         if run_num == 1:
             print_static_app_output(output)
             print_header(f"benchmark runs started at {runs_started_at}")
 
-        print(f"{run_num:03d} | avg step: {step_ms:.3f} ms | BLUPS: {blups:.3f}")
+        print(
+            f"{run_num:03d} | avg step time: {step_ms:.3f} ms | "
+            f"total time: {total_seconds:.3f} sec | MLUPS: {int(mlups)}"
+        )
 
-        blups_values.append(blups)
+        mlups_values.append(mlups)
         timing_spreads.append(timing_spread)
 
     print()
-    blups_stats = get_stats(blups_values, higher_is_better=True)
+    mlups_stats = get_stats(mlups_values, higher_is_better=True)
 
-    print_header("BLUPS metrics")
-    print_param("median", f"{blups_stats['median']:.3f}")
-    print_param("best", f"{blups_stats['best']:.3f}")
-    print_param("worst", f"{blups_stats['worst']:.3f}")
-    print_param("mean", f"{blups_stats['mean']:.3f}")
-    print_param("stddev", f"{blups_stats['stddev_percent']:.3f} %")
+    print_header("MLUPS metrics")
+    print_param("median", f"{int(mlups_stats['median'])}")
+    print_param("best", f"{int(mlups_stats['best'])}")
+    print_param("worst", f"{int(mlups_stats['worst'])}")
+    print_param("mean", f"{int(mlups_stats['mean'])}")
+    print_param("stddev", f"{mlups_stats['stddev_percent']:.3f} %")
 
     print_timing_spread_medians(timing_spreads)
 
