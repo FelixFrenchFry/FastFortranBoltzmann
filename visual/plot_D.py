@@ -1,0 +1,234 @@
+#!/usr/bin/env python3
+import json
+from pathlib import Path
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+
+# --- [ plot velocity magnitude heatmap with streamlines overlay ] ---
+
+# run config
+# options "shear_wave" (1), "couette_flow" (2), "poiseuille_flow" (3), "sliding_lid" (4)
+SIM_MODE = 4
+RUN_NAME = "run_002_SL"
+DATA_NAME_X = "velocity_x"
+
+_MODE_MAP = {1: "shear_wave", 2: "couette_flow", 3: "poiseuille_flow", 4: "sliding_lid"}
+_SIM_MODE_RESOLVED = _MODE_MAP.get(SIM_MODE, SIM_MODE)
+DATA_NAME_Y = "velocity_y"
+PLOT_NAME = "velocity_mag_streamlines_heatmap"
+_SIM_METADATA_KEYS = {
+    "shear_wave": ["rho_0", "omega", "u_max", "n_sin"],
+    "couette_flow": ["rho_0", "omega", "u_wall", "reynolds"],
+    "poiseuille_flow": ["rho_0", "omega", "rho_in", "rho_out"],
+    "sliding_lid": ["rho_0", "omega", "u_lid", "reynolds"],
+}
+
+# step config
+STEP_START = 0
+STEP_END = None       # None -> uses N_STEPS from config.json
+STEP_STRIDE = None    # None -> uses export_interval from config.json
+COLOR_LIMIT = None    # None -> uses max(|u|) across all selected steps
+STREAM_STRIDE = 5
+STREAM_DENSITY = 1.5
+STREAM_LINEWIDTH = 1.0
+STREAM_ARROWSIZE = 1.2
+
+# path config
+SCRIPT_DIR = Path(__file__).resolve().parent
+ROOT_DIR = Path(__file__).resolve().parents[1]
+RUN_DIR = ROOT_DIR / "output" / RUN_NAME
+PLOT_DIR = SCRIPT_DIR / _SIM_MODE_RESOLVED / RUN_NAME / "D"
+
+
+def format_step_suffix(step: int, width: int = 9) -> str:
+    return f"_{step:0{width}d}"
+
+
+def load_config() -> dict:
+    config_path = RUN_DIR / "config.json"
+    with config_path.open("r", encoding="utf-8") as file:
+        return json.load(file)
+
+
+def get_steps(config: dict) -> list[int]:
+    step_start = STEP_START
+    step_end = config["N_STEPS"] if STEP_END is None else STEP_END
+    step_stride = config["export_interval"] if STEP_STRIDE is None else STEP_STRIDE
+
+    steps = list(range(step_start, step_end + 1, step_stride))
+    export_endpoint_states = config.get("export_endpoint_states", config.get("export_final_state", False))
+    if export_endpoint_states and step_end not in steps:
+        steps.append(step_end)
+
+    return steps
+
+
+def get_data_path(data_name: str, step: int) -> Path:
+    return RUN_DIR / f"{data_name}{format_step_suffix(step)}.bin"
+
+
+def get_file_dtype(config: dict) -> np.dtype:
+    file_dtype = config.get("file_dtype", "real32")
+    if file_dtype == "real32":
+        return np.float32
+    if file_dtype == "real64":
+        return np.float64
+
+    raise ValueError(f"unsupported file_dtype: {file_dtype}")
+
+
+def load_field(path: Path, config: dict) -> np.ndarray:
+    N_X = config["N_X"]
+    N_Y = config["N_Y"]
+    return np.fromfile(path, dtype=get_file_dtype(config)).reshape((N_Y, N_X))
+
+
+def is_data_exported(config: dict) -> bool:
+    if "export_macros" in config:
+        return bool(config["export_macros"])
+
+    return bool(config.get("export_u_x", False)) and bool(config.get("export_u_y", False))
+
+
+def format_metadata_value(value) -> str:
+    if isinstance(value, bool):
+        return str(value).lower()
+    if isinstance(value, float):
+        return f"{value:.6f}"
+
+    return str(value)
+
+
+def format_metadata_entries(config: dict, keys: list[str]) -> list[str]:
+    return [f"{key}={format_metadata_value(config[key])}" for key in keys if key in config]
+
+
+def get_metadata_text(config: dict) -> str:
+    sim_mode = config.get("SIM_MODE", _SIM_MODE_RESOLVED)
+    sim_mode = _MODE_MAP.get(sim_mode, sim_mode)
+    sim_entries = format_metadata_entries(config, _SIM_METADATA_KEYS.get(sim_mode, []))
+    grid_entries = [
+        f"N_X_TOTAL={format_metadata_value(config['N_X'])}",
+        f"N_Y_TOTAL={format_metadata_value(config['N_Y'])}",
+    ]
+
+    return " | ".join(sim_entries + grid_entries)
+
+
+def add_metadata_text(fig, config: dict):
+    metadata_text = get_metadata_text(config)
+    if not metadata_text:
+        return None
+
+    return fig.text(
+        0.5,
+        0.018,
+        metadata_text,
+        ha="center",
+        va="bottom",
+        fontsize=6.5,
+        color="0.15",
+    )
+
+
+def get_color_limit(steps: list[int], config: dict) -> float:
+    if COLOR_LIMIT is not None:
+        return float(COLOR_LIMIT)
+
+    max_val = 0.0
+    for step in steps:
+        u_x_path = get_data_path(DATA_NAME_X, step)
+        u_y_path = get_data_path(DATA_NAME_Y, step)
+        if u_x_path.exists() and u_y_path.exists():
+            u_x = load_field(u_x_path, config)
+            u_y = load_field(u_y_path, config)
+            velocity_mag = np.sqrt(u_x * u_x + u_y * u_y)
+            max_val = max(max_val, float(np.max(velocity_mag)))
+
+    return max(max_val, 1.0e-12)
+
+
+def plot_step(step: int, config: dict, color_limit: float) -> None:
+    u_x_path = get_data_path(DATA_NAME_X, step)
+    u_y_path = get_data_path(DATA_NAME_Y, step)
+    missing_paths = [path.name for path in [u_x_path, u_y_path] if not path.exists()]
+    if missing_paths:
+        print(f"skipped step {step:>9}: missing {', '.join(missing_paths)}")
+        return
+
+    u_x = load_field(u_x_path, config)
+    u_y = load_field(u_y_path, config)
+    velocity_mag = np.sqrt(u_x * u_x + u_y * u_y)
+
+    fig, ax = plt.subplots(figsize=(8, 5.55))
+    fig.subplots_adjust(bottom=0.13)
+
+    # velocity magnitude heatmap (from plot_B)
+    image = ax.imshow(
+        velocity_mag,
+        origin="lower",
+        cmap="turbo",
+        vmin=0.0,
+        vmax=color_limit,
+        extent=(0, config["N_X"], 0, config["N_Y"]),
+        interpolation="nearest",
+    )
+
+    # streamlines overlay in white (from plot_C)
+    x_grid = np.arange(config["N_X"], dtype=get_file_dtype(config))[::STREAM_STRIDE]
+    y_grid = np.arange(config["N_Y"], dtype=get_file_dtype(config))[::STREAM_STRIDE]
+    u_x_plot = u_x[::STREAM_STRIDE, ::STREAM_STRIDE]
+    u_y_plot = u_y[::STREAM_STRIDE, ::STREAM_STRIDE]
+    ax.streamplot(
+        x_grid,
+        y_grid,
+        u_x_plot,
+        u_y_plot,
+        color="white",
+        density=STREAM_DENSITY,
+        linewidth=STREAM_LINEWIDTH,
+        arrowsize=STREAM_ARROWSIZE,
+    )
+
+    fig.colorbar(image, ax=ax, label="|u|")
+    ax.set_title(f"|u| + streamlines at step {step}")
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    ax.set_xlim(0, config["N_X"])
+    ax.set_ylim(0, config["N_Y"])
+    ax.set_aspect("equal")
+    metadata_text = add_metadata_text(fig, config)
+
+    output_path = PLOT_DIR / f"{PLOT_NAME}{format_step_suffix(step)}.png"
+    fig.savefig(
+        output_path,
+        dpi=200,
+        bbox_inches="tight",
+        bbox_extra_artists=[metadata_text] if metadata_text is not None else None,
+    )
+    plt.close(fig)
+
+    print(f"saved plot: {output_path}")
+
+
+if __name__ == "__main__":
+    config = load_config()
+    steps = get_steps(config)
+    color_limit = get_color_limit(steps, config)
+    PLOT_DIR.mkdir(parents=True, exist_ok=True)
+
+    print(f"run directory:  {RUN_DIR}")
+    print(f"plot directory: {PLOT_DIR}")
+    print(f"data field:     {PLOT_NAME}")
+    print(f"steps:          {steps}")
+    print(f"color bounds:   [0, {color_limit:.6g}]")
+
+    if not is_data_exported(config):
+        print("warning: config does not mark velocity_x and velocity_y as exported")
+
+    for step in steps:
+        plot_step(step, config, color_limit)
