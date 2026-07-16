@@ -45,17 +45,7 @@ set(FFB_XYD_SOURCES
     source/layouts/xyd/modes/sliding_lid.f90
 )
 
-set(FFB_DXY_SOURCES
-    source/layouts/dxy/exchange.f90
-    source/layouts/dxy/initialization.f90
-    source/layouts/dxy/main.f90
-    source/layouts/dxy/simulation.f90
-    source/layouts/dxy/modes/couette_flow.f90
-    source/layouts/dxy/modes/poiseuille_flow.f90
-    source/layouts/dxy/modes/shear_wave.f90
-    source/layouts/dxy/modes/sliding_lid.f90
-)
-
+set(FFB_EXPERIMENT_SHARED_SOURCES source/experiments/exchange.f90 source/experiments/initialization.f90 source/experiments/main.f90)
 string(TOUPPER "${CMAKE_BUILD_TYPE}" FFB_BUILD_TYPE_UPPER)
 set(FFB_ACTIVE_FORTRAN_FLAGS "${CMAKE_Fortran_FLAGS} ${CMAKE_Fortran_FLAGS_${FFB_BUILD_TYPE_UPPER}}")
 string(STRIP "${FFB_ACTIVE_FORTRAN_FLAGS}" FFB_ACTIVE_FORTRAN_FLAGS)
@@ -103,14 +93,11 @@ function(configure_ffb_target target_name dist_func_layout)
     )
 endfunction()
 
-add_executable(FFB
-    ${FFB_SHARED_SOURCES}
-    ${FFB_XYD_SOURCES}
-)
-configure_ffb_target(FFB "xyd")
-
-add_executable(FFB_DXY
-    ${FFB_SHARED_SOURCES}
-    ${FFB_DXY_SOURCES}
-)
-configure_ffb_target(FFB_DXY "dxy")
+add_executable(FFB ${FFB_SHARED_SOURCES} ${FFB_XYD_SOURCES})
+configure_ffb_target(FFB xyd)
+add_executable(FFB_CHECKPOINT_0 ${FFB_SHARED_SOURCES} ${FFB_EXPERIMENT_SHARED_SOURCES} source/experiments/checkpoint_0/simulation.f90)
+configure_ffb_target(FFB_CHECKPOINT_0 dxy)
+add_executable(FFB_CHECKPOINT_1 ${FFB_SHARED_SOURCES} ${FFB_EXPERIMENT_SHARED_SOURCES} source/experiments/checkpoint_1/simulation.f90)
+configure_ffb_target(FFB_CHECKPOINT_1 dxy)
+add_executable(FFB_CHECKPOINT_2 ${FFB_SHARED_SOURCES} ${FFB_EXPERIMENT_SHARED_SOURCES} source/experiments/checkpoint_2/simulation.f90)
+configure_ffb_target(FFB_CHECKPOINT_2 dxy)
