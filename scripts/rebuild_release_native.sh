@@ -8,7 +8,9 @@ presets=(
 
 targets=(
   FFB
-  FFB_DXY
+  FFB_CHECKPOINT_0
+  FFB_CHECKPOINT_1
+  FFB_CHECKPOINT_2
 )
 
 rm -rf build

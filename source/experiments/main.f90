@@ -3,18 +3,15 @@ program main
     use iso_fortran_env, only: int32, int64, real64
     use domain, only: domain_t, initialize_domain
     use exchange, only: halo_buffers_t, exchange_plan_t, exchange_timing_t, &
-        BUF_MACRO_LEFT, BUF_MACRO_RIGHT, allocate_halo_buffers, build_exchange_plan, exchange_halos, &
-        exchange_poiseuille_macro_halos
+        allocate_halo_buffers, build_exchange_plan, exchange_halos
     use export, only: should_export_step, export_selected_data_distributed, export_metadata
     use hardware_info, only: hardware_info_t, collect_hardware_info
-    use initialization, only: apply_condition_shear_wave_local, &
-        apply_condition_couette_flow_local, apply_condition_poiseuille_flow_local, apply_condition_sliding_lid_local
-    use poiseuille_flow, only: prepare_poiseuille_flow_halos_PF, update_poiseuille_flow_macro_strips_PF
+    use initialization, only: apply_condition_sliding_lid_local
     use settings, only: N_STEPS, N_CELLS, N_DIRS, &
-        SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, SIM_MODE, FP, &
+        SIM_MODE, FP, &
         EXPORT_MACROS, EXPORT_ENDPOINT_STATES, EXPORT_INTERVAL, &
         EXPORT_NUM, INTERACTIVE_PROGRESS, &
-        PROGRESS_INTERVAL, RHO_0, U_MAX, N_SIN, RHO_IN, RHO_OUT
+        PROGRESS_INTERVAL, RHO_0
     use reporting, only: print_run_summary, print_launch_timestamp, print_progress_status, print_finish_timestamp, &
         print_execution_summary
     use simulation, only: execute_local_sim_step
@@ -94,40 +91,8 @@ program main
     total_bytes_per_cell = real(total_buffer_bytes, real64) / real(N_CELLS, real64)
 
     ! initial condition
-    if (SIM_MODE == SIM_SHEAR_WAVE) then
-        call apply_condition_shear_wave_local( &
-            RHO_0, U_MAX, N_SIN, &
-            domain_info%n_x, domain_info%n_y, domain_info%y_global_start, f_a, rho, u_x, u_y)
-    else if (SIM_MODE == SIM_COUETTE_FLOW) then
-        call apply_condition_couette_flow_local( &
-            RHO_0, domain_info%n_x, domain_info%n_y, f_a, rho, u_x, u_y)
-    else if (SIM_MODE == SIM_POISEUILLE_FLOW) then
-        call apply_condition_poiseuille_flow_local( &
-            RHO_0, domain_info%n_x, domain_info%n_y, f_a, rho, u_x, u_y)
-    else if (SIM_MODE == SIM_SLIDING_LID) then
-        call apply_condition_sliding_lid_local( &
-            RHO_0, domain_info%n_x, domain_info%n_y, f_a, rho, u_x, u_y)
-    else
-        error stop "error: unknown sim mode in main initial condition"
-    end if
-
-    if (SIM_MODE == SIM_POISEUILLE_FLOW) then
-        halo_buffers%window(:, 1, BUF_MACRO_LEFT) = RHO_IN
-        halo_buffers%window(:, 2, BUF_MACRO_LEFT) = 0.0_FP
-        halo_buffers%window(:, 3, BUF_MACRO_LEFT) = 0.0_FP
-
-        halo_buffers%window(:, 1, BUF_MACRO_RIGHT) = RHO_OUT
-        halo_buffers%window(:, 2, BUF_MACRO_RIGHT) = 0.0_FP
-        halo_buffers%window(:, 3, BUF_MACRO_RIGHT) = 0.0_FP
-
-        halo_buffers%recv_macro_left(:, 1) = RHO_IN
-        halo_buffers%recv_macro_left(:, 2) = 0.0_FP
-        halo_buffers%recv_macro_left(:, 3) = 0.0_FP
-
-        halo_buffers%recv_macro_right(:, 1) = RHO_OUT
-        halo_buffers%recv_macro_right(:, 2) = 0.0_FP
-        halo_buffers%recv_macro_right(:, 3) = 0.0_FP
-    end if
+    call apply_condition_sliding_lid_local( &
+        RHO_0, domain_info%n_x, domain_info%n_y, f_a, rho, u_x, u_y)
 
     ! print sim info
     if (this_image() == 1) then
@@ -184,41 +149,6 @@ program main
         halo_sync_seconds = halo_sync_seconds + exchange_timing%halo_sync_seconds
         halo_transfer_seconds = halo_transfer_seconds + exchange_timing%halo_transfer_seconds
 
-        if (SIM_MODE == SIM_POISEUILLE_FLOW) then
-            ! macro strips are computed from the current buffer after its halos are well-defined
-            call system_clock(clock_section_start)
-            if (read_from_a) then
-                call prepare_poiseuille_flow_halos_PF( &
-                    domain_info%n_x, domain_info%n_y, &
-                    domain_info%at_left_boundary, domain_info%at_right_boundary, &
-                    domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
-                    RHO_IN, RHO_OUT, &
-                    f_a, halo_buffers%recv_macro_left, halo_buffers%recv_macro_right)
-                call update_poiseuille_flow_macro_strips_PF( &
-                    domain_info%n_x, domain_info%n_y, &
-                    domain_info%at_left_boundary, domain_info%at_right_boundary, f_a, &
-                    halo_buffers%window(:,:,BUF_MACRO_LEFT), halo_buffers%window(:,:,BUF_MACRO_RIGHT))
-            else
-                call prepare_poiseuille_flow_halos_PF( &
-                    domain_info%n_x, domain_info%n_y, &
-                    domain_info%at_left_boundary, domain_info%at_right_boundary, &
-                    domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
-                    RHO_IN, RHO_OUT, &
-                    f_b, halo_buffers%recv_macro_left, halo_buffers%recv_macro_right)
-                call update_poiseuille_flow_macro_strips_PF( &
-                    domain_info%n_x, domain_info%n_y, &
-                    domain_info%at_left_boundary, domain_info%at_right_boundary, f_b, &
-                    halo_buffers%window(:,:,BUF_MACRO_LEFT), halo_buffers%window(:,:,BUF_MACRO_RIGHT))
-            end if
-            call system_clock(clock_section_end)
-            kernel_compute_seconds = kernel_compute_seconds + &
-                real(clock_section_end - clock_section_start, real64) / real(clock_rate, real64)
-
-            call exchange_poiseuille_macro_halos( &
-                domain_info, halo_buffers, exchange_plan, clock_rate, exchange_timing)
-            halo_sync_seconds = halo_sync_seconds + exchange_timing%halo_sync_seconds
-            halo_transfer_seconds = halo_transfer_seconds + exchange_timing%halo_transfer_seconds
-        end if
 
         call system_clock(clock_section_start)
         if (read_from_a) then
