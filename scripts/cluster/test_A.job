@@ -11,8 +11,7 @@
 
 set -euo pipefail
 
-cd $HOME/FastFortranBoltzmann
-source .venv/bin/activate
+cd "$SLURM_SUBMIT_DIR"
 
 # execution mode ("raw", "run", "sweep")
 EXECUTION_MODE="sweep"
