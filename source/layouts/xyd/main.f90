@@ -6,7 +6,7 @@ program main
         BUF_MACRO_LEFT, BUF_MACRO_RIGHT, allocate_halo_buffers, build_exchange_plan, exchange_halos, &
         exchange_poiseuille_macro_halos
     use export, only: should_export_step, export_selected_data_distributed, export_metadata
-    use hardware_info, only: hardware_info_t, collect_hardware_info
+    use hardware_info, only: hardware_info_t, collect_hardware_info, collect_image_host_names
     use initialization, only: apply_condition_shear_wave_local, &
         apply_condition_couette_flow_local, apply_condition_poiseuille_flow_local, apply_condition_sliding_lid_local
     use poiseuille_flow, only: prepare_poiseuille_flow_halos_PF, update_poiseuille_flow_macro_strips_PF
@@ -71,6 +71,7 @@ program main
     ! setup domain decomposition
     call initialize_domain(domain_info)
     call build_exchange_plan(domain_info, SIM_MODE, exchange_plan)
+    call collect_image_host_names()
 
     if (this_image() == 1) then
         call collect_hardware_info(machine_info)

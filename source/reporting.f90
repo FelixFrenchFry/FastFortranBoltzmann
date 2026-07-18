@@ -2,7 +2,7 @@ module reporting
     ! imports
     use iso_fortran_env, only: int32, int64, real64, output_unit
     use domain, only: domain_t, print_domain_summary
-    use hardware_info, only: hardware_info_t, print_hardware_summary
+    use hardware_info, only: hardware_info_t, print_hardware_summary, print_image_host_table
     use settings, only: N_X, N_Y, N_STEPS, N_CELLS, &
         SIM_SHEAR_WAVE, SIM_COUETTE_FLOW, SIM_POISEUILLE_FLOW, SIM_SLIDING_LID, &
         DIST_FUNC_LAYOUT, USE_UNROLLED_KERNELS, &
@@ -47,6 +47,9 @@ contains
         call print_hardware_summary(machine_info)
 
         print '(A)', ""
+        call print_image_host_table(domain_info%n_images, domain_info%n_images_x)
+        print '(A)', ""
+
         print '(A)', "--- [ simulation parameters ] --------------------------------------------------"
         print '(A,T27,A,A)',     "SIM_MODE", "= ", trim(sim_mode_to_string(sim_mode))
 
