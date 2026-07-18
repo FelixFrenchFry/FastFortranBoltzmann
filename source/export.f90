@@ -71,6 +71,7 @@ contains
         velocity_mag = sqrt(u_x * u_x + u_y * u_y) ! element-wise sqrt of velocity magnitude
         call export_scalar_field_distributed( &
             domain_info, velocity_mag, "velocity_mag", export_num, suffix_num)
+        deallocate(velocity_mag)
     end subroutine export_selected_data_distributed
 
 
@@ -264,6 +265,9 @@ contains
             call ensure_output_directory(output_path)
             call write_binary_field(global_field, file_path)
         end if
+
+        if (allocated(global_field)) deallocate(global_field)
+        deallocate(export_buffer)
 
         sync all
     end subroutine export_scalar_field_distributed
