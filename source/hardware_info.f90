@@ -93,12 +93,6 @@ contains
         integer :: env_status
 
         host_name = ""
-        call get_environment_variable("SLURMD_NODENAME", host_name, status=env_status)
-
-        if (len_trim(host_name) == 0) then
-            host_name = ""
-            call get_environment_variable("HOSTNAME", host_name, status=env_status)
-        end if
 
         write(image_id_text, '(I0)') this_image()
         slurm_job_id = ""
@@ -112,11 +106,17 @@ contains
         end if
 
         command_host_name = unknown_value
-        if (len_trim(host_name) == 0) then
-            call read_command_output("hostname", command_host_name, tmp_file)
-        end if
-        if (len_trim(host_name) == 0 .and. len_trim(command_host_name) > 0 .and. trim(command_host_name) /= unknown_value) then
+        call read_command_output("hostname", command_host_name, tmp_file)
+
+        if (len_trim(command_host_name) > 0 .and. trim(command_host_name) /= unknown_value) then
             host_name = command_host_name
+        else
+            call get_environment_variable("HOSTNAME", host_name, status=env_status)
+
+            if (len_trim(host_name) == 0) then
+                host_name = ""
+                call get_environment_variable("SLURMD_NODENAME", host_name, status=env_status)
+            end if
         end if
 
         if (len_trim(host_name) == 0) then
