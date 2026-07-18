@@ -12,6 +12,9 @@ module hardware_info
 #ifndef FFB_FORTRAN_FLAGS
 #define FFB_FORTRAN_FLAGS "unknown"
 #endif
+#ifndef FFB_GIT_COMMIT
+#define FFB_GIT_COMMIT "unknown"
+#endif
 
     private
 
@@ -39,6 +42,7 @@ module hardware_info
     character(len=*), parameter :: compiler_id = FFB_COMPILER_ID
     character(len=*), parameter :: compiler_version = FFB_COMPILER_VERSION
     character(len=*), parameter :: fortran_flags = FFB_FORTRAN_FLAGS
+    character(len=*), parameter :: latest_commit = FFB_GIT_COMMIT
     character(len=256) :: image_host_names[*]
 
 contains
@@ -137,6 +141,7 @@ contains
         print '(A,T27,A,A)', "compute nodes", "= ", trim(info%slurm_nodes)
         print '(A,T27,A,A)', "compiler", "= ", trim(info%compiler)
         print '(A,T27,A,A)', "flags", "= ", trim(info%compiler_flags)
+        print '(A,T27,A,A)', "latest commit", "= ", trim(latest_commit)
     end subroutine print_hardware_summary
 
 
@@ -165,7 +170,88 @@ contains
             print '(I5,A,I4,A,I4,A,A)', image_id, " | [ ", image_x, " / ", image_y, " ] | ", &
                 trim(image_host_names[image_id])
         end do
+
+        call print_image_host_buckets(n_images)
     end subroutine print_image_host_table
+
+
+    subroutine print_image_host_buckets( &
+        n_images &
+        )
+        ! inputs
+        integer(int32), intent(in) :: n_images
+
+        ! locals
+        character(len=*), parameter :: table_separator = "--------------------------------------------------------------------------------"
+        integer(int32), parameter :: table_width = len(table_separator)
+        integer(int32) :: image_id
+        integer(int32) :: bucket_image_id
+        character(len=32) :: image_id_text
+        character(len=:), allocatable :: line
+        character(len=:), allocatable :: continuation_prefix
+        character(len=:), allocatable :: image_separator
+        logical :: is_first_bucket
+        logical :: line_has_image
+
+        print '(A)', ""
+        print '(A)', "host | images"
+        print '(A)', table_separator
+
+        do image_id = 1, n_images
+            is_first_bucket = .true.
+
+            do bucket_image_id = 1, image_id - 1
+                if (trim(image_host_names[bucket_image_id]) == &
+                    trim(image_host_names[image_id])) then
+                    is_first_bucket = .false.
+                    exit
+                end if
+            end do
+
+            if (.not. is_first_bucket) then
+                cycle
+            end if
+
+            line = trim(image_host_names[image_id]) // " | [ "
+            continuation_prefix = repeat(" ", len_trim(image_host_names[image_id])) // " | "
+            line_has_image = .false.
+
+            do bucket_image_id = image_id, n_images
+                if (trim(image_host_names[bucket_image_id]) == &
+                    trim(image_host_names[image_id])) then
+                    write(image_id_text, '(I0)') bucket_image_id
+
+                    if (line_has_image) then
+                        image_separator = ", "
+                    else
+                        image_separator = ""
+                    end if
+
+                    if (len(line) + len(image_separator) + len_trim(image_id_text) + &
+                        len(" ]") + 1 > table_width) then
+                        if (line_has_image) then
+                            print '(A)', trim(line) // ","
+                            line = continuation_prefix
+                        else
+                            print '(A)', trim(image_host_names[image_id]) // " |"
+                            line = " | [ "
+                            continuation_prefix = " | "
+                        end if
+
+                        image_separator = ""
+                        line_has_image = .false.
+                    end if
+
+                    line = line // image_separator // trim(image_id_text)
+                    line_has_image = .true.
+                end if
+            end do
+
+            print '(A)', trim(line) // " ]"
+        end do
+
+        print '(A)', ""
+    end subroutine print_image_host_buckets
 
 
     subroutine write_hardware_metadata( &
