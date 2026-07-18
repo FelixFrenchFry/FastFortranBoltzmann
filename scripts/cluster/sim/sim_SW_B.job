@@ -85,6 +85,11 @@ export EXE=$BUILD_DIR/bin/FFB
 export I_MPI_FABRICS=shm:ofi
 unset I_MPI_PIN_PROCESSOR_LIST
 
+# cyclic process distribution to force a round-robin allocation of MPI ranks across available nodes
+export SLURM_DISTRIBUTION=cyclic
+# force Intel MPI's Hydra process manager to use Slurm bootstrap interface
+export I_MPI_HYDRA_BOOTSTRAP=slurm
+
 echo ""
 echo "----- [ launching job script in $EXECUTION_MODE execution mode ] -----"
 echo ""
