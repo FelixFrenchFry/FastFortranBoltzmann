@@ -5,6 +5,22 @@ project(FastFortranBoltzmann
     LANGUAGES Fortran
 )
 
+find_package(Git QUIET)
+
+if(GIT_FOUND)
+    execute_process(
+        COMMAND "${GIT_EXECUTABLE}" rev-parse --short HEAD
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        OUTPUT_VARIABLE FFB_GIT_COMMIT
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+endif()
+
+if(NOT FFB_GIT_COMMIT)
+    set(FFB_GIT_COMMIT "unknown")
+endif()
+
 # only support for Intel Fortran compiler
 if(NOT CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
     message(FATAL_ERROR
@@ -71,6 +87,7 @@ function(configure_ffb_target target_name dist_func_layout)
         "FFB_COMPILER_ID=\"${CMAKE_Fortran_COMPILER_ID}\""
         "FFB_COMPILER_VERSION=\"${CMAKE_Fortran_COMPILER_VERSION}\""
         "FFB_FORTRAN_FLAGS=\"${FFB_ACTIVE_FORTRAN_FLAGS}\""
+        "FFB_GIT_COMMIT=\"${FFB_GIT_COMMIT}\""
         "FFB_DIST_FUNC_LAYOUT=\"${dist_func_layout}\""
         ${FFB_SETTINGS_DEFINITIONS}
     )

@@ -48,7 +48,6 @@ contains
 
         print '(A)', ""
         call print_image_host_table(domain_info%n_images, domain_info%n_images_x)
-        print '(A)', ""
 
         print '(A)', "--- [ simulation parameters ] --------------------------------------------------"
         print '(A,T27,A,A)',     "SIM_MODE", "= ", trim(sim_mode_to_string(sim_mode))
