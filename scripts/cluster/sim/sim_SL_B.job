@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=sim_SL_B
 #SBATCH --partition=cpu_il
-#SBATCH --nodes=6
+#SBATCH --nodes=4
 #SBATCH --ntasks-per-node=64
 #SBATCH --cpus-per-task=1
 #SBATCH --time=72:00:00
@@ -20,7 +20,7 @@ EXECUTION_MODE="raw"
 # (ignored in "sweep" mode)
 IMAGES=$SLURM_NTASKS
 I_X=1
-I_Y=384
+I_Y=256
 
 # compile-time setting overwrites
 FFB_SETTINGS_DEFINITIONS=(
@@ -28,7 +28,7 @@ FFB_SETTINGS_DEFINITIONS=(
     FFB_SIM_MODE=4
     FFB_N_X=9600
     FFB_N_Y=9600
-    FFB_N_STEPS=14000000
+    FFB_N_STEPS=10000000
     FFB_USE_UNROLLED_KERNELS=.true.
     FFB_EXPORT_MACROS=.true.
     FFB_EXPORT_ENDPOINT_STATES=.true.
