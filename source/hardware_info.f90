@@ -1,6 +1,6 @@
 module hardware_info
     ! imports
-    use iso_fortran_env, only: int64
+    use iso_fortran_env, only: int32, int64
     implicit none
 
 #ifndef FFB_COMPILER_ID
@@ -17,7 +17,9 @@ module hardware_info
 
     public :: hardware_info_t
     public :: collect_hardware_info
+    public :: collect_image_host_names
     public :: print_hardware_summary
+    public :: print_image_host_table
     public :: write_hardware_metadata
 
     type :: hardware_info_t
@@ -37,6 +39,7 @@ module hardware_info
     character(len=*), parameter :: compiler_id = FFB_COMPILER_ID
     character(len=*), parameter :: compiler_version = FFB_COMPILER_VERSION
     character(len=*), parameter :: fortran_flags = FFB_FORTRAN_FLAGS
+    character(len=256) :: image_host_names[*]
 
 contains
 
@@ -76,6 +79,52 @@ contains
     end subroutine collect_hardware_info
 
 
+    subroutine collect_image_host_names()
+        ! locals
+        character(len=256) :: host_name
+        character(len=256) :: slurm_job_id
+        character(len=256) :: tmp_file
+        character(len=32) :: image_id_text
+        character(len=:), allocatable :: command_host_name
+        integer :: env_status
+
+        host_name = ""
+        call get_environment_variable("SLURMD_NODENAME", host_name, status=env_status)
+
+        if (len_trim(host_name) == 0) then
+            host_name = ""
+            call get_environment_variable("HOSTNAME", host_name, status=env_status)
+        end if
+
+        write(image_id_text, '(I0)') this_image()
+        slurm_job_id = ""
+        call get_environment_variable("SLURM_JOB_ID", slurm_job_id, status=env_status)
+
+        if (len_trim(slurm_job_id) > 0) then
+            tmp_file = "/tmp/.ffb_hostname_" // trim(slurm_job_id) // "_" // &
+                trim(image_id_text) // ".tmp"
+        else
+            tmp_file = "/tmp/.ffb_hostname_" // trim(image_id_text) // ".tmp"
+        end if
+
+        command_host_name = unknown_value
+        if (len_trim(host_name) == 0) then
+            call read_command_output("hostname", command_host_name, tmp_file)
+        end if
+        if (len_trim(host_name) == 0 .and. len_trim(command_host_name) > 0 .and. trim(command_host_name) /= unknown_value) then
+            host_name = command_host_name
+        end if
+
+        if (len_trim(host_name) == 0) then
+            image_host_names = unknown_value
+        else
+            image_host_names = trim(adjustl(host_name))
+        end if
+
+        sync all
+    end subroutine collect_image_host_names
+
+
     subroutine print_hardware_summary( &
         info &
         )
@@ -89,6 +138,34 @@ contains
         print '(A,T27,A,A)', "compiler", "= ", trim(info%compiler)
         print '(A,T27,A,A)', "flags", "= ", trim(info%compiler_flags)
     end subroutine print_hardware_summary
+
+
+    subroutine print_image_host_table( &
+        n_images, n_images_x &
+        )
+        ! inputs
+        integer(int32), intent(in) :: n_images
+        integer(int32), intent(in) :: n_images_x
+
+        ! locals
+        integer(int32) :: image_id
+        integer(int32) :: image_x
+        integer(int32) :: image_y
+
+        if (this_image() /= 1) then
+            return
+        end if
+
+        print '(A)', "image | [    X /    Y ] | host"
+        print '(A)', "--------------------------------------------------------------------------------"
+
+        do image_id = 1, n_images
+            image_x = modulo(image_id - 1, n_images_x) + 1
+            image_y = (image_id - 1) / n_images_x + 1
+            print '(I5,A,I4,A,I4,A,A)', image_id, " | [ ", image_x, " / ", image_y, " ] | ", &
+                trim(image_host_names[image_id])
+        end do
+    end subroutine print_image_host_table
 
 
     subroutine write_hardware_metadata( &
@@ -124,29 +201,37 @@ contains
 
 
     subroutine read_command_output( &
-        command, command_output &
+        command, command_output, tmp_file &
         )
         ! inputs
         character(len=*), intent(in) :: command
+        character(len=*), intent(in), optional :: tmp_file
 
         ! output
         character(len=:), allocatable, intent(out) :: command_output
 
         ! locals
-        character(len=*), parameter :: tmp_file = ".ffb_hardware_info.tmp"
+        character(len=*), parameter :: default_tmp_file = ".ffb_hardware_info.tmp"
         character(len=512) :: line
         integer :: unit
         integer :: io_stat
         integer :: cmdstat
         integer :: exitstat
+        character(len=:), allocatable :: tmp_file_resolved
+
+        if (present(tmp_file)) then
+            tmp_file_resolved = trim(tmp_file)
+        else
+            tmp_file_resolved = default_tmp_file
+        end if
 
         command_output = unknown_value
 
-        call execute_command_line(trim(command) // " > " // tmp_file // " 2>/dev/null", &
+        call execute_command_line(trim(command) // " > " // trim(tmp_file_resolved) // " 2>/dev/null", &
             exitstat=exitstat, cmdstat=cmdstat)
 
         if (cmdstat == 0) then
-            open(newunit=unit, file=tmp_file, form="formatted", status="old", action="read", iostat=io_stat)
+            open(newunit=unit, file=trim(tmp_file_resolved), form="formatted", status="old", action="read", iostat=io_stat)
 
             if (io_stat == 0) then
                 read(unit, '(A)', iostat=io_stat) line
@@ -157,7 +242,7 @@ contains
             end if
         end if
 
-        call execute_command_line("rm -f " // tmp_file)
+        call execute_command_line("rm -f " // trim(tmp_file_resolved))
     end subroutine read_command_output
 
 
