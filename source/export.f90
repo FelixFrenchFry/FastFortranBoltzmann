@@ -46,7 +46,7 @@ contains
 
 
     subroutine export_selected_data_distributed( &
-        domain_info, export_num, suffix_num, rho, u_x, u_y &
+        domain_info, export_num, suffix_num, rho, u_x, u_y, export_buffer &
         )
         ! read-only inputs
         type(domain_t), intent(in) :: domain_info
@@ -55,22 +55,23 @@ contains
         real(FP), intent(in) :: rho(:,:)
         real(FP), intent(in) :: u_x(:,:)
         real(FP), intent(in) :: u_y(:,:)
+        real(FP), intent(inout) :: export_buffer(:,:)[*]
 
         ! temp
         real(FP), allocatable :: velocity_mag(:,:)
 
         ! export macro scalar fields
         call export_scalar_field_distributed( &
-            domain_info, rho, "density", export_num, suffix_num)
+            domain_info, rho, "density", export_num, suffix_num, export_buffer)
         call export_scalar_field_distributed( &
-            domain_info, u_x, "velocity_x", export_num, suffix_num)
+            domain_info, u_x, "velocity_x", export_num, suffix_num, export_buffer)
         call export_scalar_field_distributed( &
-            domain_info, u_y, "velocity_y", export_num, suffix_num)
+            domain_info, u_y, "velocity_y", export_num, suffix_num, export_buffer)
 
         allocate(velocity_mag(size(u_x, 1), size(u_x, 2)))
         velocity_mag = sqrt(u_x * u_x + u_y * u_y) ! element-wise sqrt of velocity magnitude
         call export_scalar_field_distributed( &
-            domain_info, velocity_mag, "velocity_mag", export_num, suffix_num)
+            domain_info, velocity_mag, "velocity_mag", export_num, suffix_num, export_buffer)
         deallocate(velocity_mag)
     end subroutine export_selected_data_distributed
 
@@ -211,7 +212,7 @@ contains
 
 
     subroutine export_scalar_field_distributed( &
-        domain_info, local_field, field_name, export_num, suffix_num &
+        domain_info, local_field, field_name, export_num, suffix_num, export_buffer &
         )
         ! read-only inputs
         type(domain_t), intent(in) :: domain_info
@@ -219,6 +220,7 @@ contains
         character(len=*), intent(in) :: field_name
         character(len=*), intent(in) :: export_num
         integer(int32), intent(in) :: suffix_num
+        real(FP), intent(inout) :: export_buffer(:,:)[*]
 
         ! temp
         integer(int32) :: image_id
@@ -231,14 +233,12 @@ contains
         character(len=:), allocatable :: output_path
         character(len=:), allocatable :: file_path
         real(FP), allocatable :: global_field(:,:)
-        real(FP), allocatable :: export_buffer(:,:)[:]
 
         if (size(local_field, 1) /= domain_info%n_x .or. &
             size(local_field, 2) /= domain_info%n_y) then
             error stop "error: local distributed export field has wrong shape"
         end if
 
-        allocate(export_buffer(domain_info%n_x, domain_info%n_y)[*])
         export_buffer(:, :) = local_field(:, :)
 
         sync all
@@ -267,7 +267,6 @@ contains
         end if
 
         if (allocated(global_field)) deallocate(global_field)
-        deallocate(export_buffer)
 
         sync all
     end subroutine export_scalar_field_distributed

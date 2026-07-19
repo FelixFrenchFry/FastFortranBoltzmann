@@ -78,6 +78,7 @@ program main
     real(FP), allocatable :: rho(:,:)
     real(FP), allocatable :: u_x(:,:)
     real(FP), allocatable :: u_y(:,:)
+    real(FP), allocatable :: export_buffer(:,:)[:]
 
     ! setup domain decomposition
     call initialize_domain(domain_info)
@@ -94,6 +95,9 @@ program main
     allocate(rho(domain_info%n_x, domain_info%n_y))
     allocate(u_x(domain_info%n_x, domain_info%n_y))
     allocate(u_y(domain_info%n_x, domain_info%n_y))
+    if (EXPORT_MACROS) then
+        allocate(export_buffer(domain_info%n_x, domain_info%n_y)[*])
+    end if
     call allocate_halo_buffers(domain_info, halo_buffers)
 
     ! compute memory metrics for persistent main sim buffers
@@ -102,6 +106,10 @@ program main
         int(domain_info%n_images, int64)
     macro_field_buffers_bytes = (size(rho, kind=int64) + size(u_x, kind=int64) + size(u_y, kind=int64)) * bytes_fp * &
         int(domain_info%n_images, int64)
+    if (allocated(export_buffer)) then
+        macro_field_buffers_bytes = macro_field_buffers_bytes + size(export_buffer, kind=int64) * bytes_fp * &
+            int(domain_info%n_images, int64)
+    end if
     total_buffer_bytes = dist_function_buffers_bytes + macro_field_buffers_bytes
     total_bytes_per_cell = real(total_buffer_bytes, real64) / real(N_CELLS, real64)
 
@@ -161,7 +169,7 @@ program main
     ! export initial condition
     if (EXPORT_MACROS .and. should_export_step(0_int32, EXPORT_ENDPOINT_STATES, &
         EXPORT_INTERVAL)) then
-        call export_selected_data_distributed(domain_info, EXPORT_NUM, 0_int32, rho, u_x, u_y)
+        call export_selected_data_distributed(domain_info, EXPORT_NUM, 0_int32, rho, u_x, u_y, export_buffer)
     end if
 
     ! print sim launch timestamp
@@ -251,7 +259,7 @@ program main
         ! export selected field
         if (EXPORT_MACROS .and. should_export_step(step, EXPORT_ENDPOINT_STATES, &
             EXPORT_INTERVAL)) then
-            call export_selected_data_distributed(domain_info, EXPORT_NUM, step, rho, u_x, u_y)
+            call export_selected_data_distributed(domain_info, EXPORT_NUM, step, rho, u_x, u_y, export_buffer)
         end if
 
         ! print sim progress info
@@ -319,6 +327,7 @@ program main
     end if
 
     flush(output_unit)
+    if (allocated(export_buffer)) deallocate(export_buffer)
     sync all
 
     call c_exit(0_c_int)
