@@ -541,6 +541,7 @@ def parse_args():
     parser.add_argument("--case", choices=DOMAIN_DECOMP_CASE_SETS.keys(), default="custom")
     parser.add_argument("--skip", type=int, default=SKIP)
     parser.add_argument("--pin", choices=PINNING_PRESETS.keys(), default=DEFAULT_PIN)
+    parser.add_argument("--per-host", action="store_true")
     return parser.parse_args()
 
 
@@ -635,13 +636,25 @@ def print_pinning_settings(pin):
     print_param("mpi pinning env", env)
 
 
-def run_once(exe, images, ix, iy, run_num, pin):
+def run_once(exe, images, ix, iy, run_num, pin, per_host=False):
     env = os.environ.copy()
     apply_pinning_preset(env, pin)
     if "FOR_COARRAY_CONFIG_FILE" not in env:
         env["FOR_COARRAY_NUM_IMAGES"] = str(images)
     env["I_X"] = str(ix)
     env["I_Y"] = str(iy)
+
+    if per_host:
+        # clear Slurm-level process layout controls to avoid conflicts
+        env.pop("I_MPI_HYDRA_BOOTSTRAP", None)
+        env.pop("SLURM_DISTRIBUTION", None)
+
+        # inject dynamic per-host rank mapping if running in Slurm (rounding up)
+        num_nodes = int(env.get("SLURM_JOB_NUM_NODES", 1))
+        if num_nodes > 1:
+            import math
+            per_host_val = math.ceil(images / num_nodes)
+            env["I_MPI_PERHOST"] = str(per_host_val)
 
     completed = subprocess.run(
         [exe],
@@ -728,7 +741,7 @@ def validate_case(case_num, n_x, n_y, images, ix, iy):
         sys.exit(f"error: case {case_num}: N_Y must be divisible by I_Y")
 
 
-def run_case(exe, runs, n_x, n_y, case_num, n_cases, images, ix, iy, pin):
+def run_case(exe, runs, n_x, n_y, case_num, n_cases, images, ix, iy, pin, per_host=False):
     validate_case(case_num, n_x, n_y, images, ix, iy)
 
     mlups_values = []
@@ -743,6 +756,7 @@ def run_case(exe, runs, n_x, n_y, case_num, n_cases, images, ix, iy, pin):
     print_param("image grid", f"{ix} x {iy}")
     print_param("sim size", f"{n_x} x {n_y}")
     print_pinning_settings(pin)
+    print_param("mpi per host option", "enabled" if per_host else "disabled")
     print()
 
     runs_started_at = timestamp()
@@ -751,7 +765,7 @@ def run_case(exe, runs, n_x, n_y, case_num, n_cases, images, ix, iy, pin):
         if run_num > 1:
             time.sleep(3.0) # extra time to clean up resources and cool down
 
-        step_ms, mlups, timing_spread, output = run_once(exe, images, ix, iy, run_num, pin)
+        step_ms, mlups, timing_spread, output = run_once(exe, images, ix, iy, run_num, pin, per_host)
         total_seconds = timing_spread["total"]["worst_seconds"]
 
         if run_num == 1:
@@ -800,7 +814,7 @@ def main():
 
     for case_num, (images, ix, iy) in enumerate(domain_decomp_cases[args.skip:], start=args.skip + 1):
         run_case(
-            args.exe, args.runs, n_x, n_y, case_num, len(domain_decomp_cases), images, ix, iy, args.pin)
+            args.exe, args.runs, n_x, n_y, case_num, len(domain_decomp_cases), images, ix, iy, args.pin, args.per_host)
 
 
 if __name__ == "__main__":
