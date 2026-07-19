@@ -18,9 +18,8 @@ STEP_RE = re.compile(rf"step time\s*[:=]\s*({NUMBER})\s*ms", re.IGNORECASE)
 MLUPS_RE = re.compile(rf"MLUPS\s*[:=]\s*({NUMBER})", re.IGNORECASE)
 TIMING_SPREAD_RE = re.compile(
     rf"^(kernel compute|halo sync|halo transfer|other|total)\s*"
-    rf"\|\s*({NUMBER})\s*"
-    rf"\|\s*({NUMBER})\s*"
-    rf"\|\s*(?:(n/a)|({NUMBER}))\s*$",
+    rf"\|\s*({NUMBER})\s*\((\d+)\)\s*"
+    rf"\|\s*({NUMBER})\s*\((\d+)\)\s*$",
     re.IGNORECASE | re.MULTILINE,
 )
 LAUNCHED_RE = re.compile(r"^\[[0-9:]+\]\s+launched", re.MULTILINE)
@@ -608,11 +607,12 @@ def parse_last(pattern, text, name):
 
 def parse_timing_spread(output):
     values = {}
-    for name, best_seconds, worst_seconds, na_marker, worst_best in TIMING_SPREAD_RE.findall(output):
+    for name, best_seconds, best_image_id, worst_seconds, worst_image_id in TIMING_SPREAD_RE.findall(output):
         values[name.strip().lower()] = {
             "best_seconds": float(best_seconds),
+            "best_image_id": int(best_image_id),
             "worst_seconds": float(worst_seconds),
-            "worst_best": None if na_marker else float(worst_best),
+            "worst_image_id": int(worst_image_id),
         }
 
     missing = [name for name in TIMING_CATEGORIES if name not in values]
@@ -649,12 +649,41 @@ def run_once(exe, images, ix, iy, run_num, pin, per_host=False):
         env.pop("I_MPI_HYDRA_BOOTSTRAP", None)
         env.pop("SLURM_DISTRIBUTION", None)
 
-        # inject dynamic per-host rank mapping if running in Slurm (rounding up)
-        num_nodes = int(env.get("SLURM_JOB_NUM_NODES", 1))
-        if num_nodes > 1:
-            import math
-            per_host_val = math.ceil(images / num_nodes)
-            env["I_MPI_PERHOST"] = str(per_host_val)
+        # generate dynamic hostfile if running in Slurm
+        slurm_nodelist = env.get("SLURM_JOB_NODELIST")
+        if slurm_nodelist:
+            try:
+                res = subprocess.run(
+                    ["scontrol", "show", "hostnames", slurm_nodelist],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                hosts = res.stdout.strip().splitlines()
+            except Exception:
+                hosts = []
+
+            if hosts:
+                num_nodes = len(hosts)
+                base = images // num_nodes
+                rem = images % num_nodes
+
+                lines = []
+                for i, host in enumerate(hosts):
+                    slots = base + (1 if i < rem else 0)
+                    if slots > 0:
+                        lines.append(f"{host}:{slots}")
+
+                import tempfile
+                tf = tempfile.NamedTemporaryFile(
+                    mode="w", delete=False, prefix=f"hostfile_{images}_", dir="."
+                )
+                try:
+                    tf.write("\n".join(lines) + "\n")
+                    tf.close()
+                    env["I_MPI_HYDRA_HOST_FILE"] = tf.name
+                except Exception as e:
+                    print(f"Warning: Failed to write dynamic hostfile: {e}")
 
     completed = subprocess.run(
         [exe],
@@ -665,6 +694,15 @@ def run_once(exe, images, ix, iy, run_num, pin, per_host=False):
     )
 
     output = completed.stdout + "\n" + completed.stderr
+
+    # clean up temporary hostfile
+    temp_hostfile_path = env.get("I_MPI_HYDRA_HOST_FILE")
+    if temp_hostfile_path and os.path.exists(temp_hostfile_path):
+        try:
+            os.unlink(temp_hostfile_path)
+        except Exception:
+            pass
+
     if completed.returncode != 0:
         print(output)
         raise RuntimeError(f"run {run_num} failed with exit code {completed.returncode}")
@@ -700,31 +738,34 @@ def get_stats(values, higher_is_better):
     }
 
 
+def get_median_timing_measurement(timing_spreads, category, seconds_key, image_key):
+    measurements = sorted(
+        (values[category][seconds_key], values[category][image_key])
+        for values in timing_spreads
+    )
+
+    return measurements[len(measurements) // 2]
+
+
+def format_timing_measurement(seconds, image_id, width):
+    return f"{seconds:.3f} ({image_id})".rjust(width)
+
+
 def print_timing_spread_medians(timing_spreads):
     print()
-    print(
-        f"{'image execution time spread':<28} |  {'best [sec]':>12}  |  {'worst [sec]':>12}  |"
-        f"{'worst/best':>16}"
-    )
+    print("image execution time spread |       best [sec] (image) |     worst [sec] (image)")
     print("-" * HEADER_WIDTH)
 
     for category in TIMING_CATEGORIES:
-        best_seconds = [values[category]["best_seconds"] for values in timing_spreads]
-        worst_seconds = [values[category]["worst_seconds"] for values in timing_spreads]
-        ratios = [
-            values[category]["worst_best"]
-            for values in timing_spreads
-            if values[category]["worst_best"] is not None
-        ]
-
-        if ratios:
-            ratio_text = f"{statistics.median(ratios):13.2f}x"
-        else:
-            ratio_text = f"{'n/a':>14}"
+        best_seconds, best_image_id = get_median_timing_measurement(
+            timing_spreads, category, "best_seconds", "best_image_id")
+        worst_seconds, worst_image_id = get_median_timing_measurement(
+            timing_spreads, category, "worst_seconds", "worst_image_id")
 
         print(
-            f"{category:<28} |  {statistics.median(best_seconds):12.3f}  |  "
-            f"{statistics.median(worst_seconds):12.3f}  |  {ratio_text}"
+            f"{category:<27} | "
+            f"{format_timing_measurement(best_seconds, best_image_id, 24)} | "
+            f"{format_timing_measurement(worst_seconds, worst_image_id, 23)}"
         )
 
 
