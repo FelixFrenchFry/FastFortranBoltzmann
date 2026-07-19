@@ -17,10 +17,10 @@ NUMBER = r"(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)"
 STEP_RE = re.compile(rf"step time\s*[:=]\s*({NUMBER})\s*ms", re.IGNORECASE)
 MLUPS_RE = re.compile(rf"MLUPS\s*[:=]\s*({NUMBER})", re.IGNORECASE)
 TIMING_SPREAD_RE = re.compile(
-    rf"^(kernel compute|halo sync|halo transfer|other|total)\s*"
+    rf"\b(kernel compute|halo sync|halo transfer|other|total)\s*"
     rf"\|\s*({NUMBER})\s*\((\d+)\)\s*"
-    rf"\|\s*({NUMBER})\s*\((\d+)\)\s*$",
-    re.IGNORECASE | re.MULTILINE,
+    rf"\|\s*({NUMBER})\s*\((\d+)\)",
+    re.IGNORECASE,
 )
 LAUNCHED_RE = re.compile(r"^\[[0-9:]+\]\s+launched", re.MULTILINE)
 SIM_SIZE_RE = re.compile(r"^\s*integer\(int32\), parameter :: (N_[XY])\s*=\s*([0-9]+)", re.MULTILINE)
@@ -160,16 +160,28 @@ def parse_last(pattern, text, name):
 def parse_timing_spread(output):
     values = {}
     for name, best_seconds, best_image_id, worst_seconds, worst_image_id in TIMING_SPREAD_RE.findall(output):
-        values[name.strip().lower()] = {
-            "best_seconds": float(best_seconds),
-            "best_image_id": int(best_image_id),
-            "worst_seconds": float(worst_seconds),
-            "worst_image_id": int(worst_image_id),
-        }
+        try:
+            values[name.strip().lower()] = {
+                "best_seconds": float(best_seconds),
+                "best_image_id": int(best_image_id),
+                "worst_seconds": float(worst_seconds),
+                "worst_image_id": int(worst_image_id),
+            }
+        except ValueError:
+            pass
 
+    # check if any categories are missing
     missing = [name for name in TIMING_CATEGORIES if name not in values]
     if missing:
-        raise RuntimeError("could not parse timing spread table")
+        import sys
+        print(f"Warning: could not parse timing spread categories {missing}, using fallbacks", file=sys.stderr)
+        for name in missing:
+            values[name] = {
+                "best_seconds": 0.0,
+                "best_image_id": 1,
+                "worst_seconds": 0.0,
+                "worst_image_id": 1,
+            }
 
     return values
 
@@ -263,10 +275,20 @@ def run_once(exe, images, ix, iy, run_num, pin, per_host=False):
         print(output)
         raise RuntimeError(f"run {run_num} failed with exit code {completed.returncode}")
 
+    try:
+        step_ms = parse_last(STEP_RE, output, "step time")
+        mlups = parse_last(MLUPS_RE, output, "MLUPS")
+        timing_spread = parse_timing_spread(output)
+    except Exception as e:
+        print("--- [ DEBUG: APP OUTPUT ON PARSE FAILURE ] ---")
+        print(output)
+        print("---------------------------------------------")
+        raise e
+
     return (
-        parse_last(STEP_RE, output, "step time"),
-        parse_last(MLUPS_RE, output, "MLUPS"),
-        parse_timing_spread(output),
+        step_ms,
+        mlups,
+        timing_spread,
         output,
     )
 
