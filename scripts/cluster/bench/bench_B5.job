@@ -1,0 +1,128 @@
+#!/bin/bash
+#SBATCH --job-name=bench_B5
+#SBATCH --partition=cpu_il
+#SBATCH --nodes=8
+#SBATCH --ntasks-per-node=48
+#SBATCH --cpus-per-task=1
+#SBATCH --time=12:00:00
+#SBATCH --mem-per-cpu=2000mb
+#SBATCH --output=job_%j.out
+#SBATCH --error=job_%j.err
+
+set -euo pipefail
+
+cd "$SLURM_SUBMIT_DIR"
+
+# execution mode ("raw", "run", "sweep")
+EXECUTION_MODE="sweep"
+
+# domain decomposition configuration
+# (ignored in "sweep" mode)
+IMAGES=$SLURM_NTASKS
+I_X=1
+I_Y=384
+
+# compile-time setting overwrites
+FFB_SETTINGS_DEFINITIONS=(
+    FFB_USE_CMAKE_SETTINGS
+    FFB_SIM_MODE=4
+    FFB_N_X=14400
+    FFB_N_Y=14400
+    FFB_N_STEPS=300
+    FFB_USE_UNROLLED_KERNELS=.true.
+    FFB_EXPORT_MACROS=.false.
+    FFB_EXPORT_ENDPOINT_STATES=.true.
+    FFB_EXPORT_INTERVAL=10000
+    FFB_INTERACTIVE_PROGRESS=.true.
+    FFB_PROGRESS_INTERVAL=1
+    FFB_RHO_0=1.0_FP
+    FFB_OMEGA=1.1_FP
+    FFB_U_MAX=0.1_FP
+    FFB_N_SIN=2.0_FP
+    FFB_U_WALL=0.1_FP
+    FFB_U_LID=0.1_FP
+    FFB_RHO_IN=1.001_FP
+    FFB_RHO_OUT=0.999_FP
+)
+FFB_SETTINGS_DEFINITIONS=$(IFS=';'; echo "${FFB_SETTINGS_DEFINITIONS[*]}")
+
+# load modules
+module purge
+module load compiler/intel
+module load mpi/impi
+
+# create job-specific build in unique directory
+export BUILD_DIR=$PWD/build/release-fp64-native-$SLURM_JOB_ID
+
+GENERATOR=""
+if command -v ninja &> /dev/null; then
+    GENERATOR="-G Ninja"
+fi
+
+cmake -S . -B "$BUILD_DIR" $GENERATOR \
+    -DCMAKE_Fortran_COMPILER=ifx \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_Fortran_FLAGS= \
+    -DCMAKE_Fortran_FLAGS_RELEASE="-O3 -march=native" \
+    -DFFB_FP64=ON \
+    -DFFB_EXPORT_NUM="run_${SLURM_JOB_ID}" \
+    -DFFB_SETTINGS_DEFINITIONS="$FFB_SETTINGS_DEFINITIONS"
+cmake --build "$BUILD_DIR"
+
+# print metadata
+echo "ID/NAME:    $SLURM_JOB_ID / $SLURM_JOB_NAME"
+echo "USER:       $SLURM_JOB_USER"
+echo "PARTITION:  $SLURM_JOB_PARTITION"
+echo "TASKS:      $SLURM_TASKS_PER_NODE tasks/node x $SLURM_JOB_NUM_NODES nodes = $SLURM_NTASKS tasks"
+echo "NODES:      $SLURM_JOB_NODELIST"
+echo "COMPILER:"
+ifx --version
+echo "MPI:"
+mpirun --version
+
+# set runtime environment
+export EXE=$BUILD_DIR/bin/FFB
+export I_MPI_FABRICS=shm:ofi
+unset I_MPI_PIN_PROCESSOR_LIST
+
+# unset Slurm bootstrap so Intel MPI's Hydra launcher controls distribution directly
+unset I_MPI_HYDRA_BOOTSTRAP
+
+echo ""
+echo "----- [ launching job script in $EXECUTION_MODE execution mode ] -----"
+echo ""
+
+if [ "$EXECUTION_MODE" = "raw" ]; then
+    # single raw execution
+    export I_MPI_PIN=1
+    export I_MPI_PIN_DOMAIN=core
+    export I_MPI_PIN_ORDER=scatter
+    export I_X=$I_X
+    export I_Y=$I_Y
+    export FOR_COARRAY_NUM_IMAGES=$IMAGES
+    "$EXE"
+
+elif [ "$EXECUTION_MODE" = "run" ]; then
+    # single benchmark run
+    python3 -u scripts/benchmark_run.py \
+        --exe "$EXE" \
+        --runs 5 \
+        --images $IMAGES \
+        --ix $I_X \
+        --iy $I_Y \
+        --pin core_scatter
+
+elif [ "$EXECUTION_MODE" = "sweep" ]; then
+    # benchmark sweep with different domain decompositions
+    python3 -u scripts/benchmark_sweep.py \
+        --exe "$EXE" \
+        --runs 5 \
+        --case custom_full \
+        --skip 0 \
+        --pin core_scatter \
+        --per-host
+
+else
+    echo "error: unknown EXECUTION_MODE='$EXECUTION_MODE'"
+    exit 1
+fi
