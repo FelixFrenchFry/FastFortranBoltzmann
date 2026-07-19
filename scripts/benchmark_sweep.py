@@ -871,10 +871,8 @@ def run_case(exe, runs, n_x, n_y, case_num, n_cases, images, ix, iy, pin, per_ho
         try:
             step_ms, mlups, timing_spread, output = run_once(
                 exe, images, ix, iy, run_num, pin, per_host, timeout)
-        except RunTimeoutError as error:
+        except RunTimeoutError:
             print(f"{run_num:03d} | timed out after {timeout} sec")
-            if error.output.strip():
-                print(error.output)
             continue
         total_seconds = timing_spread["total"]["worst_seconds"]
 
