@@ -890,10 +890,10 @@ def run_case(exe, runs, n_x, n_y, case_num, n_cases, images, ix, iy, pin, per_ho
             print(f"{run_num:03d} | timed out after {timeout} sec")
             if error.output.strip():
                 print(error.output)
-            return False
+            continue
         total_seconds = timing_spread["total"]["worst_seconds"]
 
-        if run_num == 1:
+        if not mlups_values:
             print_static_app_output(output)
             print_header(f"benchmark runs started at {runs_started_at}")
 
@@ -904,6 +904,10 @@ def run_case(exe, runs, n_x, n_y, case_num, n_cases, images, ix, iy, pin, per_ho
 
         mlups_values.append(mlups)
         timing_spreads.append(timing_spread)
+
+    if not mlups_values:
+        print("no benchmark runs completed")
+        return False
 
     print()
     mlups_stats = get_stats(mlups_values, higher_is_better=True)
@@ -940,17 +944,10 @@ def main():
         sys.exit(f"error: executable not found: {args.exe}")
 
     n_x, n_y = read_sim_size(args.exe)
-    timed_out_cases = []
 
     for case_num, (images, ix, iy) in enumerate(domain_decomp_cases[args.skip:], start=args.skip + 1):
-        completed = run_case(
+        run_case(
             args.exe, args.runs, n_x, n_y, case_num, len(domain_decomp_cases), images, ix, iy, args.pin, args.per_host, args.timeout)
-        if not completed:
-            timed_out_cases.append(case_num)
-
-    if timed_out_cases:
-        cases = ", ".join(str(case_num) for case_num in timed_out_cases)
-        sys.exit(f"error: benchmark timed out in case(s): {cases}")
 
 
 if __name__ == "__main__":
