@@ -55,7 +55,10 @@ program main
     real(real64) :: current_execution_time_values(N_TIMING_VALUES)
     real(real64) :: min_execution_time_values(N_TIMING_VALUES)
     real(real64) :: max_execution_time_values(N_TIMING_VALUES)
+    integer(int32) :: min_execution_time_image_ids(N_TIMING_VALUES)
+    integer(int32) :: max_execution_time_image_ids(N_TIMING_VALUES)
     integer(int32) :: image_id
+    integer(int32) :: timing_id
 
     ! allocate sim data structures
     real(FP), allocatable :: f_a(:, :, :)[:] ! distribution function buffer A
@@ -211,9 +214,19 @@ program main
             if (image_id == 1) then
                 min_execution_time_values = current_execution_time_values
                 max_execution_time_values = current_execution_time_values
+                min_execution_time_image_ids = image_id
+                max_execution_time_image_ids = image_id
             else
-                min_execution_time_values = min(min_execution_time_values, current_execution_time_values)
-                max_execution_time_values = max(max_execution_time_values, current_execution_time_values)
+                do timing_id = 1, N_TIMING_VALUES
+                    if (current_execution_time_values(timing_id) < min_execution_time_values(timing_id)) then
+                        min_execution_time_values(timing_id) = current_execution_time_values(timing_id)
+                        min_execution_time_image_ids(timing_id) = image_id
+                    end if
+                    if (current_execution_time_values(timing_id) > max_execution_time_values(timing_id)) then
+                        max_execution_time_values(timing_id) = current_execution_time_values(timing_id)
+                        max_execution_time_image_ids(timing_id) = image_id
+                    end if
+                end do
             end if
         end do
 
@@ -223,6 +236,7 @@ program main
 
         call print_execution_summary( &
             min_execution_time_values, max_execution_time_values, &
+            min_execution_time_image_ids, max_execution_time_image_ids, &
             seconds_per_step, mlups)
     end if
 

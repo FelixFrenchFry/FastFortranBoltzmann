@@ -190,17 +190,20 @@ contains
 
 
     subroutine print_execution_summary( &
-        best_seconds, worst_seconds, seconds_per_step, mlups &
+        best_seconds, worst_seconds, best_image_ids, worst_image_ids, seconds_per_step, mlups &
         )
         ! inputs
         real(real64), intent(in) :: best_seconds(:)
         real(real64), intent(in) :: worst_seconds(:)
+        integer(int32), intent(in) :: best_image_ids(:)
+        integer(int32), intent(in) :: worst_image_ids(:)
         real(real64), intent(in) :: seconds_per_step
         real(real64), intent(in) :: mlups
         character(len=32) :: total_time_text
         character(len=32) :: step_time_text
 
-        if (size(best_seconds) < 5 .or. size(worst_seconds) < 5) then
+        if (size(best_seconds) < 5 .or. size(worst_seconds) < 5 .or. &
+            size(best_image_ids) < 5 .or. size(worst_image_ids) < 5) then
             error stop "error: execution timing arrays are too small"
         end if
 
@@ -208,15 +211,19 @@ contains
         call format_compact_real(seconds_per_step * 1000.0_real64, step_time_text)
 
         print '(A)', ""
-        print '(A,T30,A,T33,A,T47,A,T50,A,T64,A,T67,A)', &
-            "image execution time spread", "|", "  best [sec]", "|", " worst [sec]", "|", "    worst/best"
+        print '(A)', "image execution time spread |       best [sec] (image) |     worst [sec] (image)"
         print '(A)', "--------------------------------------------------------------------------------"
 
-        call print_timing_spread_row("kernel compute", best_seconds(1), worst_seconds(1))
-        call print_timing_spread_row("halo sync", best_seconds(2), worst_seconds(2))
-        call print_timing_spread_row("halo transfer", best_seconds(3), worst_seconds(3))
-        call print_timing_spread_row("other", best_seconds(4), worst_seconds(4))
-        call print_timing_spread_row("total", best_seconds(5), worst_seconds(5))
+        call print_timing_spread_row( &
+            "kernel compute", best_seconds(1), best_image_ids(1), worst_seconds(1), worst_image_ids(1))
+        call print_timing_spread_row( &
+            "halo sync", best_seconds(2), best_image_ids(2), worst_seconds(2), worst_image_ids(2))
+        call print_timing_spread_row( &
+            "halo transfer", best_seconds(3), best_image_ids(3), worst_seconds(3), worst_image_ids(3))
+        call print_timing_spread_row( &
+            "other", best_seconds(4), best_image_ids(4), worst_seconds(4), worst_image_ids(4))
+        call print_timing_spread_row( &
+            "total", best_seconds(5), best_image_ids(5), worst_seconds(5), worst_image_ids(5))
 
         print '(A)', ""
         print '(A)', "--- [ perf metrics ] -----------------------------------------------------------"
@@ -250,30 +257,54 @@ contains
     end subroutine format_compact_real
 
 
+    subroutine format_timing_measurement(seconds, image_id, value_text)
+        ! inputs
+        real(real64), intent(in) :: seconds
+        integer(int32), intent(in) :: image_id
+
+        ! output
+        character(len=*), intent(out) :: value_text
+
+        ! temp
+        character(len=64) :: raw_text
+        integer(int32) :: value_length
+
+        write(raw_text, '(F0.3," (",I0,")")') seconds, image_id
+        value_length = len_trim(raw_text)
+        if (value_length > len(value_text)) then
+            error stop "error: timing measurement text is too wide"
+        end if
+
+        value_text = repeat(" ", len(value_text))
+        value_text(len(value_text) - value_length + 1:) = trim(raw_text)
+    end subroutine format_timing_measurement
+
+
     subroutine print_timing_spread_row( &
-        row_name, best_seconds, worst_seconds &
+        row_name, best_seconds, best_image_id, worst_seconds, worst_image_id &
         )
         ! inputs
         character(len=*), intent(in) :: row_name
         real(real64), intent(in) :: best_seconds
+        integer(int32), intent(in) :: best_image_id
         real(real64), intent(in) :: worst_seconds
+        integer(int32), intent(in) :: worst_image_id
 
         ! temp
-        real(real64) :: ratio
-        character(len=14) :: ratio_text
+        character(len=27) :: row_text
+        character(len=24) :: best_text
+        character(len=23) :: worst_text
 
-        if (best_seconds > 0.0_real64) then
-            ratio = worst_seconds / best_seconds
-            write(ratio_text, '(F14.3)') ratio
-        else if (worst_seconds <= best_seconds) then
-            ratio = 1.0_real64
-            write(ratio_text, '(F14.3)') ratio
-        else
-            ratio_text = "           n/a"
+        if (len_trim(row_name) > len(row_text)) then
+            error stop "error: timing row name is too wide"
         end if
 
-        print '(A,T30,A,T33,F12.3,T47,A,T50,F12.3,T64,A,T67,A14)', &
-            row_name, "|", best_seconds, "|", worst_seconds, "|", ratio_text
+        row_text = " "
+        row_text(1:len_trim(row_name)) = trim(row_name)
+        call format_timing_measurement(best_seconds, best_image_id, best_text)
+        call format_timing_measurement(worst_seconds, worst_image_id, worst_text)
+
+        print '(A)', row_text // " | " // best_text // " | " // worst_text
     end subroutine print_timing_spread_row
 
 
