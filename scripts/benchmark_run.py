@@ -4,6 +4,7 @@
 import argparse
 import os
 import re
+import signal
 import statistics
 import subprocess
 import sys
@@ -77,6 +78,14 @@ PINNING_PRESETS = {
 DEFAULT_EXE = "build/release-fp32/bin/FFB"
 DEFAULT_RUNS = 5
 DEFAULT_PIN = "core_spread"
+DEFAULT_TIMEOUT = 15 * 60
+TIMEOUT_TERMINATION_GRACE = 30
+
+
+class RunTimeoutError(RuntimeError):
+    def __init__(self, run_num, timeout, output):
+        self.output = output
+        super().__init__(f"run {run_num} timed out after {timeout} seconds")
 
 
 def print_header(title):
@@ -95,12 +104,53 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--exe", default=DEFAULT_EXE)
     parser.add_argument("--runs", type=int, default=DEFAULT_RUNS)
+    parser.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT)
     parser.add_argument("--images", type=int, required=True)
     parser.add_argument("--ix", type=int, required=True)
     parser.add_argument("--iy", type=int, required=True)
     parser.add_argument("--pin", choices=PINNING_PRESETS.keys(), default=DEFAULT_PIN)
     parser.add_argument("--per-host", action="store_true")
     return parser.parse_args()
+
+
+def terminate_process(process, force=False):
+    if os.name == "posix":
+        signal_number = signal.SIGKILL if force else signal.SIGTERM
+        try:
+            os.killpg(process.pid, signal_number)
+        except ProcessLookupError:
+            pass
+    elif force:
+        process.kill()
+    else:
+        process.terminate()
+
+
+def run_process(command, env, timeout, run_num):
+    process = subprocess.Popen(
+        command,
+        env=env,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        start_new_session=(os.name == "posix"),
+    )
+
+    try:
+        stdout, stderr = process.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        terminate_process(process)
+
+        try:
+            stdout, stderr = process.communicate(timeout=TIMEOUT_TERMINATION_GRACE)
+        except subprocess.TimeoutExpired:
+            terminate_process(process, force=True)
+            stdout, stderr = process.communicate()
+
+        output = (stdout or "") + "\n" + (stderr or "")
+        raise RunTimeoutError(run_num, timeout, output)
+
+    return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
 
 
 def read_source_sim_size():
@@ -203,7 +253,7 @@ def print_pinning_settings(pin):
     print_param("mpi pinning env", env)
 
 
-def run_once(exe, images, ix, iy, run_num, pin, per_host=False):
+def run_once(exe, images, ix, iy, run_num, pin, per_host=False, timeout=DEFAULT_TIMEOUT):
     env = os.environ.copy()
     apply_pinning_preset(env, pin)
     if "FOR_COARRAY_CONFIG_FILE" not in env:
@@ -256,23 +306,18 @@ def run_once(exe, images, ix, iy, run_num, pin, per_host=False):
                 except Exception as e:
                     print(f"Warning: Failed to write dynamic hostfile: {e}")
 
-    completed = subprocess.run(
-        [exe],
-        env=env,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
+    try:
+        completed = run_process([exe], env, timeout, run_num)
+    finally:
+        # clean up temporary hostfile
+        temp_hostfile_path = env.get("I_MPI_HYDRA_HOST_FILE")
+        if temp_hostfile_path and os.path.exists(temp_hostfile_path):
+            try:
+                os.unlink(temp_hostfile_path)
+            except Exception:
+                pass
 
     output = completed.stdout + "\n" + completed.stderr
-
-    # clean up temporary hostfile
-    temp_hostfile_path = env.get("I_MPI_HYDRA_HOST_FILE")
-    if temp_hostfile_path and os.path.exists(temp_hostfile_path):
-        try:
-            os.unlink(temp_hostfile_path)
-        except Exception:
-            pass
 
     if completed.returncode != 0:
         print(output)
@@ -359,6 +404,8 @@ def main():
         sys.exit("error: --runs must be positive")
     if args.runs > MAX_RUNS:
         sys.exit(f"error: --runs must be <= {MAX_RUNS}")
+    if args.timeout <= 0:
+        sys.exit("error: --timeout must be positive")
     if args.images <= 0:
         sys.exit("error: --images must be positive")
     if args.ix <= 0 or args.iy <= 0:
@@ -380,6 +427,7 @@ def main():
     print_header("benchmark script settings")
     print_param("executable", args.exe)
     print_param("runs", args.runs)
+    print_param("timeout", f"{args.timeout} sec")
     print_param("images", args.images)
     print_param("image grid", f"{args.ix} x {args.iy}")
     print_param("sim size", f"{n_x} x {n_y}")
@@ -393,8 +441,13 @@ def main():
         if run_num > 1:
             time.sleep(3.0) # extra time to clean up resources and cool down
 
-        step_ms, mlups, timing_spread, output = run_once(
-            args.exe, args.images, args.ix, args.iy, run_num, args.pin, args.per_host)
+        try:
+            step_ms, mlups, timing_spread, output = run_once(
+                args.exe, args.images, args.ix, args.iy, run_num, args.pin, args.per_host, args.timeout)
+        except RunTimeoutError as error:
+            if error.output.strip():
+                print(error.output)
+            sys.exit(str(error))
         total_seconds = timing_spread["total"]["worst_seconds"]
 
         if run_num == 1:
