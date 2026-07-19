@@ -649,6 +649,10 @@ def run_once(exe, images, ix, iy, run_num, pin, per_host=False):
         env.pop("I_MPI_HYDRA_BOOTSTRAP", None)
         env.pop("SLURM_DISTRIBUTION", None)
 
+        # force Intel MPI to fail fast and clean up resources on exit/failure
+        env["I_MPI_FORCE_CLEANUP"] = "yes"
+        env["I_MPI_FAIL_FAST"] = "yes"
+
         # generate dynamic hostfile if running in Slurm
         slurm_nodelist = env.get("SLURM_JOB_NODELIST")
         if slurm_nodelist:
@@ -753,7 +757,7 @@ def format_timing_measurement(seconds, image_id, width):
 
 def print_timing_spread_medians(timing_spreads):
     print()
-    print("image execution time spread |       best [sec] (image) |     worst [sec] (image)")
+    print("image execution time spread  |      best [sec] (image) |     worst [sec] (image)")
     print("-" * HEADER_WIDTH)
 
     for category in TIMING_CATEGORIES:
@@ -763,8 +767,8 @@ def print_timing_spread_medians(timing_spreads):
             timing_spreads, category, "worst_seconds", "worst_image_id")
 
         print(
-            f"{category:<27} | "
-            f"{format_timing_measurement(best_seconds, best_image_id, 24)} | "
+            f"{category:<28} | "
+            f"{format_timing_measurement(best_seconds, best_image_id, 23)} | "
             f"{format_timing_measurement(worst_seconds, worst_image_id, 23)}"
         )
 

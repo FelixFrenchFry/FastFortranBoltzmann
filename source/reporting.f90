@@ -211,7 +211,7 @@ contains
         call format_compact_real(seconds_per_step * 1000.0_real64, step_time_text)
 
         print '(A)', ""
-        print '(A)', "image execution time spread |       best [sec] (image) |     worst [sec] (image)"
+        print '(A)', "image execution time spread  |      best [sec] (image) |     worst [sec] (image)"
         print '(A)', "--------------------------------------------------------------------------------"
 
         call print_timing_spread_row( &
@@ -291,8 +291,8 @@ contains
         integer(int32), intent(in) :: worst_image_id
 
         ! temp
-        character(len=27) :: row_text
-        character(len=24) :: best_text
+        character(len=28) :: row_text
+        character(len=23) :: best_text
         character(len=23) :: worst_text
 
         if (len_trim(row_name) > len(row_text)) then
