@@ -5,7 +5,7 @@
 #SBATCH --ntasks-per-node=64
 #SBATCH --cpus-per-task=1
 #SBATCH --time=72:00:00
-#SBATCH --mem-per-cpu=2000mb
+#SBATCH --mem-per-cpu=4000mb
 #SBATCH --output=job_%j.out
 #SBATCH --error=job_%j.err
 
@@ -26,15 +26,15 @@ I_Y=256
 FFB_SETTINGS_DEFINITIONS=(
     FFB_USE_CMAKE_SETTINGS
     FFB_SIM_MODE=4
-    FFB_N_X=9216
-    FFB_N_Y=9216
+    FFB_N_X=8960
+    FFB_N_Y=8960
     FFB_N_STEPS=10000000
     FFB_USE_UNROLLED_KERNELS=.true.
     FFB_EXPORT_MACROS=.true.
     FFB_EXPORT_ENDPOINT_STATES=.true.
     FFB_EXPORT_INTERVAL=10000
     FFB_INTERACTIVE_PROGRESS=.true.
-    FFB_PROGRESS_INTERVAL=100
+    FFB_PROGRESS_INTERVAL=1000
     FFB_RHO_0=1.0_FP
     FFB_OMEGA=1.1_FP
     FFB_U_MAX=0.1_FP
@@ -112,7 +112,8 @@ elif [ "$EXECUTION_MODE" = "run" ]; then
         --images $IMAGES \
         --ix $I_X \
         --iy $I_Y \
-        --pin core_scatter
+        --pin core_scatter \
+        --per-host
 
 elif [ "$EXECUTION_MODE" = "sweep" ]; then
     # benchmark sweep with different domain decompositions
@@ -121,7 +122,8 @@ elif [ "$EXECUTION_MODE" = "sweep" ]; then
         --runs 5 \
         --case custom \
         --skip 0 \
-        --pin core_scatter
+        --pin core_scatter \
+        --per-host
 
 else
     echo "error: unknown EXECUTION_MODE='$EXECUTION_MODE'"
