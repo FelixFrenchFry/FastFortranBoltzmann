@@ -17,10 +17,17 @@ NUMBER = r"(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)"
 STEP_RE = re.compile(rf"step time\s*[:=]\s*({NUMBER})\s*ms", re.IGNORECASE)
 MLUPS_RE = re.compile(rf"MLUPS\s*[:=]\s*({NUMBER})", re.IGNORECASE)
 TIMING_SPREAD_RE = re.compile(
-    rf"\b(kernel compute|halo sync|halo transfer|other|total)\s*"
+    rf"^(kernel compute|halo sync|halo transfer|other|total)\s*"
     rf"\|\s*({NUMBER})\s*\((\d+)\)\s*"
-    rf"\|\s*({NUMBER})\s*\((\d+)\)",
-    re.IGNORECASE,
+    rf"\|\s*({NUMBER})\s*\((\d+)\)\s*$",
+    re.IGNORECASE | re.MULTILINE,
+)
+LEGACY_TIMING_SPREAD_RE = re.compile(
+    rf"^(kernel compute|halo sync|halo transfer|other|total)\s*"
+    rf"\|\s*({NUMBER})\s*"
+    rf"\|\s*({NUMBER})\s*"
+    rf"\|\s*(?:{NUMBER}|n/a)\s*$",
+    re.IGNORECASE | re.MULTILINE,
 )
 LAUNCHED_RE = re.compile(r"^\[[0-9:]+\]\s+launched", re.MULTILINE)
 SIM_SIZE_RE = re.compile(r"^\s*integer\(int32\), parameter :: (N_[XY])\s*=\s*([0-9]+)", re.MULTILINE)
@@ -608,28 +615,24 @@ def parse_last(pattern, text, name):
 def parse_timing_spread(output):
     values = {}
     for name, best_seconds, best_image_id, worst_seconds, worst_image_id in TIMING_SPREAD_RE.findall(output):
-        try:
-            values[name.strip().lower()] = {
-                "best_seconds": float(best_seconds),
-                "best_image_id": int(best_image_id),
-                "worst_seconds": float(worst_seconds),
-                "worst_image_id": int(worst_image_id),
-            }
-        except ValueError:
-            pass
+        values[name.strip().lower()] = {
+            "best_seconds": float(best_seconds),
+            "best_image_id": int(best_image_id),
+            "worst_seconds": float(worst_seconds),
+            "worst_image_id": int(worst_image_id),
+        }
 
-    # check if any categories are missing
+    for name, best_seconds, worst_seconds in LEGACY_TIMING_SPREAD_RE.findall(output):
+        values.setdefault(name.strip().lower(), {
+            "best_seconds": float(best_seconds),
+            "best_image_id": None,
+            "worst_seconds": float(worst_seconds),
+            "worst_image_id": None,
+        })
+
     missing = [name for name in TIMING_CATEGORIES if name not in values]
     if missing:
-        import sys
-        print(f"Warning: could not parse timing spread categories {missing}, using fallbacks", file=sys.stderr)
-        for name in missing:
-            values[name] = {
-                "best_seconds": 0.0,
-                "best_image_id": 1,
-                "worst_seconds": 0.0,
-                "worst_image_id": 1,
-            }
+        raise RuntimeError("could not parse timing spread table")
 
     return values
 
@@ -731,7 +734,7 @@ def run_once(exe, images, ix, iy, run_num, pin, per_host=False):
         print("--- [ DEBUG: APP OUTPUT ON PARSE FAILURE ] ---")
         print(output)
         print("---------------------------------------------")
-        raise e
+        raise
 
     return (
         step_ms,
@@ -765,16 +768,18 @@ def get_stats(values, higher_is_better):
 
 
 def get_median_timing_measurement(timing_spreads, category, seconds_key, image_key):
-    measurements = sorted(
+    measurements = [
         (values[category][seconds_key], values[category][image_key])
         for values in timing_spreads
-    )
+    ]
+    measurements.sort(key=lambda measurement: measurement[0])
 
     return measurements[len(measurements) // 2]
 
 
 def format_timing_measurement(seconds, image_id, width):
-    return f"{seconds:.3f} ({image_id})".rjust(width)
+    image_text = "n/a" if image_id is None else str(image_id)
+    return f"{seconds:.3f} ({image_text})".rjust(width)
 
 
 def print_timing_spread_medians(timing_spreads):
