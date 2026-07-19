@@ -23,13 +23,6 @@ TIMING_SPREAD_RE = re.compile(
     rf"\|\s*({NUMBER})\s*\((\d+)\)\s*$",
     re.IGNORECASE | re.MULTILINE,
 )
-LEGACY_TIMING_SPREAD_RE = re.compile(
-    rf"^(kernel compute|halo sync|halo transfer|other|total)\s*"
-    rf"\|\s*({NUMBER})\s*"
-    rf"\|\s*({NUMBER})\s*"
-    rf"\|\s*(?:{NUMBER}|n/a)\s*$",
-    re.IGNORECASE | re.MULTILINE,
-)
 LAUNCHED_RE = re.compile(r"^\[[0-9:]+\]\s+launched", re.MULTILINE)
 SIM_SIZE_RE = re.compile(r"^\s*integer\(int32\), parameter :: (N_[XY])\s*=\s*([0-9]+)", re.MULTILINE)
 CMAKE_CACHE_RE = re.compile(r"^([^#/\n][^:=\n]*):[^=\n]*=(.*)$", re.MULTILINE)
@@ -671,14 +664,6 @@ def parse_timing_spread(output):
             "worst_seconds": float(worst_seconds),
             "worst_image_id": int(worst_image_id),
         }
-
-    for name, best_seconds, worst_seconds in LEGACY_TIMING_SPREAD_RE.findall(output):
-        values.setdefault(name.strip().lower(), {
-            "best_seconds": float(best_seconds),
-            "best_image_id": None,
-            "worst_seconds": float(worst_seconds),
-            "worst_image_id": None,
-        })
 
     missing = [name for name in TIMING_CATEGORIES if name not in values]
     if missing:
