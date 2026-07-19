@@ -94,3 +94,6 @@ profile*/
 # os files
 .DS_Store
 Thumbs.db
+
+# documentation
+/docs/
