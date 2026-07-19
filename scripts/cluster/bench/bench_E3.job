@@ -112,7 +112,9 @@ elif [ "$EXECUTION_MODE" = "run" ]; then
         --images $IMAGES \
         --ix $I_X \
         --iy $I_Y \
-        --pin core_scatter
+        --pin core_scatter \
+        --per-host \
+        --timeout 600
 
 elif [ "$EXECUTION_MODE" = "sweep" ]; then
     # benchmark sweep with different domain decompositions
@@ -121,7 +123,9 @@ elif [ "$EXECUTION_MODE" = "sweep" ]; then
         --runs 5 \
         --case custom_full \
         --skip 0 \
-        --pin core_scatter
+        --pin core_scatter \
+        --per-host \
+        --timeout 600
 
 else
     echo "error: unknown EXECUTION_MODE='$EXECUTION_MODE'"
