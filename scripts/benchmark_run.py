@@ -429,10 +429,8 @@ def main():
         try:
             step_ms, mlups, timing_spread, output = run_once(
                 args.exe, args.images, args.ix, args.iy, run_num, args.pin, args.per_host, args.timeout)
-        except RunTimeoutError as error:
+        except RunTimeoutError:
             print(f"{run_num:03d} | timed out after {args.timeout} sec")
-            if error.output.strip():
-                print(error.output)
             continue
         total_seconds = timing_spread["total"]["worst_seconds"]
 
