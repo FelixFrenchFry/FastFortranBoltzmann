@@ -445,12 +445,13 @@ def main():
             step_ms, mlups, timing_spread, output = run_once(
                 args.exe, args.images, args.ix, args.iy, run_num, args.pin, args.per_host, args.timeout)
         except RunTimeoutError as error:
+            print(f"{run_num:03d} | timed out after {args.timeout} sec")
             if error.output.strip():
                 print(error.output)
-            sys.exit(str(error))
+            continue
         total_seconds = timing_spread["total"]["worst_seconds"]
 
-        if run_num == 1:
+        if not mlups_values:
             print_static_app_output(output)
             print_header(f"benchmark runs started at {runs_started_at}")
 
@@ -461,6 +462,9 @@ def main():
 
         mlups_values.append(mlups)
         timing_spreads.append(timing_spread)
+
+    if not mlups_values:
+        sys.exit("error: no benchmark runs completed")
 
     print()
     mlups_stats = get_stats(mlups_values, higher_is_better=True)
