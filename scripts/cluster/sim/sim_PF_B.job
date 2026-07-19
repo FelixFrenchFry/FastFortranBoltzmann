@@ -5,7 +5,7 @@
 #SBATCH --ntasks-per-node=64
 #SBATCH --cpus-per-task=1
 #SBATCH --time=72:00:00
-#SBATCH --mem-per-cpu=3000mb
+#SBATCH --mem-per-cpu=2000mb
 #SBATCH --output=job_%j.out
 #SBATCH --error=job_%j.err
 
