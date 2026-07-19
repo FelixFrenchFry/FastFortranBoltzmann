@@ -1,6 +1,6 @@
 program main
     ! imports
-    use iso_fortran_env, only: int32, int64, real64
+    use iso_fortran_env, only: int32, int64, real64, output_unit
     use domain, only: domain_t, initialize_domain
     use exchange, only: halo_buffers_t, exchange_plan_t, exchange_timing_t, &
         BUF_MACRO_LEFT, BUF_MACRO_RIGHT, allocate_halo_buffers, build_exchange_plan, exchange_halos, &
@@ -18,7 +18,15 @@ program main
     use reporting, only: print_run_summary, print_launch_timestamp, print_progress_status, print_finish_timestamp, &
         print_execution_summary
     use simulation, only: execute_local_sim_step
+    use iso_c_binding, only: c_int
     implicit none
+
+    interface
+        subroutine c_exit(status) bind(c, name="_exit")
+            import :: c_int
+            integer(c_int), value :: status
+        end subroutine c_exit
+    end interface
 
     ! misc
     integer(int32) :: step
@@ -310,5 +318,9 @@ program main
             seconds_per_step, mlups)
     end if
 
+    flush(output_unit)
+    sync all
+
+    call c_exit(0_c_int)
 
 end program main
