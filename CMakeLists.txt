@@ -6,6 +6,7 @@ project(FastFortranBoltzmann
 )
 
 find_package(Git QUIET)
+find_package(MPI REQUIRED COMPONENTS Fortran)
 
 if(GIT_FOUND)
     execute_process(
@@ -112,9 +113,13 @@ endfunction()
 
 add_executable(FFB ${FFB_SHARED_SOURCES} ${FFB_XYD_SOURCES})
 configure_ffb_target(FFB xyd)
+target_link_libraries(FFB PRIVATE MPI::MPI_Fortran)
 add_executable(FFB_CHECKPOINT_0 ${FFB_SHARED_SOURCES} ${FFB_EXPERIMENT_SHARED_SOURCES} source/experiments/checkpoint_0/simulation.f90)
 configure_ffb_target(FFB_CHECKPOINT_0 dxy)
+target_link_libraries(FFB_CHECKPOINT_0 PRIVATE MPI::MPI_Fortran)
 add_executable(FFB_CHECKPOINT_1 ${FFB_SHARED_SOURCES} ${FFB_EXPERIMENT_SHARED_SOURCES} source/experiments/checkpoint_1/simulation.f90)
 configure_ffb_target(FFB_CHECKPOINT_1 dxy)
+target_link_libraries(FFB_CHECKPOINT_1 PRIVATE MPI::MPI_Fortran)
 add_executable(FFB_CHECKPOINT_2 ${FFB_SHARED_SOURCES} ${FFB_EXPERIMENT_SHARED_SOURCES} source/experiments/checkpoint_2/simulation.f90)
 configure_ffb_target(FFB_CHECKPOINT_2 dxy)
+target_link_libraries(FFB_CHECKPOINT_2 PRIVATE MPI::MPI_Fortran)
