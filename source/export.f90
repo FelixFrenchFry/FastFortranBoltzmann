@@ -13,10 +13,54 @@ module export
     private
 
     public :: should_export_step
+    public :: export_buffers_t
+    public :: allocate_export_buffers
+    public :: deallocate_export_buffers
     public :: export_selected_data_distributed
     public :: export_metadata
 
+    type :: export_buffers_t
+        real(FP), allocatable :: gathered_field(:)
+        real(FP), allocatable :: global_row(:)
+        integer, allocatable :: image_ranks(:)
+    end type export_buffers_t
+
 contains
+
+    subroutine allocate_export_buffers( &
+        domain_info, export_buffers &
+        )
+        ! read-only inputs
+        type(domain_t), intent(in) :: domain_info
+
+        ! output
+        type(export_buffers_t), intent(out) :: export_buffers
+
+        if (this_image() == 1) then
+            allocate(export_buffers%gathered_field( &
+                domain_info%n_x * domain_info%n_y * domain_info%n_images))
+            allocate(export_buffers%global_row(N_X))
+            allocate(export_buffers%image_ranks(domain_info%n_images))
+        end if
+    end subroutine allocate_export_buffers
+
+
+    subroutine deallocate_export_buffers( &
+        export_buffers &
+        )
+        ! input/output
+        type(export_buffers_t), intent(inout) :: export_buffers
+
+        if (allocated(export_buffers%gathered_field)) then
+            deallocate(export_buffers%gathered_field)
+        end if
+        if (allocated(export_buffers%global_row)) then
+            deallocate(export_buffers%global_row)
+        end if
+        if (allocated(export_buffers%image_ranks)) then
+            deallocate(export_buffers%image_ranks)
+        end if
+    end subroutine deallocate_export_buffers
 
     pure function should_export_step( &
         step, export_endpoint_states, export_interval &
@@ -46,7 +90,7 @@ contains
 
 
     subroutine export_selected_data_distributed( &
-        domain_info, export_num, suffix_num, rho, u_x, u_y, export_buffer &
+        domain_info, export_num, suffix_num, rho, u_x, u_y, export_buffers &
         )
         ! read-only inputs
         type(domain_t), intent(in) :: domain_info
@@ -55,23 +99,23 @@ contains
         real(FP), intent(in) :: rho(:,:)
         real(FP), intent(in) :: u_x(:,:)
         real(FP), intent(in) :: u_y(:,:)
-        real(FP), intent(inout) :: export_buffer(:,:)[*]
+        type(export_buffers_t), intent(inout) :: export_buffers
 
         ! temp
         real(FP), allocatable :: velocity_mag(:,:)
 
         ! export macro scalar fields
         call export_scalar_field_distributed( &
-            domain_info, rho, "density", export_num, suffix_num, export_buffer)
+            domain_info, rho, "density", export_num, suffix_num, export_buffers)
         call export_scalar_field_distributed( &
-            domain_info, u_x, "velocity_x", export_num, suffix_num, export_buffer)
+            domain_info, u_x, "velocity_x", export_num, suffix_num, export_buffers)
         call export_scalar_field_distributed( &
-            domain_info, u_y, "velocity_y", export_num, suffix_num, export_buffer)
+            domain_info, u_y, "velocity_y", export_num, suffix_num, export_buffers)
 
         allocate(velocity_mag(size(u_x, 1), size(u_x, 2)))
         velocity_mag = sqrt(u_x * u_x + u_y * u_y) ! element-wise sqrt of velocity magnitude
         call export_scalar_field_distributed( &
-            domain_info, velocity_mag, "velocity_mag", export_num, suffix_num, export_buffer)
+            domain_info, velocity_mag, "velocity_mag", export_num, suffix_num, export_buffers)
         deallocate(velocity_mag)
     end subroutine export_selected_data_distributed
 
@@ -212,61 +256,116 @@ contains
 
 
     subroutine export_scalar_field_distributed( &
-        domain_info, local_field, field_name, export_num, suffix_num, export_buffer &
+        domain_info, local_field, field_name, export_num, suffix_num, export_buffers &
         )
+        use mpi
+
         ! read-only inputs
         type(domain_t), intent(in) :: domain_info
-        real(FP), intent(in) :: local_field(:,:)
+        real(FP), intent(in) :: local_field(domain_info%n_x, domain_info%n_y)
         character(len=*), intent(in) :: field_name
         character(len=*), intent(in) :: export_num
         integer(int32), intent(in) :: suffix_num
-        real(FP), intent(inout) :: export_buffer(:,:)[*]
+        type(export_buffers_t), intent(inout) :: export_buffers
 
         ! temp
-        integer(int32) :: image_id
-        integer(int32) :: image_x
-        integer(int32) :: image_y
-        integer(int32) :: x_global_start
-        integer(int32) :: x_global_end
-        integer(int32) :: y_global_start
-        integer(int32) :: y_global_end
+        integer :: mpi_ierror
+        integer :: mpi_rank
+        integer :: mpi_size
+        integer :: root_rank
+        integer :: local_field_size
+        integer :: local_image_id
+        integer :: rank_id
+        integer :: image_id
+        integer :: image_ids(domain_info%n_images)
+        real(FP) :: ignored_receive_buffer
         character(len=:), allocatable :: output_path
         character(len=:), allocatable :: file_path
-        real(FP), allocatable :: global_field(:,:)
+
+    #ifdef FFB_FP64
+        integer, parameter :: mpi_fp_type = MPI_DOUBLE_PRECISION
+    #else
+        integer, parameter :: mpi_fp_type = MPI_REAL
+    #endif
 
         if (size(local_field, 1) /= domain_info%n_x .or. &
             size(local_field, 2) /= domain_info%n_y) then
             error stop "error: local distributed export field has wrong shape"
         end if
 
-        export_buffer(:, :) = local_field(:, :)
+        local_field_size = size(local_field)
+        local_image_id = int(domain_info%image_id)
+
+        call MPI_Comm_rank(MPI_COMM_WORLD, mpi_rank, mpi_ierror)
+        if (mpi_ierror /= MPI_SUCCESS) then
+            error stop "error: could not get MPI rank for distributed export"
+        end if
+
+        call MPI_Comm_size(MPI_COMM_WORLD, mpi_size, mpi_ierror)
+        if (mpi_ierror /= MPI_SUCCESS) then
+            error stop "error: could not get MPI size for distributed export"
+        end if
+
+        if (mpi_size /= domain_info%n_images) then
+            error stop "error: MPI size does not match coarray image count"
+        end if
+
+        call MPI_Allgather( &
+            local_image_id, 1, MPI_INTEGER, image_ids, 1, MPI_INTEGER, &
+            MPI_COMM_WORLD, mpi_ierror)
+        if (mpi_ierror /= MPI_SUCCESS) then
+            error stop "error: could not gather coarray image IDs"
+        end if
+
+        root_rank = -1
+        do rank_id = 0, mpi_size - 1
+            image_id = image_ids(rank_id + 1)
+            if (image_id < 1 .or. image_id > domain_info%n_images) then
+                error stop "error: invalid coarray image ID in distributed export"
+            end if
+            if (image_id == 1) then
+                root_rank = rank_id
+            end if
+        end do
+        if (root_rank < 0) then
+            error stop "error: could not identify root image for distributed export"
+        end if
 
         sync all
 
-        if (this_image() == 1) then
-            allocate(global_field(N_X, N_Y))
-
-            do image_id = 1, domain_info%n_images
-                image_x = modulo(image_id - 1, domain_info%n_images_x) + 1
-                image_y = (image_id - 1) / domain_info%n_images_x + 1
-
-                x_global_start = (image_x - 1) * domain_info%n_x + 1
-                x_global_end = image_x * domain_info%n_x
-                y_global_start = (image_y - 1) * domain_info%n_y + 1
-                y_global_end = image_y * domain_info%n_y
-
-                global_field(x_global_start:x_global_end, y_global_start:y_global_end) = &
-                    export_buffer(:, :)[image_id]
+        if (mpi_rank == root_rank) then
+            if (.not. allocated(export_buffers%gathered_field) .or. &
+                .not. allocated(export_buffers%global_row) .or. &
+                .not. allocated(export_buffers%image_ranks)) then
+                error stop "error: root export buffers are not allocated"
+            end if
+            do rank_id = 0, mpi_size - 1
+                export_buffers%image_ranks(image_ids(rank_id + 1)) = rank_id
             end do
+        end if
 
+        if (mpi_rank == root_rank) then
+            call MPI_Gather( &
+                local_field, local_field_size, mpi_fp_type, export_buffers%gathered_field, &
+                local_field_size, mpi_fp_type, root_rank, MPI_COMM_WORLD, mpi_ierror)
+        else
+            call MPI_Gather( &
+                local_field, local_field_size, mpi_fp_type, ignored_receive_buffer, &
+                local_field_size, mpi_fp_type, root_rank, MPI_COMM_WORLD, mpi_ierror)
+        end if
+        if (mpi_ierror /= MPI_SUCCESS) then
+            error stop "error: could not gather distributed export field"
+        end if
+
+        if (mpi_rank == root_rank) then
             output_path = "output/" // trim(export_num)
             file_path = output_path // "/" // trim(field_name) // format_step_suffix(suffix_num) // ".bin"
 
             call ensure_output_directory(output_path)
-            call write_binary_field(global_field, file_path)
+            call write_gathered_field( &
+                export_buffers%gathered_field, export_buffers%global_row, &
+                export_buffers%image_ranks, domain_info, file_path)
         end if
-
-        if (allocated(global_field)) deallocate(global_field)
 
         sync all
     end subroutine export_scalar_field_distributed
@@ -359,16 +458,33 @@ contains
     end subroutine ensure_output_directory
 
 
-    subroutine write_binary_field( &
-        field, file_path &
+    subroutine write_gathered_field( &
+        gathered_field, global_row, image_ranks, domain_info, file_path &
         )
         ! read-only inputs
-        real(FP), intent(in) :: field(:,:)
+        real(FP), intent(in) :: gathered_field(:)
+        integer, intent(in) :: image_ranks(:)
+        type(domain_t), intent(in) :: domain_info
         character(len=*), intent(in) :: file_path
+
+        ! input/output
+        real(FP), intent(inout) :: global_row(:)
 
         ! temp
         integer :: unit
         integer :: io_stat
+        integer :: global_y
+        integer :: image_y
+        integer :: local_y
+        integer :: image_x
+        integer :: image_id
+        integer :: rank_id
+        integer :: local_field_size
+        integer :: field_index
+
+        if (size(global_row) /= N_X) then
+            error stop "error: global export row has wrong shape"
+        end if
 
         ! open raw binary stream file
         open(newunit=unit, file=trim(file_path), access="stream", form="unformatted", &
@@ -378,16 +494,33 @@ contains
             error stop "error: could not open binary output file"
         end if
 
-        ! write raw floating point field data to file
-        write(unit, iostat=io_stat) field
+        local_field_size = domain_info%n_x * domain_info%n_y
 
-        if (io_stat /= 0) then
-            close(unit)
-            error stop "error: could not write binary output file"
-        end if
+        do global_y = 1, N_Y
+            image_y = (global_y - 1) / domain_info%n_y + 1
+            local_y = modulo(global_y - 1, domain_info%n_y) + 1
+
+            do image_x = 1, domain_info%n_images_x
+                image_id = image_x + (image_y - 1) * domain_info%n_images_x
+                rank_id = image_ranks(image_id)
+                field_index = rank_id * local_field_size + &
+                    (local_y - 1) * domain_info%n_x + 1
+
+                global_row( &
+                    (image_x - 1) * domain_info%n_x + 1:image_x * domain_info%n_x) = &
+                    gathered_field(field_index:field_index + domain_info%n_x - 1)
+            end do
+
+            write(unit, iostat=io_stat) global_row
+
+            if (io_stat /= 0) then
+                close(unit)
+                error stop "error: could not write binary output file"
+            end if
+        end do
 
         close(unit)
-    end subroutine write_binary_field
+    end subroutine write_gathered_field
 
 
 end module export

@@ -5,7 +5,8 @@ program main
     use exchange, only: halo_buffers_t, exchange_plan_t, exchange_timing_t, &
         BUF_MACRO_LEFT, BUF_MACRO_RIGHT, allocate_halo_buffers, build_exchange_plan, exchange_halos, &
         exchange_poiseuille_macro_halos
-    use export, only: should_export_step, export_selected_data_distributed, export_metadata
+    use export, only: should_export_step, export_buffers_t, allocate_export_buffers, &
+        deallocate_export_buffers, export_selected_data_distributed, export_metadata
     use hardware_info, only: hardware_info_t, collect_hardware_info, collect_image_host_names
     use initialization, only: apply_condition_shear_wave_local, &
         apply_condition_couette_flow_local, apply_condition_poiseuille_flow_local, apply_condition_sliding_lid_local
@@ -78,7 +79,7 @@ program main
     real(FP), allocatable :: rho(:,:)
     real(FP), allocatable :: u_x(:,:)
     real(FP), allocatable :: u_y(:,:)
-    real(FP), allocatable :: export_buffer(:,:)[:]
+    type(export_buffers_t) :: export_buffers
 
     ! setup domain decomposition
     call initialize_domain(domain_info)
@@ -96,7 +97,7 @@ program main
     allocate(u_x(domain_info%n_x, domain_info%n_y))
     allocate(u_y(domain_info%n_x, domain_info%n_y))
     if (EXPORT_MACROS) then
-        allocate(export_buffer(domain_info%n_x, domain_info%n_y)[*])
+        call allocate_export_buffers(domain_info, export_buffers)
     end if
     call allocate_halo_buffers(domain_info, halo_buffers)
 
@@ -106,9 +107,10 @@ program main
         int(domain_info%n_images, int64)
     macro_field_buffers_bytes = (size(rho, kind=int64) + size(u_x, kind=int64) + size(u_y, kind=int64)) * bytes_fp * &
         int(domain_info%n_images, int64)
-    if (allocated(export_buffer)) then
-        macro_field_buffers_bytes = macro_field_buffers_bytes + size(export_buffer, kind=int64) * bytes_fp * &
-            int(domain_info%n_images, int64)
+    if (allocated(export_buffers%gathered_field)) then
+        macro_field_buffers_bytes = macro_field_buffers_bytes + &
+            (size(export_buffers%gathered_field, kind=int64) + &
+            size(export_buffers%global_row, kind=int64)) * bytes_fp
     end if
     total_buffer_bytes = dist_function_buffers_bytes + macro_field_buffers_bytes
     total_bytes_per_cell = real(total_buffer_bytes, real64) / real(N_CELLS, real64)
@@ -169,7 +171,7 @@ program main
     ! export initial condition
     if (EXPORT_MACROS .and. should_export_step(0_int32, EXPORT_ENDPOINT_STATES, &
         EXPORT_INTERVAL)) then
-        call export_selected_data_distributed(domain_info, EXPORT_NUM, 0_int32, rho, u_x, u_y, export_buffer)
+        call export_selected_data_distributed(domain_info, EXPORT_NUM, 0_int32, rho, u_x, u_y, export_buffers)
     end if
 
     ! print sim launch timestamp
@@ -259,7 +261,7 @@ program main
         ! export selected field
         if (EXPORT_MACROS .and. should_export_step(step, EXPORT_ENDPOINT_STATES, &
             EXPORT_INTERVAL)) then
-            call export_selected_data_distributed(domain_info, EXPORT_NUM, step, rho, u_x, u_y, export_buffer)
+            call export_selected_data_distributed(domain_info, EXPORT_NUM, step, rho, u_x, u_y, export_buffers)
         end if
 
         ! print sim progress info
@@ -327,7 +329,7 @@ program main
     end if
 
     flush(output_unit)
-    if (allocated(export_buffer)) deallocate(export_buffer)
+    call deallocate_export_buffers(export_buffers)
     sync all
 
     call c_exit(0_c_int)
