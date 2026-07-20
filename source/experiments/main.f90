@@ -16,6 +16,7 @@ program main
     use reporting, only: print_run_summary, print_launch_timestamp, print_progress_status, print_finish_timestamp, &
         print_execution_summary
     use simulation, only: execute_local_sim_step
+    use mpi, only: MPI_Finalize, MPI_SUCCESS
     use iso_c_binding, only: c_int
     implicit none
 
@@ -25,6 +26,8 @@ program main
             integer(c_int), value :: status
         end subroutine c_exit
     end interface
+
+    integer :: mpi_ierr
 
     ! misc
     integer(int32) :: step
@@ -261,6 +264,12 @@ program main
     flush(output_unit)
     call deallocate_export_buffers(export_buffers)
     sync all
+
+    call MPI_Finalize(mpi_ierr)
+
+    if (mpi_ierr /= MPI_SUCCESS) then
+        call c_exit(1_c_int)
+    end if
 
     call c_exit(0_c_int)
 
