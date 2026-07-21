@@ -4,7 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=64
 #SBATCH --cpus-per-task=1
-#SBATCH --time=2:00:00
+#SBATCH --time=1:00:00
 #SBATCH --mem-per-cpu=2000mb
 #SBATCH --output=job_%j.out
 #SBATCH --error=job_%j.err
@@ -93,9 +93,9 @@ for version in 0 1 2 3; do
     python3 -u scripts/benchmark_run.py \
         --exe "$exe" \
         --runs 10 \
-        --images 16 \
-        --ix 4 \
-        --iy 4 \
-        --pin core_scatter \
-        --timeout 300
+        --images 4 \
+        --ix 2 \
+        --iy 2 \
+        --pin core_spread \
+        --timeout 600
 done
