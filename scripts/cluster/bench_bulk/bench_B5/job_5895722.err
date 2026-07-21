@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 862, in <module>
+    
+  File "/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 857, in main
+    print_param("mean", f"{int(mlups_stats['mean'])}")
+  File "/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 809, in run_case
+    
+  File "/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 713, in run_once
+    
+  File "/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 620, in parse_timing_spread
+    
+RuntimeError: could not parse timing spread table

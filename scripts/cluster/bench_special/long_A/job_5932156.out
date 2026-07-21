@@ -1,0 +1,879 @@
+-- The Fortran compiler identification is IntelLLVM 2025.0.4
+-- Detecting Fortran compiler ABI info
+-- Detecting Fortran compiler ABI info - done
+-- Check for working Fortran compiler: /software/bwhpc/common/toolkit/Intel_OneAPI/compiler/2025.0/bin/ifx - skipped
+-- Configuring done (7.3s)
+-- Generating done (0.1s)
+-- Build files have been written to: /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5932156
+[1/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/simulation.f90-pp.f90
+[2/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/settings.f90-pp.f90
+[3/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/hardware_info.f90-pp.f90
+[4/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/export.f90-pp.f90
+[5/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/initialization.f90-pp.f90
+[6/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/hardware_info.f90-pp.f90
+[7/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/domain.f90-pp.f90
+[8/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/main.f90-pp.f90
+[9/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/modes/poiseuille_flow.f90-pp.f90
+[10/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/checkpoint_0/simulation.f90-pp.f90
+[11/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/reporting.f90-pp.f90
+[12/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/exchange.f90-pp.f90
+[13/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/modes/couette_flow.f90-pp.f90
+[14/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/initialization.f90-pp.f90
+[15/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/domain.f90-pp.f90
+[16/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/modes/shear_wave.f90-pp.f90
+[17/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/modes/sliding_lid.f90-pp.f90
+[18/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/domain.f90-pp.f90
+[19/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/exchange.f90-pp.f90
+[20/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/main.f90-pp.f90
+[21/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/reporting.f90-pp.f90
+[22/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/reporting.f90-pp.f90
+[23/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/export.f90-pp.f90
+[24/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/export.f90-pp.f90
+[25/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/settings.f90-pp.f90
+[26/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/hardware_info.f90-pp.f90
+[27/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/settings.f90-pp.f90
+[28/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/exchange.f90-pp.f90
+[29/88] Generating Fortran dyndep file CMakeFiles/FFB.dir/Fortran.dd
+[30/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/initialization.f90-pp.f90
+[31/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/main.f90-pp.f90
+[32/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/checkpoint_1/simulation.f90-pp.f90
+[33/88] Generating Fortran dyndep file CMakeFiles/FFB_CHECKPOINT_0.dir/Fortran.dd
+[34/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/checkpoint_2/simulation.f90-pp.f90
+[35/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/main.f90-pp.f90
+[36/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/hardware_info.f90-pp.f90
+[37/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/exchange.f90-pp.f90
+[38/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/initialization.f90-pp.f90
+[39/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/reporting.f90-pp.f90
+[40/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/domain.f90-pp.f90
+[41/88] Generating Fortran dyndep file CMakeFiles/FFB_CHECKPOINT_1.dir/Fortran.dd
+[42/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/export.f90-pp.f90
+[43/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/settings.f90-pp.f90
+[44/88] Generating Fortran dyndep file CMakeFiles/FFB_CHECKPOINT_2.dir/Fortran.dd
+[45/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/settings.f90.o
+[46/88] Building Fortran object CMakeFiles/FFB.dir/source/settings.f90.o
+[47/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/settings.f90.o
+[48/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/settings.f90.o
+[49/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/domain.f90.o
+[50/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/initialization.f90.o
+[51/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/initialization.f90.o
+[52/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/initialization.f90.o
+[53/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/domain.f90.o
+[54/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/modes/shear_wave.f90.o
+[55/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/domain.f90.o
+[56/88] Building Fortran object CMakeFiles/FFB.dir/source/domain.f90.o
+[57/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/modes/couette_flow.f90.o
+[58/88] Building Fortran object CMakeFiles/FFB.dir/source/hardware_info.f90.o
+[59/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/hardware_info.f90.o
+[60/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/modes/sliding_lid.f90.o
+[61/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/hardware_info.f90.o
+[62/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/hardware_info.f90.o
+[63/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/modes/poiseuille_flow.f90.o
+[64/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/initialization.f90.o
+[65/88] Building Fortran object CMakeFiles/FFB.dir/source/reporting.f90.o
+[66/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/reporting.f90.o
+[67/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/reporting.f90.o
+[68/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/reporting.f90.o
+[69/88] Building Fortran object CMakeFiles/FFB.dir/source/export.f90.o
+[70/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/export.f90.o
+[71/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/export.f90.o
+[72/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/export.f90.o
+[73/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/exchange.f90.o
+[74/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/exchange.f90.o
+[75/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/exchange.f90.o
+[76/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/checkpoint_1/simulation.f90.o
+/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/experiments/checkpoint_1/simulation.f90(14): remark #7712: This variable has not been used.   [HALO_BUFFERS]
+        domain_info, halo_buffers, n_x_local, n_y_local, &
+---------------------^
+[77/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/exchange.f90.o
+[78/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/checkpoint_2/simulation.f90.o
+/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/experiments/checkpoint_2/simulation.f90(14): remark #7712: This variable has not been used.   [HALO_BUFFERS]
+        domain_info, halo_buffers, n_x_local, n_y_local, &
+---------------------^
+[79/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/main.f90.o
+[80/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/main.f90.o
+[81/88] Linking Fortran executable bin/FFB_CHECKPOINT_1
+[82/88] Linking Fortran executable bin/FFB_CHECKPOINT_2
+[83/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/checkpoint_0/simulation.f90.o
+/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/experiments/checkpoint_0/simulation.f90(14): remark #7712: This variable has not been used.   [HALO_BUFFERS]
+        domain_info, halo_buffers, n_x_local, n_y_local, &
+---------------------^
+[84/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/main.f90.o
+[85/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/simulation.f90.o
+[86/88] Linking Fortran executable bin/FFB_CHECKPOINT_0
+[87/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/main.f90.o
+[88/88] Linking Fortran executable bin/FFB
+ID/NAME:    5932156 / long_A
+USER:       fr_fl184
+PARTITION:  cpu_il
+TASKS:      12(x48) tasks/node x 48 nodes = 576 tasks
+NODES:      uc2n[656-662,666-672,727-736,742,744,781-784,794,796,798,800-803,805-806,809,815,853-854,861-862,864-866]
+COMPILER:
+ifx (IFX) 2025.0.4 20241205
+Copyright (C) 1985-2024 Intel Corporation. All rights reserved.
+
+MPI:
+Intel(R) MPI Library for Linux* OS, Version 2021.14 Build 20241121 (id: e7829d6)
+Copyright 2003-2024, Intel Corporation.
+
+----- [ launching job script in sweep execution mode ] -----
+
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 1 / 30
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5932156/bin/FFB
+runs                      = 5
+timeout                   = 900 sec
+images                    = 4
+image grid                = 1 x 4
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+mpi per host option       = enabled
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 4
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+latest commit             = 57eb7a0
+
+image | [    X /    Y ] | host
+--------------------------------------------------------------------------------
+    1 | [    1 /    1 ] | uc2n656.localdomain
+    2 | [    1 /    2 ] | uc2n657.localdomain
+    3 | [    1 /    3 ] | uc2n658.localdomain
+    4 | [    1 /    4 ] | uc2n659.localdomain
+
+host | images
+--------------------------------------------------------------------------------
+uc2n656.localdomain | [ 1 ]
+uc2n657.localdomain | [ 2 ]
+uc2n658.localdomain | [ 3 ]
+uc2n659.localdomain | [ 4 ]
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5932156
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 4
+image grid [X/Y]          = [ 1 / 4 ]
+local domain [X/Y]        = [ 14400 / 3600 ]
+halo cells                = 0.069 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.881
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.857
+
+--- [ benchmark runs started at 2026-07-20 18:22:11 ] --------------------------
+001 | avg step time: 601.105 ms | total time: 180.332 sec | MLUPS: 344
+002 | avg step time: 626.435 ms | total time: 187.931 sec | MLUPS: 331
+003 | avg step time: 651.886 ms | total time: 195.566 sec | MLUPS: 318
+004 | avg step time: 597.845 ms | total time: 179.353 sec | MLUPS: 346
+005 | avg step time: 603.418 ms | total time: 181.025 sec | MLUPS: 343
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 343
+best                      = 346
+worst                     = 318
+mean                      = 336
+stddev                    = 3.521 %
+
+image execution time spread  |      best [sec] (image) |     worst [sec] (image)
+--------------------------------------------------------------------------------
+kernel compute               |             172.922 (3) |             178.177 (4)
+halo sync                    |               1.254 (4) |               6.975 (1)
+halo transfer                |               0.718 (1) |               1.823 (3)
+other                        |               0.001 (2) |               0.028 (3)
+total                        |             181.025 (4) |             181.025 (1)
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 2 / 30
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5932156/bin/FFB
+runs                      = 5
+timeout                   = 900 sec
+images                    = 6
+image grid                = 1 x 6
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+mpi per host option       = enabled
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 6
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+latest commit             = 57eb7a0
+
+image | [    X /    Y ] | host
+--------------------------------------------------------------------------------
+    1 | [    1 /    1 ] | uc2n656.localdomain
+    2 | [    1 /    2 ] | uc2n657.localdomain
+    3 | [    1 /    3 ] | uc2n658.localdomain
+    4 | [    1 /    4 ] | uc2n659.localdomain
+    5 | [    1 /    5 ] | uc2n660.localdomain
+    6 | [    1 /    6 ] | uc2n661.localdomain
+
+host | images
+--------------------------------------------------------------------------------
+uc2n656.localdomain | [ 1 ]
+uc2n657.localdomain | [ 2 ]
+uc2n658.localdomain | [ 3 ]
+uc2n659.localdomain | [ 4 ]
+uc2n660.localdomain | [ 5 ]
+uc2n661.localdomain | [ 6 ]
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5932156
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 6
+image grid [X/Y]          = [ 1 / 6 ]
+local domain [X/Y]        = [ 14400 / 2400 ]
+halo cells                = 0.097 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.889
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.866
+
+--- [ benchmark runs started at 2026-07-20 18:38:00 ] --------------------------
+001 | avg step time: 408.899 ms | total time: 122.670 sec | MLUPS: 507
+002 | avg step time: 410.912 ms | total time: 123.274 sec | MLUPS: 504
+003 | avg step time: 432.028 ms | total time: 129.608 sec | MLUPS: 479
+004 | avg step time: 404.742 ms | total time: 121.423 sec | MLUPS: 512
+005 | avg step time: 407.110 ms | total time: 122.133 sec | MLUPS: 509
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 507
+best                      = 512
+worst                     = 479
+mean                      = 502
+stddev                    = 2.647 %
+
+image execution time spread  |      best [sec] (image) |     worst [sec] (image)
+--------------------------------------------------------------------------------
+kernel compute               |             116.721 (1) |             119.842 (5)
+halo sync                    |               1.149 (4) |               4.938 (1)
+halo transfer                |               0.665 (1) |               1.890 (3)
+other                        |               0.007 (6) |               0.030 (6)
+total                        |             122.670 (2) |             122.670 (1)
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 3 / 30
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5932156/bin/FFB
+runs                      = 5
+timeout                   = 900 sec
+images                    = 9
+image grid                = 1 x 9
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+mpi per host option       = enabled
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 9
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+latest commit             = 57eb7a0
+
+image | [    X /    Y ] | host
+--------------------------------------------------------------------------------
+    1 | [    1 /    1 ] | uc2n656.localdomain
+    2 | [    1 /    2 ] | uc2n657.localdomain
+    3 | [    1 /    3 ] | uc2n658.localdomain
+    4 | [    1 /    4 ] | uc2n659.localdomain
+    5 | [    1 /    5 ] | uc2n660.localdomain
+    6 | [    1 /    6 ] | uc2n661.localdomain
+    7 | [    1 /    7 ] | uc2n662.localdomain
+    8 | [    1 /    8 ] | uc2n666.localdomain
+    9 | [    1 /    9 ] | uc2n667.localdomain
+
+host | images
+--------------------------------------------------------------------------------
+uc2n656.localdomain | [ 1 ]
+uc2n657.localdomain | [ 2 ]
+uc2n658.localdomain | [ 3 ]
+uc2n659.localdomain | [ 4 ]
+uc2n660.localdomain | [ 5 ]
+uc2n661.localdomain | [ 6 ]
+uc2n662.localdomain | [ 7 ]
+uc2n666.localdomain | [ 8 ]
+uc2n667.localdomain | [ 9 ]
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5932156
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 9
+image grid [X/Y]          = [ 1 / 9 ]
+local domain [X/Y]        = [ 14400 / 1600 ]
+halo cells                = 0.139 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.901
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.878
+
+--- [ benchmark runs started at 2026-07-20 18:48:43 ] --------------------------
+001 | avg step time: 298.319 ms | total time: 89.496 sec | MLUPS: 695
+002 | avg step time: 298.562 ms | total time: 89.569 sec | MLUPS: 694
+003 | avg step time: 297.961 ms | total time: 89.388 sec | MLUPS: 695
+004 | avg step time: 298.023 ms | total time: 89.407 sec | MLUPS: 695
+005 | avg step time: 296.862 ms | total time: 89.059 sec | MLUPS: 698
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 695
+best                      = 698
+worst                     = 694
+mean                      = 695
+stddev                    = 0.218 %
+
+image execution time spread  |      best [sec] (image) |     worst [sec] (image)
+--------------------------------------------------------------------------------
+kernel compute               |              84.418 (4) |              86.235 (8)
+halo sync                    |               1.217 (8) |               3.631 (9)
+halo transfer                |               0.940 (1) |               2.021 (7)
+other                        |               0.027 (8) |               0.044 (9)
+total                        |              89.402 (6) |              89.407 (8)
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 4 / 30
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5932156/bin/FFB
+runs                      = 5
+timeout                   = 900 sec
+images                    = 12
+image grid                = 1 x 12
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+mpi per host option       = enabled
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 12
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+latest commit             = 57eb7a0
+
+image | [    X /    Y ] | host
+--------------------------------------------------------------------------------
+    1 | [    1 /    1 ] | uc2n656.localdomain
+    2 | [    1 /    2 ] | uc2n657.localdomain
+    3 | [    1 /    3 ] | uc2n658.localdomain
+    4 | [    1 /    4 ] | uc2n659.localdomain
+    5 | [    1 /    5 ] | uc2n660.localdomain
+    6 | [    1 /    6 ] | uc2n661.localdomain
+    7 | [    1 /    7 ] | uc2n662.localdomain
+    8 | [    1 /    8 ] | uc2n666.localdomain
+    9 | [    1 /    9 ] | uc2n667.localdomain
+   10 | [    1 /   10 ] | uc2n668.localdomain
+   11 | [    1 /   11 ] | uc2n669.localdomain
+   12 | [    1 /   12 ] | uc2n670.localdomain
+
+host | images
+--------------------------------------------------------------------------------
+uc2n656.localdomain | [ 1 ]
+uc2n657.localdomain | [ 2 ]
+uc2n658.localdomain | [ 3 ]
+uc2n659.localdomain | [ 4 ]
+uc2n660.localdomain | [ 5 ]
+uc2n661.localdomain | [ 6 ]
+uc2n662.localdomain | [ 7 ]
+uc2n666.localdomain | [ 8 ]
+uc2n667.localdomain | [ 9 ]
+uc2n668.localdomain | [ 10 ]
+uc2n669.localdomain | [ 11 ]
+uc2n670.localdomain | [ 12 ]
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5932156
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 12
+image grid [X/Y]          = [ 1 / 12 ]
+local domain [X/Y]        = [ 14400 / 1200 ]
+halo cells                = 0.181 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.914
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.890
+
+--- [ benchmark runs started at 2026-07-20 18:56:33 ] --------------------------
+001 | avg step time: 279.771 ms | total time: 83.931 sec | MLUPS: 741
+002 | avg step time: 279.626 ms | total time: 83.888 sec | MLUPS: 741
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 12
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+latest commit             = 57eb7a0
+
+image | [    X /    Y ] | host
+--------------------------------------------------------------------------------
+    1 | [    1 /    1 ] | uc2n656.localdomain
+    2 | [    1 /    2 ] | uc2n657.localdomain
+    3 | [    1 /    3 ] | uc2n658.localdomain
+    4 | [    1 /    4 ] | uc2n659.localdomain
+    5 | [    1 /    5 ] | uc2n660.localdomain
+    6 | [    1 /    6 ] | uc2n661.localdomain
+    7 | [    1 /    7 ] | uc2n662.localdomain
+    8 | [    1 /    8 ] | uc2n666.localdomain
+    9 | [    1 /    9 ] | uc2n667.localdomain
+   10 | [    1 /   10 ] | uc2n668.localdomain
+   11 | [    1 /   11 ] | uc2n669.localdomain
+   12 | [    1 /   12 ] | uc2n670.localdomain
+
+host | images
+--------------------------------------------------------------------------------
+uc2n656.localdomain | [ 1 ]
+uc2n657.localdomain | [ 2 ]
+uc2n658.localdomain | [ 3 ]
+uc2n659.localdomain | [ 4 ]
+uc2n660.localdomain | [ 5 ]
+uc2n661.localdomain | [ 6 ]
+uc2n662.localdomain | [ 7 ]
+uc2n666.localdomain | [ 8 ]
+uc2n667.localdomain | [ 9 ]
+uc2n668.localdomain | [ 10 ]
+uc2n669.localdomain | [ 11 ]
+uc2n670.localdomain | [ 12 ]
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5932156
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 12
+image grid [X/Y]          = [ 1 / 12 ]
+local domain [X/Y]        = [ 14400 / 1200 ]
+halo cells                = 0.181 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.914
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.890
+ 
+[18:59:34] launched ------------------------------------------------------------
+
+[18:59:34]   0.33 %  (T-00:01:50)  1/300 steps  |  avg step: 365.963 ms   
+[18:59:35]   0.67 %  (T-00:01:28)  2/300 steps  |  avg step: 293.949 ms   
+[18:59:35]   1.00 %  (T-00:01:21)  3/300 steps  |  avg step: 270.384 ms   
+[18:59:35]   1.33 %  (T-00:01:17)  4/300 steps  |  avg step: 257.830 ms   
+[18:59:35]   1.67 %  (T-00:01:18)  5/300 steps  |  avg step: 262.267 ms   
+[18:59:36]   2.00 %  (T-00:01:19)  6/300 steps  |  avg step: 266.111 ms   
+[18:59:36]   2.33 %  (T-00:01:19)  7/300 steps  |  avg step: 268.449 ms   
+[18:59:36]   2.67 %  (T-00:01:20)  8/300 steps  |  avg step: 271.753 ms   
+[18:59:36]   3.00 %  (T-00:01:20)  9/300 steps  |  avg step: 271.934 ms   
+[18:59:37]   3.33 %  (T-00:01:20)  10/300 steps  |  avg step: 272.867 ms   
+[18:59:37]   3.67 %  (T-00:01:20)  11/300 steps  |  avg step: 274.447 ms   
+[18:59:37]   4.00 %  (T-00:01:20)  12/300 steps  |  avg step: 274.554 ms   
+[18:59:38]   4.33 %  (T-00:01:20)  13/300 steps  |  avg step: 275.739 ms   
+[18:59:38]   4.67 %  (T-00:01:19)  14/300 steps  |  avg step: 276.054 ms   
+[18:59:38]   5.00 %  (T-00:01:19)  15/300 steps  |  avg step: 276.828 ms   
+[18:59:38]   5.33 %  (T-00:01:19)  16/300 steps  |  avg step: 276.736 ms   
+[18:59:39]   5.67 %  (T-00:01:19)  17/300 steps  |  avg step: 277.517 ms   
+[18:59:39]   6.00 %  (T-00:01:19)  18/300 steps  |  avg step: 277.433 ms   
+[18:59:39]   6.33 %  (T-00:01:19)  19/300 steps  |  avg step: 277.646 ms   
+[18:59:40]   6.67 %  (T-00:01:18)  20/300 steps  |  avg step: 277.828 ms   
+[18:59:40]   7.00 %  (T-00:01:18)  21/300 steps  |  avg step: 278.163 ms   
+[18:59:40]   7.33 %  (T-00:01:18)  22/300 steps  |  avg step: 278.256 ms   
+[18:59:40]   7.67 %  (T-00:01:18)  23/300 steps  |  avg step: 278.442 ms   
+[18:59:41]   8.00 %  (T-00:01:17)  24/300 steps  |  avg step: 278.698 ms   
+[18:59:41]   8.33 %  (T-00:01:17)  25/300 steps  |  avg step: 279.586 ms   
+[18:59:41]   8.67 %  (T-00:01:17)  26/300 steps  |  avg step: 279.430 ms   
+[18:59:42]   9.00 %  (T-00:01:17)  27/300 steps  |  avg step: 279.198 ms   
+[18:59:42]   9.33 %  (T-00:01:16)  28/300 steps  |  avg step: 279.058 ms   
+[18:59:42]   9.67 %  (T-00:01:16)  29/300 steps  |  avg step: 279.191 ms   
+[18:59:42]  10.00 %  (T-00:01:16)  30/300 steps  |  avg step: 278.873 ms   
+[18:59:43]  10.33 %  (T-00:01:16)  31/300 steps  |  avg step: 278.958 ms   
+[18:59:43]  10.67 %  (T-00:01:15)  32/300 steps  |  avg step: 279.218 ms   
+[18:59:43]  11.00 %  (T-00:01:15)  33/300 steps  |  avg step: 279.372 ms   
+[18:59:44]  11.33 %  (T-00:01:15)  34/300 steps  |  avg step: 279.369 ms   
+[18:59:44]  11.67 %  (T-00:01:15)  35/300 steps  |  avg step: 279.342 ms   
+[18:59:44]  12.00 %  (T-00:01:14)  36/300 steps  |  avg step: 279.506 ms   
+[18:59:44]  12.33 %  (T-00:01:14)  37/300 steps  |  avg step: 279.641 ms   
+[18:59:45]  12.67 %  (T-00:01:14)  38/300 steps  |  avg step: 279.619 ms   
+[18:59:45]  13.00 %  (T-00:01:14)  39/300 steps  |  avg step: 279.710 ms   
+[18:59:45]  13.33 %  (T-00:01:13)  40/300 steps  |  avg step: 279.725 ms   
+[18:59:45]  13.67 %  (T-00:01:13)  41/300 steps  |  avg step: 279.775 ms   
+[18:59:46]  14.00 %  (T-00:01:13)  42/300 steps  |  avg step: 279.797 ms   
+[18:59:46]  14.33 %  (T-00:01:12)  43/300 steps  |  avg step: 279.947 ms   
+[18:59:46]  14.67 %  (T-00:01:12)  44/300 steps  |  avg step: 280.056 ms   
+[18:59:47]  15.00 %  (T-00:01:12)  45/300 steps  |  avg step: 280.006 ms   
+[18:59:47]  15.33 %  (T-00:01:12)  46/300 steps  |  avg step: 280.042 ms   
+[18:59:47]  15.67 %  (T-00:01:11)  47/300 steps  |  avg step: 280.064 ms   
+[18:59:47]  16.00 %  (T-00:01:11)  48/300 steps  |  avg step: 280.036 ms   
+[18:59:48]  16.33 %  (T-00:01:11)  49/300 steps  |  avg step: 280.036 ms   
+[18:59:48]  16.67 %  (T-00:01:11)  50/300 steps  |  avg step: 280.060 ms   
+[18:59:48]  17.00 %  (T-00:01:10)  51/300 steps  |  avg step: 280.155 ms   
+[18:59:49]  17.33 %  (T-00:01:10)  52/300 steps  |  avg step: 280.265 ms   
+[18:59:49]  17.67 %  (T-00:01:10)  53/300 steps  |  avg step: 280.403 ms   
+[18:59:49]  18.00 %  (T-00:01:09)  54/300 steps  |  avg step: 280.328 ms   
+[18:59:49]  18.33 %  (T-00:01:09)  55/300 steps  |  avg step: 280.410 ms   
+[18:59:50]  18.67 %  (T-00:01:09)  56/300 steps  |  avg step: 280.359 ms   
+[18:59:50]  19.00 %  (T-00:01:09)  57/300 steps  |  avg step: 280.502 ms   
+[18:59:50]  19.33 %  (T-00:01:08)  58/300 steps  |  avg step: 280.333 ms   
+[18:59:51]  19.67 %  (T-00:01:08)  59/300 steps  |  avg step: 280.516 ms   
+[18:59:51]  20.00 %  (T-00:01:08)  60/300 steps  |  avg step: 280.493 ms   
+[18:59:51]  20.33 %  (T-00:01:08)  61/300 steps  |  avg step: 280.615 ms   
+[18:59:51]  20.67 %  (T-00:01:07)  62/300 steps  |  avg step: 280.503 ms   
+[18:59:52]  21.00 %  (T-00:01:07)  63/300 steps  |  avg step: 280.549 ms   
+[18:59:52]  21.33 %  (T-00:01:07)  64/300 steps  |  avg step: 280.514 ms   
+[18:59:52]  21.67 %  (T-00:01:06)  65/300 steps  |  avg step: 280.519 ms   
+[18:59:53]  22.00 %  (T-00:01:06)  66/300 steps  |  avg step: 280.429 ms   
+[18:59:53]  22.33 %  (T-00:01:06)  67/300 steps  |  avg step: 280.387 ms   
+[18:59:53]  22.67 %  (T-00:01:06)  68/300 steps  |  avg step: 280.344 ms   
+[18:59:53]  23.00 %  (T-00:01:05)  69/300 steps  |  avg step: 280.309 ms   
+[18:59:54]  23.33 %  (T-00:01:05)  70/300 steps  |  avg step: 280.195 ms   
+[18:59:54]  23.67 %  (T-00:01:05)  71/300 steps  |  avg step: 280.337 ms   
+[18:59:54]  24.00 %  (T-00:01:04)  72/300 steps  |  avg step: 280.208 ms   
+[18:59:54]  24.33 %  (T-00:01:04)  73/300 steps  |  avg step: 280.284 ms   
+[18:59:55]  24.67 %  (T-00:01:04)  74/300 steps  |  avg step: 280.252 ms   
+[18:59:55]  25.00 %  (T-00:01:04)  75/300 steps  |  avg step: 280.359 ms   
+[18:59:55]  25.33 %  (T-00:01:03)  76/300 steps  |  avg step: 280.343 ms   
+[18:59:56]  25.67 %  (T-00:01:03)  77/300 steps  |  avg step: 280.406 ms   
+[18:59:56]  26.00 %  (T-00:01:03)  78/300 steps  |  avg step: 280.415 ms   
+[18:59:56]  26.33 %  (T-00:01:03)  79/300 steps  |  avg step: 280.618 ms   
+[18:59:56]  26.67 %  (T-00:01:02)  80/300 steps  |  avg step: 280.555 ms   
+[18:59:57]  27.00 %  (T-00:01:02)  81/300 steps  |  avg step: 280.584 ms   
+[18:59:57]  27.33 %  (T-00:01:02)  82/300 steps  |  avg step: 280.705 ms   
+[18:59:57]  27.67 %  (T-00:01:01)  83/300 steps  |  avg step: 280.569 ms   
+[18:59:58]  28.00 %  (T-00:01:01)  84/300 steps  |  avg step: 280.476 ms   
+[18:59:58]  28.33 %  (T-00:01:01)  85/300 steps  |  avg step: 280.528 ms   
+[18:59:58]  28.67 %  (T-00:01:01)  86/300 steps  |  avg step: 280.440 ms   
+[18:59:58]  29.00 %  (T-00:01:00)  87/300 steps  |  avg step: 280.464 ms   
+[18:59:59]  29.33 %  (T-00:01:00)  88/300 steps  |  avg step: 280.447 ms   
+[18:59:59]  29.67 %  (T-00:01:00)  89/300 steps  |  avg step: 280.545 ms   
+[18:59:59]  30.00 %  (T-00:00:59)  90/300 steps  |  avg step: 280.441 ms   
+[19:00:00]  30.33 %  (T-00:00:59)  91/300 steps  |  avg step: 280.443 ms   
+[19:00:00]  30.67 %  (T-00:00:59)  92/300 steps  |  avg step: 280.505 ms   
+[19:00:00]  31.00 %  (T-00:00:59)  93/300 steps  |  avg step: 280.495 ms   
+[19:00:00]  31.33 %  (T-00:00:58)  94/300 steps  |  avg step: 280.431 ms   
+[19:00:01]  31.67 %  (T-00:00:58)  95/300 steps  |  avg step: 280.476 ms   
+[19:00:01]  32.00 %  (T-00:00:58)  96/300 steps  |  avg step: 280.440 ms   
+[19:00:01]  32.33 %  (T-00:00:57)  97/300 steps  |  avg step: 280.461 ms   
+[19:00:02]  32.67 %  (T-00:00:57)  98/300 steps  |  avg step: 280.375 ms   
+[19:00:02]  33.00 %  (T-00:00:57)  99/300 steps  |  avg step: 280.389 ms   
+[19:00:02]  33.33 %  (T-00:00:57)  100/300 steps  |  avg step: 280.378 ms   
+[19:00:02]  33.67 %  (T-00:00:56)  101/300 steps  |  avg step: 280.426 ms   
+[19:00:03]  34.00 %  (T-00:00:56)  102/300 steps  |  avg step: 280.549 ms   
+[19:00:03]  34.33 %  (T-00:00:56)  103/300 steps  |  avg step: 280.362 ms   
+[19:00:03]  34.67 %  (T-00:00:55)  104/300 steps  |  avg step: 280.407 ms   
+[19:00:03]  35.00 %  (T-00:00:55)  105/300 steps  |  avg step: 280.432 ms   
+[19:00:04]  35.33 %  (T-00:00:55)  106/300 steps  |  avg step: 280.423 ms   
+[19:00:04]  35.67 %  (T-00:00:55)  107/300 steps  |  avg step: 280.445 ms   
+[19:00:04]  36.00 %  (T-00:00:54)  108/300 steps  |  avg step: 280.414 ms   
+[19:00:05]  36.33 %  (T-00:00:54)  109/300 steps  |  avg step: 280.453 ms   
+[19:00:05]  36.67 %  (T-00:00:54)  110/300 steps  |  avg step: 280.471 ms   
+[19:00:05]  37.00 %  (T-00:00:54)  111/300 steps  |  avg step: 280.485 ms   
+[19:00:05]  37.33 %  (T-00:00:53)  112/300 steps  |  avg step: 280.434 ms   
+[19:00:06]  37.67 %  (T-00:00:53)  113/300 steps  |  avg step: 280.447 ms   
+[19:00:06]  38.00 %  (T-00:00:53)  114/300 steps  |  avg step: 280.451 ms   
+[19:00:06]  38.33 %  (T-00:00:52)  115/300 steps  |  avg step: 280.517 ms   
+[19:00:07]  38.67 %  (T-00:00:52)  116/300 steps  |  avg step: 280.425 ms   
+[19:00:07]  39.00 %  (T-00:00:52)  117/300 steps  |  avg step: 280.444 ms   
+[19:00:07]  39.33 %  (T-00:00:52)  118/300 steps  |  avg step: 280.423 ms   
+[19:00:07]  39.67 %  (T-00:00:51)  119/300 steps  |  avg step: 280.427 ms   
+[19:00:08]  40.00 %  (T-00:00:51)  120/300 steps  |  avg step: 280.382 ms   
+[19:00:08]  40.33 %  (T-00:00:51)  121/300 steps  |  avg step: 280.384 ms   
+[19:00:08]  40.67 %  (T-00:00:50)  122/300 steps  |  avg step: 280.295 ms   
+[19:00:09]  41.00 %  (T-00:00:50)  123/300 steps  |  avg step: 280.323 ms   
+[19:00:09]  41.33 %  (T-00:00:50)  124/300 steps  |  avg step: 280.327 ms   
+[19:00:09]  41.67 %  (T-00:00:50)  125/300 steps  |  avg step: 280.357 ms   
+[19:00:09]  42.00 %  (T-00:00:49)  126/300 steps  |  avg step: 280.392 ms   
+[19:00:10]  42.33 %  (T-00:00:49)  127/300 steps  |  avg step: 280.425 ms   
+[19:00:10]  42.67 %  (T-00:00:49)  128/300 steps  |  avg step: 280.388 ms   
+[19:00:10]  43.00 %  (T-00:00:48)  129/300 steps  |  avg step: 280.509 ms   
+[19:00:10]  43.33 %  (T-00:00:48)  130/300 steps  |  avg step: 280.485 ms   
+[19:00:11]  43.67 %  (T-00:00:48)  131/300 steps  |  avg step: 280.464 ms   
+[19:00:11]  44.00 %  (T-00:00:48)  132/300 steps  |  avg step: 280.422 ms   
+[19:00:11]  44.33 %  (T-00:00:47)  133/300 steps  |  avg step: 280.471 ms   
+[19:00:12]  44.67 %  (T-00:00:47)  134/300 steps  |  avg step: 280.415 ms   
+[19:00:12]  45.00 %  (T-00:00:47)  135/300 steps  |  avg step: 280.509 ms   
+[19:00:12]  45.33 %  (T-00:00:47)  136/300 steps  |  avg step: 280.501 ms   
+[19:00:12]  45.67 %  (T-00:00:46)  137/300 steps  |  avg step: 280.532 ms   
+[19:00:13]  46.00 %  (T-00:00:46)  138/300 steps  |  avg step: 280.516 ms   
+[19:00:13]  46.33 %  (T-00:00:46)  139/300 steps  |  avg step: 280.512 ms   
+[19:00:13]  46.67 %  (T-00:00:45)  140/300 steps  |  avg step: 280.548 ms   
+[19:00:14]  47.00 %  (T-00:00:45)  141/300 steps  |  avg step: 280.575 ms   
+[19:00:14]  47.33 %  (T-00:00:45)  142/300 steps  |  avg step: 280.552 ms   
+[19:00:14]  47.67 %  (T-00:00:45)  143/300 steps  |  avg step: 280.532 ms   
+[19:00:14]  48.00 %  (T-00:00:44)  144/300 steps  |  avg step: 280.505 ms   
+[19:00:15]  48.33 %  (T-00:00:44)  145/300 steps  |  avg step: 280.503 ms   
+[19:00:15]  48.67 %  (T-00:00:44)  146/300 steps  |  avg step: 280.492 ms   
+[19:00:15]  49.00 %  (T-00:00:43)  147/300 steps  |  avg step: 280.552 ms   
+[19:00:16]  49.33 %  (T-00:00:43)  148/300 steps  |  avg step: 280.532 ms   
+[19:00:16]  49.67 %  (T-00:00:43)  149/300 steps  |  avg step: 280.523 ms   
+[19:00:16]  50.00 %  (T-00:00:43)  150/300 steps  |  avg step: 280.548 ms   
+[19:00:16]  50.33 %  (T-00:00:42)  151/300 steps  |  avg step: 280.556 ms   
+[19:00:17]  50.67 %  (T-00:00:42)  152/300 steps  |  avg step: 280.534 ms   
+[19:00:17]  51.00 %  (T-00:00:42)  153/300 steps  |  avg step: 280.546 ms   
+[19:00:17]  51.33 %  (T-00:00:41)  154/300 steps  |  avg step: 280.531 ms   
+[19:00:18]  51.67 %  (T-00:00:41)  155/300 steps  |  avg step: 280.572 ms   
+[19:00:18]  52.00 %  (T-00:00:41)  156/300 steps  |  avg step: 280.566 ms   
+[19:00:18]  52.33 %  (T-00:00:41)  157/300 steps  |  avg step: 280.550 ms   
+[19:00:18]  52.67 %  (T-00:00:40)  158/300 steps  |  avg step: 280.533 ms   
+[19:00:19]  53.00 %  (T-00:00:40)  159/300 steps  |  avg step: 280.540 ms   
+[19:00:19]  53.33 %  (T-00:00:40)  160/300 steps  |  avg step: 280.582 ms   
+[19:00:19]  53.67 %  (T-00:00:39)  161/300 steps  |  avg step: 280.574 ms   
+[19:00:19]  54.00 %  (T-00:00:39)  162/300 steps  |  avg step: 280.543 ms   
+[19:00:20]  54.33 %  (T-00:00:39)  163/300 steps  |  avg step: 280.578 ms   
+[19:00:20]  54.67 %  (T-00:00:39)  164/300 steps  |  avg step: 280.574 ms   
+[19:00:20]  55.00 %  (T-00:00:38)  165/300 steps  |  avg step: 280.625 ms   
+[19:00:21]  55.33 %  (T-00:00:38)  166/300 steps  |  avg step: 280.612 ms   
+[19:00:21]  55.67 %  (T-00:00:38)  167/300 steps  |  avg step: 280.619 ms   
+[19:00:21]  56.00 %  (T-00:00:38)  168/300 steps  |  avg step: 280.566 ms   
+[19:00:21]  56.33 %  (T-00:00:37)  169/300 steps  |  avg step: 280.579 ms   
+[19:00:22]  56.67 %  (T-00:00:37)  170/300 steps  |  avg step: 280.544 ms   
+[19:00:22]  57.00 %  (T-00:00:37)  171/300 steps  |  avg step: 280.562 ms   
+[19:00:22]  57.33 %  (T-00:00:36)  172/300 steps  |  avg step: 280.531 ms   
+[19:00:23]  57.67 %  (T-00:00:36)  173/300 steps  |  avg step: 280.531 ms   
+[19:00:23]  58.00 %  (T-00:00:36)  174/300 steps  |  avg step: 280.535 ms   
+[19:00:23]  58.33 %  (T-00:00:36)  175/300 steps  |  avg step: 280.528 ms   
+[19:00:23]  58.67 %  (T-00:00:35)  176/300 steps  |  avg step: 280.518 ms   
+[19:00:24]  59.00 %  (T-00:00:35)  177/300 steps  |  avg step: 280.561 ms   
+[19:00:24]  59.33 %  (T-00:00:35)  178/300 steps  |  avg step: 280.526 ms   
+[19:00:24]  59.67 %  (T-00:00:34)  179/300 steps  |  avg step: 280.587 ms   
+[19:00:25]  60.00 %  (T-00:00:34)  180/300 steps  |  avg step: 280.561 ms   
+[19:00:25]  60.33 %  (T-00:00:34)  181/300 steps  |  avg step: 280.569 ms   
+[19:00:25]  60.67 %  (T-00:00:34)  182/300 steps  |  avg step: 280.504 ms   
+[19:00:25]  61.00 %  (T-00:00:33)  183/300 steps  |  avg step: 280.528 ms   
+[19:00:26]  61.33 %  (T-00:00:33)  184/300 steps  |  avg step: 280.507 ms   
+[19:00:26]  61.67 %  (T-00:00:33)  185/300 steps  |  avg step: 280.523 ms   
+[19:00:26]  62.00 %  (T-00:00:32)  186/300 steps  |  avg step: 280.508 ms   
+[19:00:26]  62.33 %  (T-00:00:32)  187/300 steps  |  avg step: 280.532 ms   
+[19:00:27]  62.67 %  (T-00:00:32)  188/300 steps  |  avg step: 280.518 ms   
+[19:00:27]  63.00 %  (T-00:00:32)  189/300 steps  |  avg step: 280.582 ms   
+[19:00:27]  63.33 %  (T-00:00:31)  190/300 steps  |  avg step: 280.567 ms   
+[19:00:28]  63.67 %  (T-00:00:31)  191/300 steps  |  avg step: 280.561 ms   
+[19:00:28]  64.00 %  (T-00:00:31)  192/300 steps  |  avg step: 280.544 ms   
+[19:00:28]  64.33 %  (T-00:00:31)  193/300 steps  |  avg step: 280.579 ms   
+[19:00:28]  64.67 %  (T-00:00:30)  194/300 steps  |  avg step: 280.569 ms   
+[19:00:29]  65.00 %  (T-00:00:30)  195/300 steps  |  avg step: 280.627 ms   
+[19:00:29]  65.33 %  (T-00:00:30)  196/300 steps  |  avg step: 280.599 ms   
+[19:00:29]  65.67 %  (T-00:00:29)  197/300 steps  |  avg step: 280.623 ms   
+[19:00:30]  66.00 %  (T-00:00:29)  198/300 steps  |  avg step: 280.616 ms   
+[19:00:30]  66.33 %  (T-00:00:29)  199/300 steps  |  avg step: 280.650 ms   
+[19:00:30]  66.67 %  (T-00:00:29)  200/300 steps  |  avg step: 280.590 ms   
+[19:00:30]  67.00 %  (T-00:00:28)  201/300 steps  |  avg step: 280.624 ms   
+[19:00:31]  67.33 %  (T-00:00:28)  202/300 steps  |  avg step: 280.625 ms   
+[19:00:31]  67.67 %  (T-00:00:28)  203/300 steps  |  avg step: 280.621 ms   
+[19:00:31]  68.00 %  (T-00:00:27)  204/300 steps  |  avg step: 280.596 ms   
+[19:00:32]  68.33 %  (T-00:00:27)  205/300 steps  |  avg step: 280.586 ms   
+[19:00:32]  68.67 %  (T-00:00:27)  206/300 steps  |  avg step: 280.647 ms   
+[19:00:32]  69.00 %  (T-00:00:27)  207/300 steps  |  avg step: 280.725 ms   
+[19:00:32]  69.33 %  (T-00:00:26)  208/300 steps  |  avg step: 280.609 ms   
+[19:00:33]  69.67 %  (T-00:00:26)  209/300 steps  |  avg step: 280.826 ms   
+[19:00:33]  70.00 %  (T-00:00:26)  210/300 steps  |  avg step: 280.896 ms   
+[19:00:33]  70.33 %  (T-00:00:25)  211/300 steps  |  avg step: 280.637 ms   
+[19:00:34]  70.67 %  (T-00:00:25)  212/300 steps  |  avg step: 280.614 ms   
+[19:00:34]  71.00 %  (T-00:00:25)  213/300 steps  |  avg step: 280.666 ms   
+[19:00:34]  71.33 %  (T-00:00:25)  214/300 steps  |  avg step: 280.651 ms   
+[19:00:34]  71.67 %  (T-00:00:24)  215/300 steps  |  avg step: 280.662 ms   
+[19:00:35]  72.00 %  (T-00:00:24)  216/300 steps  |  avg step: 280.682 ms   
+[19:00:35]  72.33 %  (T-00:00:24)  217/300 steps  |  avg step: 280.663 ms   
+[19:00:35]  72.67 %  (T-00:00:24)  218/300 steps  |  avg step: 280.706 ms   
+[19:00:36]  73.00 %  (T-00:00:23)  219/300 steps  |  avg step: 280.720 ms   
+[19:00:36]  73.33 %  (T-00:00:23)  220/300 steps  |  avg step: 280.689 ms   
+[19:00:36]  73.67 %  (T-00:00:23)  221/300 steps  |  avg step: 280.696 ms   
+[19:00:36]  74.00 %  (T-00:00:22)  222/300 steps  |  avg step: 280.718 ms   
+[19:00:37]  74.33 %  (T-00:00:22)  223/300 steps  |  avg step: 280.723 ms   
+[19:00:37]  74.67 %  (T-00:00:22)  224/300 steps  |  avg step: 280.740 ms   
+[19:00:37]  75.00 %  (T-00:00:22)  225/300 steps  |  avg step: 280.756 ms   
+[19:00:37]  75.33 %  (T-00:00:21)  226/300 steps  |  avg step: 280.782 ms   
+[19:00:38]  75.67 %  (T-00:00:21)  227/300 steps  |  avg step: 280.824 ms   
+[19:00:38]  76.00 %  (T-00:00:21)  228/300 steps  |  avg step: 280.830 ms   
+[19:00:38]  76.33 %  (T-00:00:20)  229/300 steps  |  avg step: 280.803 ms   
+[19:00:39]  76.67 %  (T-00:00:20)  230/300 steps  |  avg step: 280.771 ms   
+[19:00:39]  77.00 %  (T-00:00:20)  231/300 steps  |  avg step: 280.787 ms   
+[19:00:39]  77.33 %  (T-00:00:20)  232/300 steps  |  avg step: 280.771 ms   
+[19:00:39]  77.67 %  (T-00:00:19)  233/300 steps  |  avg step: 280.803 ms   
+[19:00:40]  78.00 %  (T-00:00:19)  234/300 steps  |  avg step: 280.780 ms   
+[19:00:40]  78.33 %  (T-00:00:19)  235/300 steps  |  avg step: 280.793 ms   
+[19:00:40]  78.67 %  (T-00:00:18)  236/300 steps  |  avg step: 280.790 ms   
+[19:00:41]  79.00 %  (T-00:00:18)  237/300 steps  |  avg step: 280.813 ms   
+[19:00:41]  79.33 %  (T-00:00:18)  238/300 steps  |  avg step: 280.800 ms   
+[19:00:41]  79.67 %  (T-00:00:18)  239/300 steps  |  avg step: 280.826 ms   
+[19:00:41]  80.00 %  (T-00:00:17)  240/300 steps  |  avg step: 280.806 ms   
+[19:00:42]  80.33 %  (T-00:00:17)  241/300 steps  |  avg step: 280.811 ms   
+[19:00:42]  80.67 %  (T-00:00:17)  242/300 steps  |  avg step: 280.837 ms   
+[19:00:42]  81.00 %  (T-00:00:17)  243/300 steps  |  avg step: 280.865 ms   
+[19:00:43]  81.33 %  (T-00:00:16)  244/300 steps  |  avg step: 280.885 ms   
+[19:00:43]  81.67 %  (T-00:00:16)  245/300 steps  |  avg step: 280.875 ms   
+[19:00:43]  82.00 %  (T-00:00:16)  246/300 steps  |  avg step: 280.831 ms   
+[19:00:43]  82.33 %  (T-00:00:15)  247/300 steps  |  avg step: 280.870 ms   
+[19:00:44]  82.67 %  (T-00:00:15)  248/300 steps  |  avg step: 280.835 ms   
+[19:00:44]  83.00 %  (T-00:00:15)  249/300 steps  |  avg step: 280.841 ms   
+[19:00:44]  83.33 %  (T-00:00:15)  250/300 steps  |  avg step: 280.862 ms   
+[19:00:45]  83.67 %  (T-00:00:14)  251/300 steps  |  avg step: 280.873 ms   
+[19:00:45]  84.00 %  (T-00:00:14)  252/300 steps  |  avg step: 280.866 ms   
+[19:00:45]  84.33 %  (T-00:00:14)  253/300 steps  |  avg step: 280.898 ms   
+[19:00:45]  84.67 %  (T-00:00:13)  254/300 steps  |  avg step: 280.873 ms   
+[19:00:46]  85.00 %  (T-00:00:13)  255/300 steps  |  avg step: 280.882 ms   
+[19:00:46]  85.33 %  (T-00:00:13)  256/300 steps  |  avg step: 280.886 ms   
+[19:00:46]  85.67 %  (T-00:00:13)  257/300 steps  |  avg step: 280.916 ms   
+[19:00:47]  86.00 %  (T-00:00:12)  258/300 steps  |  avg step: 280.921 ms   
+[19:00:47]  86.33 %  (T-00:00:12)  259/300 steps  |  avg step: 280.932 ms   
+[19:00:47]  86.67 %  (T-00:00:12)  260/300 steps  |  avg step: 280.937 ms   
+[19:00:47]  87.00 %  (T-00:00:11)  261/300 steps  |  avg step: 280.971 ms   
+[19:00:48]  87.33 %  (T-00:00:11)  262/300 steps  |  avg step: 280.955 ms   
+[19:00:48]  87.67 %  (T-00:00:11)  263/300 steps  |  avg step: 280.977 ms   
+[19:00:48]  88.00 %  (T-00:00:11)  264/300 steps  |  avg step: 280.971 ms   
+[19:00:48]  88.33 %  (T-00:00:10)  265/300 steps  |  avg step: 281.000 ms   
+[19:00:49]  88.67 %  (T-00:00:10)  266/300 steps  |  avg step: 280.977 ms   
+[19:00:49]  89.00 %  (T-00:00:10)  267/300 steps  |  avg step: 281.014 ms   
+[19:00:49]  89.33 %  (T-00:00:09)  268/300 steps  |  avg step: 280.998 ms   
+[19:00:50]  89.67 %  (T-00:00:09)  269/300 steps  |  avg step: 281.021 ms   
+[19:00:50]  90.00 %  (T-00:00:09)  270/300 steps  |  avg step: 280.998 ms   
+[19:00:50]  90.33 %  (T-00:00:09)  271/300 steps  |  avg step: 281.007 ms   
+[19:00:50]  90.67 %  (T-00:00:08)  272/300 steps  |  avg step: 281.019 ms   
+[19:00:51]  91.00 %  (T-00:00:08)  273/300 steps  |  avg step: 281.023 ms   
+[19:00:51]  91.33 %  (T-00:00:08)  274/300 steps  |  avg step: 280.999 ms   
+[19:00:51]  91.67 %  (T-00:00:08)  275/300 steps  |  avg step: 281.025 ms   
+[19:00:52]  92.00 %  (T-00:00:07)  276/300 steps  |  avg step: 281.030 ms   
+[19:00:52]  92.33 %  (T-00:00:07)  277/300 steps  |  avg step: 281.043 ms   
+[19:00:52]  92.67 %  (T-00:00:07)  278/300 steps  |  avg step: 281.060 ms   
+[19:00:52]  93.00 %  (T-00:00:06)  279/300 steps  |  avg step: 281.081 ms   
+[19:00:53]  93.33 %  (T-00:00:06)  280/300 steps  |  avg step: 281.467 ms   
+[19:00:53]  93.67 %  (T-00:00:06)  281/300 steps  |  avg step: 281.263 ms   
+[19:00:53]  94.00 %  (T-00:00:06)  282/300 steps  |  avg step: 281.484 ms   
+[19:00:54]  94.33 %  (T-00:00:05)  283/300 steps  |  avg step: 281.299 ms   
+[19:00:54]  94.67 %  (T-00:00:05)  284/300 steps  |  avg step: 281.130 ms   
+[19:00:54]  95.00 %  (T-00:00:05)  285/300 steps  |  avg step: 281.164 ms   
+[19:00:54]  95.33 %  (T-00:00:04)  286/300 steps  |  avg step: 281.138 ms   
+[19:00:55]  95.67 %  (T-00:00:04)  287/300 steps  |  avg step: 281.130 ms   
+[19:00:55]  96.00 %  (T-00:00:04)  288/300 steps  |  avg step: 281.142 ms   
+[19:00:55]  96.33 %  (T-00:00:04)  289/300 steps  |  avg step: 281.140 ms   
+[19:00:56]  96.67 %  (T-00:00:03)  290/300 steps  |  avg step: 281.127 ms   
+[19:00:56]  97.00 %  (T-00:00:03)  291/300 steps  |  avg step: 281.127 ms   
+[19:00:56]  97.33 %  (T-00:00:03)  292/300 steps  |  avg step: 281.134 ms   
+[19:00:56]  97.67 %  (T-00:00:02)  293/300 steps  |  avg step: 281.152 ms   
+[19:00:57]  98.00 %  (T-00:00:02)  294/300 steps  |  avg step: 281.135 ms   
+[19:00:57]  98.33 %  (T-00:00:02)  295/300 steps  |  avg step: 281.151 ms   
+[19:00:57]  98.67 %  (T-00:00:02)  296/300 steps  |  avg step: 281.143 ms   
+[19:00:58]  99.00 %  (T-00:00:01)  297/300 steps  |  avg step: 281.159 ms   
+[19:00:58]  99.33 %  (T-00:00:01)  298/300 steps  |  avg step: 281.168 ms   
+[19:00:58]  99.67 %  (T-00:00:01)  299/300 steps  |  avg step: 281.173 ms   
+[19:00:58] 100.00 %  (T-00:00:00)  300/300 steps  |  avg step: 281.183 ms    
+[19:00:59] finished ------------------------------------------------------------
+
+image execution time spread  |      best [sec] (image) |     worst [sec] (image)
+--------------------------------------------------------------------------------
+kernel compute               |              60.937 (7) |             82.728 (12)
+halo sync                    |              1.334 (12) |              21.991 (6)
+halo transfer                |               .577 (12) |               2.435 (8)
+other                        |               .039 (12) |                .334 (2)
+total                        |             84.678 (10) |              84.679 (5)
+
+--- [ perf metrics ] -----------------------------------------------------------
+sim size [X/Y/N]       = [ 14400 / 14400 / 300 ]
+total time             = 84.679 sec
+step time              = 282.265 ms
+MLUPS                  = 734
+
+
+
+============================= JOB FEEDBACK =============================
+
+NodeName=uc2n[656-662,666-672,727-736,742,744,781-784,794,796,798,800-803,805-806,809,815,853-854,861-862,864-866]
+Job ID: 5932156
+Cluster: uc3
+User/Group: fr_fl184/fr_fr
+State: FAILED (exit code 1)
+Nodes: 48
+Cores per node: 24
+CPU Utilized: 00:00:18
+CPU Efficiency: 0.00% of 31-08:19:12 core-walltime
+Job Wall-clock time: 00:39:11
+Memory Utilized: 34.09 GB
+Memory Efficiency: 1.52% of 2.20 TB (1.95 GB/core)
+The task which had the largest memory consumption differs by 100.15% from the average task max memory consumption
