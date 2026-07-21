@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/scratch/benchmark_user/FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 893, in <module>
+    continue
+  File "/scratch/benchmark_user/FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 888, in main
+    exe, images, ix, iy, run_num, pin, per_host, timeout)
+  File "/scratch/benchmark_user/FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 840, in run_case
+    
+  File "/scratch/benchmark_user/FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 730, in run_once
+    )
+  File "/scratch/benchmark_user/FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 611, in parse_last
+    
+RuntimeError: could not parse step time

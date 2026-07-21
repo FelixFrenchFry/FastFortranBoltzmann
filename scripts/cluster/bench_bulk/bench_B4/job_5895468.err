@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/scratch/benchmark_user/FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 807, in <module>
+    sys.exit(f"error: case {case_num}: I_X and I_Y must be positive")
+  File "/scratch/benchmark_user/FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 802, in main
+    
+  File "/scratch/benchmark_user/FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 754, in run_case
+    
+  File "/scratch/benchmark_user/FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 660, in run_once
+    env["I_Y"] = str(iy)
+  File "/scratch/benchmark_user/FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 604, in parse_last
+    
+RuntimeError: could not parse step time
