@@ -1,174 +1,0 @@
--- The Fortran compiler identification is IntelLLVM 2025.0.4
--- Detecting Fortran compiler ABI info
--- Detecting Fortran compiler ABI info - done
--- Check for working Fortran compiler: /software/bwhpc/common/toolkit/Intel_OneAPI/compiler/2025.0/bin/ifx - skipped
--- Configuring done (1.9s)
--- Generating done (0.0s)
--- Build files have been written to: /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5854613
-[1/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/domain.f90-pp.f90
-[2/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/export.f90-pp.f90
-[3/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/hardware_info.f90-pp.f90
-[4/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/settings.f90-pp.f90
-[5/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/reporting.f90-pp.f90
-[6/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/simulation.f90-pp.f90
-[7/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/modes/couette_flow.f90-pp.f90
-[8/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/reporting.f90-pp.f90
-[9/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/modes/shear_wave.f90-pp.f90
-[10/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/main.f90-pp.f90
-[11/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/exchange.f90-pp.f90
-[12/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/modes/sliding_lid.f90-pp.f90
-[13/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/hardware_info.f90-pp.f90
-[14/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/initialization.f90-pp.f90
-[15/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/modes/poiseuille_flow.f90-pp.f90
-[16/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/export.f90-pp.f90
-[17/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/settings.f90-pp.f90
-[18/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/exchange.f90-pp.f90
-[19/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/domain.f90-pp.f90
-[20/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/checkpoint_0/simulation.f90-pp.f90
-[21/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/export.f90-pp.f90
-[22/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/initialization.f90-pp.f90
-[23/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/main.f90-pp.f90
-[24/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/reporting.f90-pp.f90
-[25/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/settings.f90-pp.f90
-[26/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/main.f90-pp.f90
-[27/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/checkpoint_1/simulation.f90-pp.f90
-[28/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/hardware_info.f90-pp.f90
-[29/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/exchange.f90-pp.f90
-[30/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/checkpoint_2/simulation.f90-pp.f90
-[31/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/domain.f90-pp.f90
-[32/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/hardware_info.f90-pp.f90
-[33/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/exchange.f90-pp.f90
-[34/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/initialization.f90-pp.f90
-[35/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/domain.f90-pp.f90
-[36/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/initialization.f90-pp.f90
-[37/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/main.f90-pp.f90
-[38/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/export.f90-pp.f90
-[39/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/settings.f90-pp.f90
-[40/88] Generating Fortran dyndep file CMakeFiles/FFB.dir/Fortran.dd
-[41/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/reporting.f90-pp.f90
-[42/88] Generating Fortran dyndep file CMakeFiles/FFB_CHECKPOINT_0.dir/Fortran.dd
-[43/88] Generating Fortran dyndep file CMakeFiles/FFB_CHECKPOINT_1.dir/Fortran.dd
-[44/88] Generating Fortran dyndep file CMakeFiles/FFB_CHECKPOINT_2.dir/Fortran.dd
-[45/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/settings.f90.o
-[46/88] Building Fortran object CMakeFiles/FFB.dir/source/settings.f90.o
-[47/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/settings.f90.o
-[48/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/settings.f90.o
-[49/88] Building Fortran object CMakeFiles/FFB.dir/source/hardware_info.f90.o
-[50/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/hardware_info.f90.o
-[51/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/hardware_info.f90.o
-[52/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/hardware_info.f90.o
-[53/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/initialization.f90.o
-[54/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/domain.f90.o
-[55/88] Building Fortran object CMakeFiles/FFB.dir/source/domain.f90.o
-[56/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/initialization.f90.o
-[57/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/initialization.f90.o
-[58/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/domain.f90.o
-[59/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/modes/shear_wave.f90.o
-[60/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/domain.f90.o
-[61/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/modes/couette_flow.f90.o
-[62/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/modes/sliding_lid.f90.o
-[63/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/modes/poiseuille_flow.f90.o
-[64/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/initialization.f90.o
-[65/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/reporting.f90.o
-[66/88] Building Fortran object CMakeFiles/FFB.dir/source/reporting.f90.o
-[67/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/reporting.f90.o
-[68/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/reporting.f90.o
-[69/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/export.f90.o
-[70/88] Building Fortran object CMakeFiles/FFB.dir/source/export.f90.o
-[71/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/export.f90.o
-[72/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/export.f90.o
-[73/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/exchange.f90.o
-[74/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/exchange.f90.o
-[75/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/exchange.f90.o
-[76/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/exchange.f90.o
-[77/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/checkpoint_1/simulation.f90.o
-/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/experiments/checkpoint_1/simulation.f90(14): remark #7712: This variable has not been used.   [HALO_BUFFERS]
-        domain_info, halo_buffers, n_x_local, n_y_local, &
----------------------^
-[78/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/checkpoint_2/simulation.f90.o
-/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/experiments/checkpoint_2/simulation.f90(14): remark #7712: This variable has not been used.   [HALO_BUFFERS]
-        domain_info, halo_buffers, n_x_local, n_y_local, &
----------------------^
-[79/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/checkpoint_0/simulation.f90.o
-/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/experiments/checkpoint_0/simulation.f90(14): remark #7712: This variable has not been used.   [HALO_BUFFERS]
-        domain_info, halo_buffers, n_x_local, n_y_local, &
----------------------^
-[80/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/main.f90.o
-[81/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/main.f90.o
-[82/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/main.f90.o
-[83/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/simulation.f90.o
-[84/88] Linking Fortran executable bin/FFB_CHECKPOINT_1
-[85/88] Linking Fortran executable bin/FFB_CHECKPOINT_0
-[86/88] Linking Fortran executable bin/FFB_CHECKPOINT_2
-[87/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/main.f90.o
-[88/88] Linking Fortran executable bin/FFB
-ID/NAME:    5854613 / SW_03
-USER:       fr_fl184
-PARTITION:  cpu
-TASKS:      96(x4) tasks/node x 4 nodes = 384 tasks
-NODES:      uc3n[028,037-039]
-COMPILER:
-ifx (IFX) 2025.0.4 20241205
-Copyright (C) 1985-2024 Intel Corporation. All rights reserved.
-
-MPI:
-Intel(R) MPI Library for Linux* OS, Version 2021.14 Build 20241121 (id: e7829d6)
-Copyright 2003-2024, Intel Corporation.
-
------ [ launching job script in raw execution mode ] -----
-
-
---- [ hardware ] ---------------------------------------------------------------
-cpu model                 = AMD EPYC 9454 48-Core Processor
-logical threads/node      = 192
-compute nodes             = 4
-compiler                  = IntelLLVM 2025.0.4
-flags                     = -O3 -march=native
-
---- [ simulation parameters ] --------------------------------------------------
-SIM_MODE                  = shear_wave
-rho_0                     = 1.000000
-omega                     = 1.100000
-u_max                     = 0.100000
-n_sin                     = 2.000000
-
---- [ other parameters ] -------------------------------------------------------
-N_X_TOTAL                 = 11520
-N_Y_TOTAL                 = 11520
-N_STEPS                   = 16000000
-dist_func_layout          = xyd
-use_unrolled_kernels      = T
-export_macros             = T
-export_endpoint_states    = T
-export_interval           = 20000
-output_dir                = output/run_5854613
-
---- [ domain decomposition ] ---------------------------------------------------
-coarray images            = 384
-image grid [X/Y]          = [ 1 / 384 ]
-local domain [X/Y]        = [ 11520 / 30 ]
-halo cells                = 6.685 %
-
-memory usage                                  |  per cell [B]  |  all cells [GB]
---------------------------------------------------------------------------------
-dist function buffers                         |           154  |          20.388
-macro field buffers                           |            24  |           3.185
-total                                         |           178  |          23.573
- 
-[17:14:57] launched ------------------------------------------------------------
-[17:14:59]   0.00 %  (T-92:58:11)  100/16000000 steps  |  avg step: 20.918 ms   [17:15:01]   0.00 %  (T-89:35:13)  200/16000000 steps  |  avg step: 20.157 ms   [17:15:03]   0.00 %  (T-88:56:22)  300/16000000 steps  |  avg step: 20.012 ms   [17:15:05]   0.00 %  (T-89:57:29)  400/16000000 steps  |  avg step: 20.241 ms   [17:15:07]   0.00 %  (T-89:29:15)  500/16000000 steps  |  avg step: 20.135 ms   [17:15:09]   0.00 %  (T-88:42:45)  600/16000000 steps  |  avg step: 19.961 ms   [17:15:11]   0.00 %  (T-89:26:24)  700/16000000 steps  |  avg step: 20.125 ms   [17:15:14]   0.01 %  (T-91:21:13)  800/16000000 steps  |  avg step: 20.556 ms   [17:15:16]   0.01 %  (T-91:36:22)  900/16000000 steps  |  avg step: 20.612 ms   [17:15:18]   0.01 %  (T-91:05:20)  1000/16000000 steps  |  avg step: 20.496 ms   [17:15:20]   0.01 %  (T-91:41:50)  1100/16000000 steps  |  avg step: 20.633 ms   [17:15:22]   0.01 %  (T-91:39:02)  1200/16000000 steps  |  avg step: 20.623 ms   [17:15:24]   0.01 %  (T-91:28:36)  1300/16000000 steps  |  avg step: 20.584 ms   [17:15:26]   0.01 %  (T-90:59:49)  1400/16000000 steps  |  avg step: 20.476 ms   [17:15:28]   0.01 %  (T-91:18:21)  1500/16000000 steps  |  avg step: 20.546 ms   [17:15:30]   0.01 %  (T-91:59:20)  1600/16000000 steps  |  avg step: 20.700 ms   [17:15:33]   0.01 %  (T-92:27:49)  1700/16000000 steps  |  avg step: 20.806 ms   [17:15:35]   0.01 %  (T-92:56:53)  1800/16000000 steps  |  avg step: 20.916 ms   [17:15:37]   0.01 %  (T-93:20:40)  1900/16000000 steps  |  avg step: 21.005 ms   [17:15:39]   0.01 %  (T-93:39:06)  2000/16000000 steps  |  avg step: 21.074 ms   [17:15:42]   0.01 %  (T-93:59:01)  2100/16000000 steps  |  avg step: 21.149 ms   [17:15:44]   0.01 %  (T-94:19:27)  2200/16000000 steps  |  avg step: 21.226 ms   [17:15:46]   0.01 %  (T-94:29:46)  2300/16000000 steps  |  avg step: 21.265 ms   [17:15:48]   0.01 %  (T-94:41:19)  2400/16000000 steps  |  avg step: 21.308 ms   [17:15:50]   0.02 %  (T-94:14:37)  2500/16000000 steps  |  avg step: 21.208 ms   [17:15:52]   0.02 %  (T-94:11:33)  2600/16000000 steps  |  avg step: 21.197 ms   [17:15:54]   0.02 %  (T-94:04:40)  2700/16000000 steps  |  avg step: 21.171 ms   [17:15:57]   0.02 %  (T-94:19:34)  2800/16000000 steps  |  avg step: 21.227 ms   [17:15:59]   0.02 %  (T-94:34:48)  2900/16000000 steps  |  avg step: 21.284 ms   [17:16:01]   0.02 %  (T-95:06:24)  3000/16000000 steps  |  avg step: 21.403 ms   [17:16:04]   0.02 %  (T-94:59:45)  3100/16000000 steps  |  avg step: 21.378 ms   [17:16:06]   0.02 %  (T-95:18:42)  3200/16000000 steps  |  avg step: 21.449 ms   [17:16:08]   0.02 %  (T-95:29:52)  3300/16000000 steps  |  avg step: 21.491 ms   [17:16:10]   0.02 %  (T-95:28:36)  3400/16000000 steps  |  avg step: 21.487 ms   [17:16:13]   0.02 %  (T-95:45:50)  3500/16000000 steps  |  avg step: 21.552 ms   [17:16:15]   0.02 %  (T-95:47:34)  3600/16000000 steps  |  avg step: 21.558 ms   [17:16:17]   0.02 %  (T-96:03:03)  3700/16000000 steps  |  avg step: 21.616 ms   [17:16:20]   0.02 %  (T-96:25:56)  3800/16000000 steps  |  avg step: 21.702 ms   [17:16:22]   0.02 %  (T-96:26:25)  3900/16000000 steps  |  avg step: 21.704 ms   [17:16:24]   0.03 %  (T-96:16:09)  4000/16000000 steps  |  avg step: 21.666 ms   [17:16:26]   0.03 %  (T-96:24:03)  4100/16000000 steps  |  avg step: 21.696 ms   [17:16:28]   0.03 %  (T-96:16:19)  4200/16000000 steps  |  avg step: 21.667 ms   [17:16:31]   0.03 %  (T-96:38:27)  4300/16000000 steps  |  avg step: 21.750 ms   [17:16:33]   0.03 %  (T-96:38:15)  4400/16000000 steps  |  avg step: 21.749 ms   [17:16:35]   0.03 %  (T-96:53:18)  4500/16000000 steps  |  avg step: 21.806 ms   [17:16:38]   0.03 %  (T-96:51:36)  4600/16000000 steps  |  avg step: 21.800 ms   [17:16:40]   0.03 %  (T-97:04:35)  4700/16000000 steps  |  avg step: 21.849 ms   [17:16:42]   0.03 %  (T-96:57:38)  4800/16000000 steps  |  avg step: 21.823 ms   [17:16:44]   0.03 %  (T-96:57:18)  4900/16000000 steps  |  avg step: 21.822 ms   [17:16:47]   0.03 %  (T-97:07:28)  5000/16000000 steps  |  avg step: 21.860 ms   [17:16:49]   0.03 %  (T-97:07:19)  5100/16000000 steps  |  avg step: 21.859 ms   [17:16:51]   0.03 %  (T-97:09:38)  5200/16000000 steps  |  avg step: 21.868 ms   [17:16:53]   0.03 %  (T-97:24:41)  5300/16000000 steps  |  avg step: 21.925 ms   [17:16:56]   0.03 %  (T-97:38:28)  5400/16000000 steps  |  avg step: 21.977 ms   [17:16:58]   0.03 %  (T-97:46:30)  5500/16000000 steps  |  avg step: 22.007 ms   [17:17:01]   0.04 %  (T-97:53:57)  5600/16000000 steps  |  avg step: 22.035 ms   [17:17:03]   0.04 %  (T-97:59:08)  5700/16000000 steps  |  avg step: 22.055 ms   [17:17:05]   0.04 %  (T-98:03:26)  5800/16000000 steps  |  avg step: 22.071 ms   [17:17:08]   0.04 %  (T-98:10:06)  5900/16000000 steps  |  avg step: 22.096 ms   [17:17:10]   0.04 %  (T-98:16:13)  6000/16000000 steps  |  avg step: 22.119 ms   [17:17:12]   0.04 %  (T-98:13:21)  6100/16000000 steps  |  avg step: 22.108 ms   [17:17:14]   0.04 %  (T-98:01:45)  6200/16000000 steps  |  avg step: 22.065 ms   [17:17:16]   0.04 %  (T-97:54:17)  6300/16000000 steps  |  avg step: 22.037 ms   [17:17:18]   0.04 %  (T-97:49:25)  6400/16000000 steps  |  avg step: 22.019 ms   [17:17:20]   0.04 %  (T-97:53:20)  6500/16000000 steps  |  avg step: 22.034 ms   [17:17:23]   0.04 %  (T-97:46:37)  6600/16000000 steps  |  avg step: 22.009 ms   [17:17:25]   0.04 %  (T-97:39:15)  6700/16000000 steps  |  avg step: 21.981 ms   [17:17:27]   0.04 %  (T-97:33:17)  6800/16000000 steps  |  avg step: 21.959 ms   [17:17:29]   0.04 %  (T-97:33:30)  6900/16000000 steps  |  avg step: 21.960 ms   [17:17:31]   0.04 %  (T-97:36:28)  7000/16000000 steps  |  avg step: 21.971 ms   [17:17:33]   0.04 %  (T-97:41:04)  7100/16000000 steps  |  avg step: 21.989 ms   [17:17:36]   0.04 %  (T-97:42:11)  7200/16000000 steps  |  avg step: 21.993 ms   [17:17:38]   0.05 %  (T-97:32:48)  7300/16000000 steps  |  avg step: 21.958 ms   [17:17:40]   0.05 %  (T-97:31:25)  7400/16000000 steps  |  avg step: 21.953 ms   [17:17:42]   0.05 %  (T-97:36:06)  7500/16000000 steps  |  avg step: 21.971 ms   [17:17:44]   0.05 %  (T-97:30:34)  7600/16000000 steps  |  avg step: 21.950 ms   [17:17:46]   0.05 %  (T-97:25:35)  7700/16000000 steps  |  avg step: 21.931 ms   [17:17:48]   0.05 %  (T-97:26:32)  7800/16000000 steps  |  avg step: 21.935 ms   [17:17:50]   0.05 %  (T-97:24:18)  7900/16000000 steps  |  avg step: 21.927 ms   [17:17:53]   0.05 %  (T-97:23:19)  8000/16000000 steps  |  avg step: 21.923 ms   [17:17:55]   0.05 %  (T-97:24:26)  8100/16000000 steps  |  avg step: 21.928 ms   [17:17:57]   0.05 %  (T-97:26:57)  8200/16000000 steps  |  avg step: 21.937 ms   [17:17:59]   0.05 %  (T-97:28:52)  8300/16000000 steps  |  avg step: 21.945 ms   [17:18:02]   0.05 %  (T-97:31:03)  8400/16000000 steps  |  avg step: 21.953 ms   [17:18:04]   0.05 %  (T-97:32:44)  8500/16000000 steps  |  avg step: 21.959 ms   [17:18:06]   0.05 %  (T-97:34:12)  8600/16000000 steps  |  avg step: 21.965 ms   [17:18:08]   0.05 %  (T-97:34:55)  8700/16000000 steps  |  avg step: 21.968 ms   [17:18:11]   0.06 %  (T-97:33:22)  8800/16000000 steps  |  avg step: 21.962 ms   [17:18:12]   0.06 %  (T-97:22:43)  8900/16000000 steps  |  avg step: 21.922 ms   [17:18:15]   0.06 %  (T-97:20:59)  9000/16000000 steps  |  avg step: 21.916 ms   [17:18:17]   0.06 %  (T-97:20:41)  9100/16000000 steps  |  avg step: 21.915 ms   [17:18:19]   0.06 %  (T-97:23:03)  9200/16000000 steps  |  avg step: 21.924 ms   [17:18:21]   0.06 %  (T-97:26:49)  9300/16000000 steps  |  avg step: 21.938 ms   [17:18:24]   0.06 %  (T-97:28:16)  9400/16000000 steps  |  avg step: 21.944 ms   [17:18:26]   0.06 %  (T-97:26:35)  9500/16000000 steps  |  avg step: 21.938 ms   [17:18:28]   0.06 %  (T-97:25:57)  9600/16000000 steps  |  avg step: 21.935 ms   [17:18:30]   0.06 %  (T-97:19:03)  9700/16000000 steps  |  avg step: 21.910 ms   [17:18:32]   0.06 %  (T-97:12:42)  9800/16000000 steps  |  avg step: 21.886 ms   [17:18:34]   0.06 %  (T-97:08:59)  9900/16000000 steps  |  avg step: 21.872 ms   [17:18:36]   0.06 %  (T-97:06:03)  10000/16000000 steps  |  avg step: 21.861 ms   [17:18:38]   0.06 %  (T-97:01:59)  10100/16000000 steps  |  avg step: 21.846 ms   [17:18:40]   0.06 %  (T-96:55:44)  10200/16000000 steps  |  avg step: 21.823 ms   [17:18:42]   0.06 %  (T-96:54:27)  10300/16000000 steps  |  avg step: 21.818 ms   [17:18:44]   0.07 %  (T-96:56:15)  10400/16000000 steps  |  avg step: 21.825 ms   [17:18:46]   0.07 %  (T-96:57:28)  10500/16000000 steps  |  avg step: 21.830 ms   [17:18:49]   0.07 %  (T-96:59:07)  10600/16000000 steps  |  avg step: 21.836 ms   [17:18:51]   0.07 %  (T-96:55:05)  10700/16000000 steps  |  avg step: 21.821 ms   [17:18:53]   0.07 %  (T-96:48:29)  10800/16000000 steps  |  avg step: 21.796 ms   [17:18:55]   0.07 %  (T-96:50:49)  10900/16000000 steps  |  avg step: 21.805 ms   [17:18:57]   0.07 %  (T-96:48:11)  11000/16000000 steps  |  avg step: 21.796 ms   [17:18:59]   0.07 %  (T-96:43:20)  11100/16000000 steps  |  avg step: 21.778 ms   [17:19:01]   0.07 %  (T-96:40:00)  11200/16000000 steps  |  avg step: 21.765 ms   [17:19:03]   0.07 %  (T-96:35:53)  11300/16000000 steps  |  avg step: 21.750 ms   [17:19:05]   0.07 %  (T-96:29:24)  11400/16000000 steps  |  avg step: 21.726 ms   [17:19:07]   0.07 %  (T-96:24:07)  11500/16000000 steps  |  avg step: 21.706 ms   [17:19:09]   0.07 %  (T-96:19:32)  11600/16000000 steps  |  avg step: 21.689 ms   [17:19:11]   0.07 %  (T-96:15:55)  11700/16000000 steps  |  avg step: 21.676 ms   [17:19:13]   0.07 %  (T-96:12:02)  11800/16000000 steps  |  avg step: 21.661 ms   [17:19:15]   0.07 %  (T-96:11:44)  11900/16000000 steps  |  avg step: 21.660 ms   [17:19:17]   0.07 %  (T-96:10:10)  12000/16000000 steps  |  avg step: 21.654 ms   [17:19:19]   0.08 %  (T-96:12:52)  12100/16000000 steps  |  avg step: 21.665 ms   [17:19:22]   0.08 %  (T-96:17:42)  12200/16000000 steps  |  avg step: 21.683 ms   [17:19:24]   0.08 %  (T-96:21:47)  12300/16000000 steps  |  avg step: 21.698 ms   [17:19:26]   0.08 %  (T-96:19:07)  12400/16000000 steps  |  avg step: 21.688 ms   [17:19:28]   0.08 %  (T-96:16:56)  12500/16000000 steps  |  avg step: 21.680 ms   [17:19:30]   0.08 %  (T-96:16:24)  12600/16000000 steps  |  avg step: 21.679 ms   [17:19:32]   0.08 %  (T-96:14:08)  12700/16000000 steps  |  avg step: 21.670 ms   [17:19:35]   0.08 %  (T-96:12:05)  12800/16000000 steps  |  avg step: 21.663 ms   [17:19:37]   0.08 %  (T-96:08:42)  12900/16000000 steps  |  avg step: 21.650 ms   [17:19:38]   0.08 %  (T-96:02:52)  13000/16000000 steps  |  avg step: 21.628 ms   [17:19:40]   0.08 %  (T-95:58:47)  13100/16000000 steps  |  avg step: 21.613 ms   [17:19:42]   0.08 %  (T-95:55:53)  13200/16000000 steps  |  avg step: 21.602 ms   [17:19:44]   0.08 %  (T-95:51:12)  13300/16000000 steps  |  avg step: 21.585 ms   [17:19:46]   0.08 %  (T-95:47:44)  13400/16000000 steps  |  avg step: 21.572 ms   [17:19:48]   0.08 %  (T-95:45:54)  13500/16000000 steps  |  avg step: 21.565 ms   [17:19:51]   0.09 %  (T-95:45:20)  13600/16000000 steps  |  avg step: 21.563 ms   [17:19:53]   0.09 %  (T-95:42:55)  13700/16000000 steps  |  avg step: 21.554 ms   [17:19:55]   0.09 %  (T-95:40:19)  13800/16000000 steps  |  avg step: 21.545 ms   [17:19:57]   0.09 %  (T-95:36:50)  13900/16000000 steps  |  avg step: 21.532 ms   [17:19:59]   0.09 %  (T-95:33:01)  14000/16000000 steps  |  avg step: 21.518 ms   [17:20:00]   0.09 %  (T-95:29:29)  14100/16000000 steps  |  avg step: 21.505 ms   [17:20:02]   0.09 %  (T-95:26:19)  14200/16000000 steps  |  avg step: 21.493 ms   [17:20:04]   0.09 %  (T-95:22:34)  14300/16000000 steps  |  avg step: 21.479 ms   [17:20:06]   0.09 %  (T-95:19:56)  14400/16000000 steps  |  avg step: 21.469 ms   [17:20:09]   0.09 %  (T-95:22:08)  14500/16000000 steps  |  avg step: 21.477 ms   [17:20:11]   0.09 %  (T-95:23:08)  14600/16000000 steps  |  avg step: 21.481 ms   [17:20:13]   0.09 %  (T-95:28:36)  14700/16000000 steps  |  avg step: 21.502 ms   [17:20:15]   0.09 %  (T-95:25:31)  14800/16000000 steps  |  avg step: 21.491 ms   [17:20:17]   0.09 %  (T-95:22:04)  14900/16000000 steps  |  avg step: 21.478 ms   [17:20:19]   0.09 %  (T-95:17:07)  15000/16000000 steps  |  avg step: 21.459 ms   [17:20:21]   0.09 %  (T-95:13:35)  15100/16000000 steps  |  avg step: 21.446 ms   [17:20:23]   0.10 %  (T-95:15:04)  15200/16000000 steps  |  avg step: 21.452 ms   [17:20:25]   0.10 %  (T-95:15:08)  15300/16000000 steps  |  avg step: 21.452 ms   [17:20:28]   0.10 %  (T-95:17:00)  15400/16000000 steps  |  avg step: 21.459 ms   [17:20:30]   0.10 %  (T-95:14:15)  15500/16000000 steps  |  avg step: 21.449 ms   [17:20:32]   0.10 %  (T-95:11:51)  15600/16000000 steps  |  avg step: 21.440 ms   [17:20:34]   0.10 %  (T-95:08:33)  15700/16000000 steps  |  avg step: 21.428 ms   [17:20:35]   0.10 %  (T-95:02:14)  15800/16000000 steps  |  avg step: 21.405 ms   [17:20:38]   0.10 %  (T-95:03:11)  15900/16000000 steps  |  avg step: 21.408 ms   [17:20:40]   0.10 %  (T-95:02:01)  16000/16000000 steps  |  avg step: 21.404 ms   [17:20:42]   0.10 %  (T-95:04:56)  16100/16000000 steps  |  avg step: 21.415 ms   [17:20:44]   0.10 %  (T-95:00:46)  16200/16000000 steps  |  avg step: 21.400 ms   [17:20:46]   0.10 %  (T-95:03:12)  16300/16000000 steps  |  avg step: 21.409 ms   [17:20:48]   0.10 %  (T-94:59:03)  16400/16000000 steps  |  avg step: 21.393 ms   [17:20:50]   0.10 %  (T-94:57:25)  16500/16000000 steps  |  avg step: 21.387 ms   [17:20:52]   0.10 %  (T-94:54:26)  16600/16000000 steps  |  avg step: 21.376 ms   [17:20:54]   0.10 %  (T-94:56:10)  16700/16000000 steps  |  avg step: 21.383 ms   [17:20:56]   0.10 %  (T-94:55:10)  16800/16000000 steps  |  avg step: 21.379 ms   [17:20:58]   0.11 %  (T-94:50:50)  16900/16000000 steps  |  avg step: 21.363 ms   [17:21:00]   0.11 %  (T-94:50:31)  17000/16000000 steps  |  avg step: 21.362 ms   [17:21:02]   0.11 %  (T-94:47:10)  17100/16000000 steps  |  avg step: 21.350 ms   [17:21:05]   0.11 %  (T-94:49:06)  17200/16000000 steps  |  avg step: 21.357 ms   [17:21:07]   0.11 %  (T-94:49:55)  17300/16000000 steps  |  avg step: 21.360 ms   [17:21:09]   0.11 %  (T-94:51:19)  17400/16000000 steps  |  avg step: 21.366 ms   [17:21:11]   0.11 %  (T-94:52:15)  17500/16000000 steps  |  avg step: 21.369 ms   [17:21:13]   0.11 %  (T-94:50:05)  17600/16000000 steps  |  avg step: 21.361 ms   [17:21:15]   0.11 %  (T-94:48:03)  17700/16000000 steps  |  avg step: 21.354 ms   [17:21:17]   0.11 %  (T-94:44:40)  17800/16000000 steps  |  avg step: 21.341 ms   [17:21:19]   0.11 %  (T-94:41:52)  17900/16000000 steps  |  avg step: 21.331 ms   [17:21:21]   0.11 %  (T-94:39:03)  18000/16000000 steps  |  avg step: 21.320 ms   [17:21:23]   0.11 %  (T-94:40:09)  18100/16000000 steps  |  avg step: 21.325 ms   [17:21:25]   0.11 %  (T-94:40:28)  18200/16000000 steps  |  avg step: 21.326 ms   [17:21:27]   0.11 %  (T-94:37:22)  18300/16000000 steps  |  avg step: 21.314 ms   [17:21:29]   0.12 %  (T-94:36:14)  18400/16000000 steps  |  avg step: 21.310 ms   [17:21:31]   0.12 %  (T-94:35:17)  18500/16000000 steps  |  avg step: 21.307 ms   [17:21:33]   0.12 %  (T-94:33:14)  18600/16000000 steps  |  avg step: 21.299 ms   [17:21:36]   0.12 %  (T-94:35:49)  18700/16000000 steps  |  avg step: 21.309 ms   [17:21:38]   0.12 %  (T-94:37:29)  18800/16000000 steps  |  avg step: 21.316 ms   [17:21:40]   0.12 %  (T-94:37:11)  18900/16000000 steps  |  avg step: 21.315 ms   [17:21:42]   0.12 %  (T-94:38:47)  19000/16000000 steps  |  avg step: 21.321 ms   [17:21:45]   0.12 %  (T-94:40:50)  19100/16000000 steps  |  avg step: 21.329 ms   [17:21:47]   0.12 %  (T-94:41:14)  19200/16000000 steps  |  avg step: 21.330 ms   [17:21:49]   0.12 %  (T-94:38:31)  19300/16000000 steps  |  avg step: 21.320 ms   [17:21:51]   0.12 %  (T-94:35:48)  19400/16000000 steps  |  avg step: 21.310 ms   [17:21:53]   0.12 %  (T-94:33:39)  19500/16000000 steps  |  avg step: 21.302 ms   [17:21:55]   0.12 %  (T-94:36:04)  19600/16000000 steps  |  avg step: 21.311 ms   [17:21:57]   0.12 %  (T-94:35:23)  19700/16000000 steps  |  avg step: 21.309 ms   [17:21:59]   0.12 %  (T-94:33:43)  19800/16000000 steps  |  avg step: 21.303 ms   [17:22:01]   0.12 %  (T-94:31:35)  19900/16000000 steps  |  avg step: 21.295 ms   [17:22:13]   0.12 %  (T-96:40:51)  20000/16000000 steps  |  avg step: 21.780 ms   [17:22:15]   0.13 %  (T-96:39:46)  20100/16000000 steps  |  avg step: 21.776 ms   [17:22:17]   0.13 %  (T-96:36:06)  20200/16000000 steps  |  avg step: 21.763 ms   [17:22:19]   0.13 %  (T-96:34:56)  20300/16000000 steps  |  avg step: 21.759 ms   [17:22:21]   0.13 %  (T-96:33:07)  20400/16000000 steps  |  avg step: 21.752 ms   [17:22:23]   0.13 %  (T-96:30:44)  20500/16000000 steps  |  avg step: 21.743 ms   [17:22:25]   0.13 %  (T-96:27:44)  20600/16000000 steps  |  avg step: 21.732 ms   [17:22:27]   0.13 %  (T-96:25:17)  20700/16000000 steps  |  avg step: 21.723 ms   [17:22:29]   0.13 %  (T-96:21:28)  20800/16000000 steps  |  avg step: 21.709 ms   [17:22:31]   0.13 %  (T-96:19:55)  20900/16000000 steps  |  avg step: 21.703 ms   [17:22:33]   0.13 %  (T-96:17:25)  21000/16000000 steps  |  avg step: 21.694 ms   [17:22:35]   0.13 %  (T-96:16:49)  21100/16000000 steps  |  avg step: 21.692 ms   [17:22:37]   0.13 %  (T-96:13:31)  21200/16000000 steps  |  avg step: 21.679 ms   [17:22:39]   0.13 %  (T-96:11:34)  21300/16000000 steps  |  avg step: 21.672 ms   [17:22:41]   0.13 %  (T-96:09:50)  21400/16000000 steps  |  avg step: 21.666 ms   [17:22:43]   0.13 %  (T-96:07:58)  21500/16000000 steps  |  avg step: 21.659 ms   [17:22:45]   0.14 %  (T-96:06:27)  21600/16000000 steps  |  avg step: 21.653 ms   [17:22:47]   0.14 %  (T-96:04:41)  21700/16000000 steps  |  avg step: 21.647 ms   [17:22:49]   0.14 %  (T-96:03:30)  21800/16000000 steps  |  avg step: 21.643 ms   [17:22:51]   0.14 %  (T-96:02:46)  21900/16000000 steps  |  avg step: 21.640 ms   [17:22:53]   0.14 %  (T-96:00:57)  22000/16000000 steps  |  avg step: 21.633 ms   [17:22:55]   0.14 %  (T-95:58:45)  22100/16000000 steps  |  avg step: 21.625 ms   [17:22:57]   0.14 %  (T-95:57:45)  22200/16000000 steps  |  avg step: 21.622 ms   [17:22:59]   0.14 %  (T-95:55:56)  22300/16000000 steps  |  avg step: 21.615 ms   [17:23:01]   0.14 %  (T-95:53:52)  22400/16000000 steps  |  avg step: 21.607 ms   [17:23:03]   0.14 %  (T-95:53:21)  22500/16000000 steps  |  avg step: 21.605 ms   [17:23:05]   0.14 %  (T-95:50:41)  22600/16000000 steps  |  avg step: 21.596 ms   [17:23:07]   0.14 %  (T-95:48:58)  22700/16000000 steps  |  avg step: 21.589 ms   [17:23:09]   0.14 %  (T-95:47:12)  22800/16000000 steps  |  avg step: 21.583 ms   [17:23:11]   0.14 %  (T-95:44:41)  22900/16000000 steps  |  avg step: 21.573 ms   [17:23:13]   0.14 %  (T-95:42:03)  23000/16000000 steps  |  avg step: 21.564 ms   [17:23:15]   0.14 %  (T-95:40:38)  23100/16000000 steps  |  avg step: 21.558 ms   [17:23:17]   0.14 %  (T-95:38:48)  23200/16000000 steps  |  avg step: 21.552 ms   [17:23:19]   0.15 %  (T-95:39:02)  23300/16000000 steps  |  avg step: 21.553 ms   
-============================= JOB FEEDBACK =============================
-
-NodeName=uc3n[028,037-039]
-Job ID: 5854613
-Cluster: uc3
-User/Group: fr_fl184/fr_fr
-State: CANCELLED (exit code 0)
-Nodes: 4
-Cores per node: 192
-CPU Utilized: 00:00:24
-CPU Efficiency: 0.01% of 3-17:10:24 core-walltime
-Job Wall-clock time: 00:06:58
-Memory Utilized: 93.22 GB
-Memory Efficiency: 6.21% of 1.46 TB (1.95 GB/core)
-The task which had the largest memory consumption differs by 100.31% from the average task max memory consumption
