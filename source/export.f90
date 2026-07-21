@@ -278,7 +278,8 @@ contains
         integer :: rank_id
         integer :: image_id
         integer :: image_ids(domain_info%n_images)
-        real(FP) :: ignored_receive_buffer
+        ! keep a valid buffer for the ignored non-root receive arguments
+        real(FP) :: ignored_receive_buffer(1)
         character(len=:), allocatable :: output_path
         character(len=:), allocatable :: file_path
 
@@ -351,7 +352,7 @@ contains
         else
             call MPI_Gather( &
                 local_field, local_field_size, mpi_fp_type, ignored_receive_buffer, &
-                local_field_size, mpi_fp_type, root_rank, MPI_COMM_WORLD, mpi_ierror)
+                0, mpi_fp_type, root_rank, MPI_COMM_WORLD, mpi_ierror)
         end if
         if (mpi_ierror /= MPI_SUCCESS) then
             error stop "error: could not gather distributed export field"
