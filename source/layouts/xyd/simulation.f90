@@ -38,13 +38,11 @@ contains
         case (SIM_SHEAR_WAVE) ! shear wave
             call prepare_shear_wave_halos_SW( &
                 domain_info%n_images_x, domain_info%n_images_y, n_x_local, n_y_local, f)
-
         case (SIM_COUETTE_FLOW) ! couette flow
             call prepare_couette_flow_halos_CF( &
                 domain_info%n_images_x, n_x_local, n_y_local, &
                 domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
                 RHO_0, U_WALL, f)
-
         case (SIM_POISEUILLE_FLOW) ! poiseuille flow
             call prepare_poiseuille_flow_halos_PF( &
                 n_x_local, n_y_local, &
@@ -58,7 +56,6 @@ contains
                 domain_info%at_left_boundary, domain_info%at_right_boundary, &
                 domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
                 RHO_0, U_LID, f)
-
         case default
             error stop "error: unknown sim mode in execute_local_sim_step()"
         end select
