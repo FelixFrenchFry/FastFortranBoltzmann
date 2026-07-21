@@ -3,7 +3,7 @@ module simulation
     use iso_fortran_env, only: int32
     use domain, only: domain_t
     use exchange, only: halo_buffers_t
-    use settings, only: N_DIRS, W, &
+    use settings, only: N_DIRS, C_X_FP, C_Y_FP, W, &
         SIM_SLIDING_LID, SIM_MODE, FP, &
         RHO_0, OMEGA, U_LID
     implicit none
@@ -19,11 +19,11 @@ contains
         integer(int32), intent(in) :: n_x_local
         integer(int32), intent(in) :: n_y_local
         logical, intent(in) :: write_macro_fields
-        real(FP), intent(inout) :: f(N_DIRS, 0:n_x_local+1, 0:n_y_local+1)
+        real(FP), intent(inout) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
 
         ! write destinations
         type(halo_buffers_t), intent(inout) :: halo_buffers
-        real(FP), intent(inout) :: f_next(N_DIRS, 0:n_x_local+1, 0:n_y_local+1)
+        real(FP), intent(inout) :: f_next(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
         real(FP), intent(inout) :: rho(n_x_local, n_y_local)
         real(FP), intent(inout) :: u_x(n_x_local, n_y_local)
         real(FP), intent(inout) :: u_y(n_x_local, n_y_local)
@@ -32,38 +32,34 @@ contains
             error stop "error: checkpoint 2 only supports sliding lid"
         end if
 
-        ! prepare sliding-lid boundary halos before universal pull streaming
-        call prepare_sliding_lid_halos_SL( &
-            n_x_local, n_y_local, &
-            domain_info%at_left_boundary, domain_info%at_right_boundary, &
-            domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
-            RHO_0, U_LID, f)
-
-        ! universal pull streaming + collision kernel
-        call fuzed_pull_streaming_collision_local_unrolled_universal( &
-            n_x_local, n_y_local, &
+        ! branch-heavy fused pull streaming + collision kernel
+        call fuzed_pull_streaming_collision_local_branchy( &
+            domain_info, n_x_local, n_y_local, &
             write_macro_fields, OMEGA, f, f_next, rho, u_x, u_y)
     end subroutine execute_local_sim_step
 
 
-    subroutine fuzed_pull_streaming_collision_local_unrolled_universal( &
-        n_x_local, n_y_local, write_macro_fields, omega, f, f_next, rho, u_x, u_y &
+    subroutine fuzed_pull_streaming_collision_local_branchy( &
+        domain_info, n_x_local, n_y_local, write_macro_fields, omega, &
+        f, f_next, rho, u_x, u_y &
         )
         ! inputs
+        type(domain_t), intent(in) :: domain_info
         integer(int32), intent(in) :: n_x_local
         integer(int32), intent(in) :: n_y_local
         logical, intent(in) :: write_macro_fields
         real(FP), intent(in) :: omega
-        real(FP), intent(in) :: f(N_DIRS, 0:n_x_local+1, 0:n_y_local+1)
+        real(FP), intent(in) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
 
         ! write destinations
-        real(FP), intent(inout) :: f_next(N_DIRS, 0:n_x_local+1, 0:n_y_local+1)
+        real(FP), intent(inout) :: f_next(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
         real(FP), intent(inout) :: rho(n_x_local, n_y_local)
         real(FP), intent(inout) :: u_x(n_x_local, n_y_local)
         real(FP), intent(inout) :: u_y(n_x_local, n_y_local)
 
         ! temp
-        integer(int32) :: x, y
+        integer(int32) :: x, y, i
+        real(FP) :: f_pulled(N_DIRS)
         real(FP) :: f_1
         real(FP) :: f_2
         real(FP) :: f_3
@@ -77,6 +73,9 @@ contains
         real(FP) :: u_x_val
         real(FP) :: u_y_val
         real(FP) :: u_squ
+        real(FP) :: c_dot_u
+        real(FP) :: f_eq_val
+        real(FP) :: f_next_val
 
         ! loop over all image-owned cells
         do y = 1, n_y_local
@@ -87,21 +86,24 @@ contains
                 ! | 4 1 2 |
                 ! | 8 5 9 |
                 ! ---------
-                ! pull streamed distribution functions from source cells
-                ! (boundaries handled separately in sim-mode-specific halo preparation step)
-                f_1 = f(1, x, y)
-                f_2 = f(2, x - 1, y)
-                f_3 = f(3, x, y - 1)
-                f_4 = f(4, x + 1, y)
-                f_5 = f(5, x, y + 1)
-                f_6 = f(6, x - 1, y - 1)
-                f_7 = f(7, x + 1, y - 1)
-                f_8 = f(8, x + 1, y + 1)
-                f_9 = f(9, x - 1, y + 1)
+                ! pull streamed distribution functions and apply boundary conditions
+                call pull_sliding_lid_populations_branchy( &
+                    n_x_local, n_y_local, x, y, &
+                    domain_info%at_left_boundary, domain_info%at_right_boundary, &
+                    domain_info%at_bottom_boundary, domain_info%at_top_boundary, &
+                    RHO_0, U_LID, f, &
+                    f_1, f_2, f_3, f_4, f_5, f_6, f_7, f_8, f_9)
+                f_pulled = [f_1, f_2, f_3, f_4, f_5, f_6, f_7, f_8, f_9]
 
-                rho_val = f_1 + f_2 + f_3 + f_4 + f_5 + f_6 + f_7 + f_8 + f_9
-                u_x_val = f_2 - f_4 + f_6 - f_7 - f_8 + f_9
-                u_y_val = f_3 - f_5 + f_6 + f_7 - f_8 - f_9
+                rho_val = 0.0_FP
+                u_x_val = 0.0_FP
+                u_y_val = 0.0_FP
+
+                do i = 1, N_DIRS
+                    rho_val = rho_val + f_pulled(i)
+                    u_x_val = u_x_val + f_pulled(i) * C_X_FP(i)
+                    u_y_val = u_y_val + f_pulled(i) * C_Y_FP(i)
+                end do
 
                 ! debug check
             #ifdef FFB_DENSITY_CHECKS
@@ -122,124 +124,100 @@ contains
                 end if
 
                 ! collide and stream locally
-                ! 1: (0, 0)
-                f_next(1, x, y) = f_1 + omega * ((4.0_FP/9.0_FP) * rho_val * ( &
-                    1.0_FP - 1.5_FP * u_squ) - f_1)
+                do i = 1, N_DIRS
+                    ! compute equilibrium distribution function for channel i
+                    c_dot_u = C_X_FP(i) * u_x_val + C_Y_FP(i) * u_y_val
+                    f_eq_val = W(i) * rho_val * ( &
+                        1.0_FP + &
+                        3.0_FP * c_dot_u + &
+                        4.5_FP * c_dot_u * c_dot_u - &
+                        1.5_FP * u_squ)
 
-                ! 2: (1, 0)
-                f_next(2, x, y) = f_2 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
-                    1.0_FP + 3.0_FP * u_x_val + 4.5_FP * u_x_val * u_x_val - &
-                    1.5_FP * u_squ) - f_2)
-
-                ! 3: (0, 1)
-                f_next(3, x, y) = f_3 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
-                    1.0_FP + 3.0_FP * u_y_val + 4.5_FP * u_y_val * u_y_val - &
-                    1.5_FP * u_squ) - f_3)
-
-                ! 4: (-1, 0)
-                f_next(4, x, y) = f_4 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
-                    1.0_FP - 3.0_FP * u_x_val + 4.5_FP * u_x_val * u_x_val - &
-                    1.5_FP * u_squ) - f_4)
-
-                ! 5: (0, -1)
-                f_next(5, x, y) = f_5 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
-                    1.0_FP - 3.0_FP * u_y_val + 4.5_FP * u_y_val * u_y_val - &
-                    1.5_FP * u_squ) - f_5)
-
-                ! 6: (1, 1)
-                f_next(6, x, y) = f_6 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
-                    1.0_FP + 3.0_FP * (u_x_val + u_y_val) + &
-                    4.5_FP * (u_x_val + u_y_val) * (u_x_val + u_y_val) - &
-                    1.5_FP * u_squ) - f_6)
-
-                ! 7: (-1, 1)
-                f_next(7, x, y) = f_7 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
-                    1.0_FP + 3.0_FP * (-u_x_val + u_y_val) + &
-                    4.5_FP * (-u_x_val + u_y_val) * (-u_x_val + u_y_val) - &
-                    1.5_FP * u_squ) - f_7)
-
-                ! 8: (-1, -1)
-                f_next(8, x, y) = f_8 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
-                    1.0_FP - 3.0_FP * (u_x_val + u_y_val) + &
-                    4.5_FP * (u_x_val + u_y_val) * (u_x_val + u_y_val) - &
-                    1.5_FP * u_squ) - f_8)
-
-                ! 9: (1, -1)
-                f_next(9, x, y) = f_9 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
-                    1.0_FP + 3.0_FP * (u_x_val - u_y_val) + &
-                    4.5_FP * (u_x_val - u_y_val) * (u_x_val - u_y_val) - &
-                    1.5_FP * u_squ) - f_9)
+                    ! relax towards equilibrium and write to destination channel
+                    f_next_val = f_pulled(i) + omega * (f_eq_val - f_pulled(i))
+                    f_next(x, y, i) = f_next_val
+                end do
             end do
         end do
-    end subroutine fuzed_pull_streaming_collision_local_unrolled_universal
+    end subroutine fuzed_pull_streaming_collision_local_branchy
 
 
-    subroutine prepare_sliding_lid_halos_SL( &
-        n_x_local, n_y_local, at_left_boundary, at_right_boundary, at_bottom_boundary, at_top_boundary, &
-        rho_0, u_wall, f &
+    pure subroutine pull_sliding_lid_populations_branchy( &
+        n_x_local, n_y_local, x, y, &
+        at_left_boundary, at_right_boundary, at_bottom_boundary, at_top_boundary, &
+        rho_0, u_wall, f, &
+        f_1, f_2, f_3, f_4, f_5, f_6, f_7, f_8, f_9 &
         )
         ! inputs
         integer(int32), intent(in) :: n_x_local
         integer(int32), intent(in) :: n_y_local
+        integer(int32), intent(in) :: x
+        integer(int32), intent(in) :: y
         logical, intent(in) :: at_left_boundary
         logical, intent(in) :: at_right_boundary
         logical, intent(in) :: at_bottom_boundary
         logical, intent(in) :: at_top_boundary
         real(FP), intent(in) :: rho_0
         real(FP), intent(in) :: u_wall
+        real(FP), intent(in) :: f(0:n_x_local+1, 0:n_y_local+1, N_DIRS)
 
-        ! read/write inputs
-        real(FP), intent(inout) :: f(N_DIRS, 0:n_x_local+1, 0:n_y_local+1)
+        ! output
+        real(FP), intent(out) :: f_1
+        real(FP), intent(out) :: f_2
+        real(FP), intent(out) :: f_3
+        real(FP), intent(out) :: f_4
+        real(FP), intent(out) :: f_5
+        real(FP), intent(out) :: f_6
+        real(FP), intent(out) :: f_7
+        real(FP), intent(out) :: f_8
+        real(FP), intent(out) :: f_9
 
-        ! ---------
-        ! | 7 3 6 |
-        ! | 4 1 2 |
-        ! | 8 5 9 |
-        ! ---------
         ! temp
-        integer(int32) :: x, y
         real(FP) :: moving_wall_correction_8
         real(FP) :: moving_wall_correction_9
 
-        ! left bounce-back boundary, written into the halo column used by pull streaming
-        if (at_left_boundary) then
-            do y = 1, n_y_local
-                f(2, 0, y) = f(4, 1, y)
-                f(6, 0, y-1) = f(8, 1, y)
-                f(9, 0, y+1) = f(7, 1, y)
-            end do
+        ! pull streamed distribution functions from source cells
+        f_1 = f(x, y, 1)
+        f_2 = f(x - 1, y, 2)
+        f_3 = f(x, y - 1, 3)
+        f_4 = f(x + 1, y, 4)
+        f_5 = f(x, y + 1, 5)
+        f_6 = f(x - 1, y - 1, 6)
+        f_7 = f(x + 1, y - 1, 7)
+        f_8 = f(x + 1, y + 1, 8)
+        f_9 = f(x - 1, y + 1, 9)
+
+        ! left bounce-back boundary
+        if (at_left_boundary .and. x == 1) then
+            f_2 = f(1, y, 4)
+            f_6 = f(1, y, 8)
+            f_9 = f(1, y, 7)
         end if
 
-        ! right bounce-back boundary, written into the halo column used by pull streaming
-        if (at_right_boundary) then
-            do y = 1, n_y_local
-                f(4, n_x_local+1, y) = f(2, n_x_local, y)
-                f(7, n_x_local+1, y-1) = f(9, n_x_local, y)
-                f(8, n_x_local+1, y+1) = f(6, n_x_local, y)
-            end do
+        ! right bounce-back boundary
+        if (at_right_boundary .and. x == n_x_local) then
+            f_4 = f(n_x_local, y, 2)
+            f_7 = f(n_x_local, y, 9)
+            f_8 = f(n_x_local, y, 6)
         end if
 
-        ! bottom bounce-back boundary, written into the halo row used by pull streaming
-        if (at_bottom_boundary) then
-            do x = 1, n_x_local
-                f(3, x, 0) = f(5, x, 1)
-                f(6, x-1, 0) = f(8, x, 1)
-                f(7, x+1, 0) = f(9, x, 1)
-            end do
+        ! bottom bounce-back boundary
+        if (at_bottom_boundary .and. y == 1) then
+            f_3 = f(x, 1, 5)
+            f_6 = f(x, 1, 8)
+            f_7 = f(x, 1, 9)
         end if
 
-        ! top bounce-back boundary, written into the halo row used by pull streaming
-        if (at_top_boundary) then
+        ! top moving-wall bounce-back boundary
+        if (at_top_boundary .and. y == n_y_local) then
             moving_wall_correction_8 = 6.0_FP * W(6) * rho_0 * u_wall
             moving_wall_correction_9 = 6.0_FP * W(7) * rho_0 * u_wall
 
-            do x = 1, n_x_local
-                f(5, x, n_y_local+1) = f(3, x, n_y_local)
-                f(8, x+1, n_y_local+1) = f(6, x, n_y_local) - moving_wall_correction_8
-                f(9, x-1, n_y_local+1) = f(7, x, n_y_local) + moving_wall_correction_9
-            end do
+            f_5 = f(x, n_y_local, 3)
+            f_8 = f(x, n_y_local, 6) - moving_wall_correction_8
+            f_9 = f(x, n_y_local, 7) + moving_wall_correction_9
         end if
-    end subroutine prepare_sliding_lid_halos_SL
+    end subroutine pull_sliding_lid_populations_branchy
 
 
 end module simulation

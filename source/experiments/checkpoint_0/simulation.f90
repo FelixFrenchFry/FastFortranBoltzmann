@@ -32,6 +32,7 @@ contains
             error stop "error: checkpoint 0 only supports sliding lid"
         end if
 
+        ! branch-heavy split streaming + collision kernels
         call pull_streaming_local_branchy( &
             domain_info, n_x_local, n_y_local, f, f_next)
         call collision_local( &
@@ -63,8 +64,16 @@ contains
         real(FP) :: f_8
         real(FP) :: f_9
 
+        ! loop over all image-owned cells
         do y = 1, n_y_local
             do x = 1, n_x_local
+
+                ! ---------
+                ! | 7 3 6 |
+                ! | 4 1 2 |
+                ! | 8 5 9 |
+                ! ---------
+                ! pull streamed distribution functions and apply boundary conditions
                 call pull_sliding_lid_populations_branchy( &
                     n_x_local, n_y_local, x, y, &
                     domain_info%at_left_boundary, domain_info%at_right_boundary, &
@@ -72,6 +81,7 @@ contains
                     RHO_0, U_LID, f, &
                     f_1, f_2, f_3, f_4, f_5, f_6, f_7, f_8, f_9)
 
+                ! write pulled distributions to the local destination cell
                 f_next(1, x, y) = f_1
                 f_next(2, x, y) = f_2
                 f_next(3, x, y) = f_3
@@ -111,8 +121,10 @@ contains
         real(FP) :: c_dot_u
         real(FP) :: f_eq_val
 
+        ! loop over all image-owned cells
         do y = 1, n_y_local
             do x = 1, n_x_local
+
                 f_pulled = f(:, x, y)
                 rho_val = 0.0_FP
                 u_x_val = 0.0_FP
@@ -124,12 +136,14 @@ contains
                     u_y_val = u_y_val + f_pulled(i) * C_Y_FP(i)
                 end do
 
+                ! debug check
             #ifdef FFB_DENSITY_CHECKS
                 if (rho_val <= 0.0_FP) then
                     error stop "error: density is zero in collision step (rho_val <= 0)"
                 end if
             #endif
 
+                ! finalize density and velocity
                 u_x_val = u_x_val / rho_val
                 u_y_val = u_y_val / rho_val
                 u_squ = u_x_val * u_x_val + u_y_val * u_y_val
@@ -140,7 +154,9 @@ contains
                     u_y(x, y) = u_y_val
                 end if
 
+                ! collide locally
                 do i = 1, N_DIRS
+                    ! compute equilibrium distribution function for channel i
                     c_dot_u = C_X_FP(i) * u_x_val + C_Y_FP(i) * u_y_val
                     f_eq_val = W(i) * rho_val * ( &
                         1.0_FP + &
@@ -148,10 +164,11 @@ contains
                         4.5_FP * c_dot_u * c_dot_u - &
                         1.5_FP * u_squ)
 
+                    ! relax distribution towards equilibrium
                     f_pulled(i) = f_pulled(i) + omega * (f_eq_val - f_pulled(i))
                 end do
 
-                ! The streamed destination is collided in place.
+                ! write collided distributions back to the local cell
                 f(:, x, y) = f_pulled
             end do
         end do
@@ -194,14 +211,14 @@ contains
 
         ! pull streamed distribution functions from source cells
         f_1 = f(1, x, y)
-        f_2 = f(2, x-1, y)
-        f_3 = f(3, x, y-1)
-        f_4 = f(4, x+1, y)
-        f_5 = f(5, x, y+1)
-        f_6 = f(6, x-1, y-1)
-        f_7 = f(7, x+1, y-1)
-        f_8 = f(8, x+1, y+1)
-        f_9 = f(9, x-1, y+1)
+        f_2 = f(2, x - 1, y)
+        f_3 = f(3, x, y - 1)
+        f_4 = f(4, x + 1, y)
+        f_5 = f(5, x, y + 1)
+        f_6 = f(6, x - 1, y - 1)
+        f_7 = f(7, x + 1, y - 1)
+        f_8 = f(8, x + 1, y + 1)
+        f_9 = f(9, x - 1, y + 1)
 
         ! left bounce-back boundary
         if (at_left_boundary .and. x == 1) then

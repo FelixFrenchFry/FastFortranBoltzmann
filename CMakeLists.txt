@@ -51,15 +51,19 @@ set(FFB_SHARED_SOURCES
     source/settings.f90
 )
 
-set(FFB_XYD_SOURCES
+set(FFB_XYD_SHARED_SOURCES
     source/layouts/xyd/exchange.f90
     source/layouts/xyd/initialization.f90
     source/layouts/xyd/main.f90
-    source/layouts/xyd/simulation.f90
     source/layouts/xyd/modes/couette_flow.f90
     source/layouts/xyd/modes/poiseuille_flow.f90
     source/layouts/xyd/modes/shear_wave.f90
     source/layouts/xyd/modes/sliding_lid.f90
+)
+
+set(FFB_XYD_SOURCES
+    ${FFB_XYD_SHARED_SOURCES}
+    source/layouts/xyd/simulation.f90
 )
 
 set(FFB_EXPERIMENT_SHARED_SOURCES source/experiments/exchange.f90 source/experiments/initialization.f90 source/experiments/main.f90)
@@ -120,6 +124,6 @@ target_link_libraries(FFB_CHECKPOINT_0 PRIVATE MPI::MPI_Fortran)
 add_executable(FFB_CHECKPOINT_1 ${FFB_SHARED_SOURCES} ${FFB_EXPERIMENT_SHARED_SOURCES} source/experiments/checkpoint_1/simulation.f90)
 configure_ffb_target(FFB_CHECKPOINT_1 dxy)
 target_link_libraries(FFB_CHECKPOINT_1 PRIVATE MPI::MPI_Fortran)
-add_executable(FFB_CHECKPOINT_2 ${FFB_SHARED_SOURCES} ${FFB_EXPERIMENT_SHARED_SOURCES} source/experiments/checkpoint_2/simulation.f90)
-configure_ffb_target(FFB_CHECKPOINT_2 dxy)
+add_executable(FFB_CHECKPOINT_2 ${FFB_SHARED_SOURCES} ${FFB_XYD_SHARED_SOURCES} source/experiments/checkpoint_2/simulation.f90)
+configure_ffb_target(FFB_CHECKPOINT_2 xyd)
 target_link_libraries(FFB_CHECKPOINT_2 PRIVATE MPI::MPI_Fortran)
