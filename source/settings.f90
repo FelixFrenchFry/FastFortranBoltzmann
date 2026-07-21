@@ -48,8 +48,8 @@ module settings
     real(FP), parameter :: N_SIN = 2.0_FP
     real(FP), parameter :: U_WALL = 0.1_FP
     real(FP), parameter :: U_LID = 0.1_FP
-    real(FP), parameter :: RHO_IN = 1.001_FP
-    real(FP), parameter :: RHO_OUT = 0.999_FP
+    real(FP), parameter :: RHO_IN = 1.00005_FP
+    real(FP), parameter :: RHO_OUT = 0.99995_FP
 #endif
 
     ! constants for sim modes
