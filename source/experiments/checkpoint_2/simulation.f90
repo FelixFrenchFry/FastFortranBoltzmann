@@ -3,7 +3,7 @@ module simulation
     use iso_fortran_env, only: int32
     use domain, only: domain_t
     use exchange, only: halo_buffers_t
-    use settings, only: N_DIRS, C_X, C_Y, C_X_FP, C_Y_FP, W, &
+    use settings, only: N_DIRS, W, &
         SIM_SLIDING_LID, SIM_MODE, FP, &
         RHO_0, OMEGA, U_LID
     implicit none
@@ -40,13 +40,13 @@ contains
             RHO_0, U_LID, f)
 
         ! universal pull streaming + collision kernel
-        call fuzed_pull_streaming_collision_local_universal( &
+        call fuzed_pull_streaming_collision_local_unrolled_universal( &
             n_x_local, n_y_local, &
             write_macro_fields, OMEGA, f, f_next, rho, u_x, u_y)
     end subroutine execute_local_sim_step
 
 
-    subroutine fuzed_pull_streaming_collision_local_universal( &
+    subroutine fuzed_pull_streaming_collision_local_unrolled_universal( &
         n_x_local, n_y_local, write_macro_fields, omega, f, f_next, rho, u_x, u_y &
         )
         ! inputs
@@ -63,24 +63,24 @@ contains
         real(FP), intent(inout) :: u_y(n_x_local, n_y_local)
 
         ! temp
-        integer(int32) :: x, y, i
-        integer(int32) :: src_x, src_y
-        real(FP) :: f_pulled(N_DIRS)
+        integer(int32) :: x, y
+        real(FP) :: f_1
+        real(FP) :: f_2
+        real(FP) :: f_3
+        real(FP) :: f_4
+        real(FP) :: f_5
+        real(FP) :: f_6
+        real(FP) :: f_7
+        real(FP) :: f_8
+        real(FP) :: f_9
         real(FP) :: rho_val
         real(FP) :: u_x_val
         real(FP) :: u_y_val
         real(FP) :: u_squ
-        real(FP) :: c_dot_u
-        real(FP) :: f_eq_val
-        real(FP) :: f_next_val
 
         ! loop over all image-owned cells
         do y = 1, n_y_local
             do x = 1, n_x_local
-
-                rho_val = 0.0_FP
-                u_x_val = 0.0_FP
-                u_y_val = 0.0_FP
 
                 ! ---------
                 ! | 7 3 6 |
@@ -89,17 +89,19 @@ contains
                 ! ---------
                 ! pull streamed distribution functions from source cells
                 ! (boundaries handled separately in sim-mode-specific halo preparation step)
-                do i = 1, N_DIRS
+                f_1 = f(1, x, y)
+                f_2 = f(2, x - 1, y)
+                f_3 = f(3, x, y - 1)
+                f_4 = f(4, x + 1, y)
+                f_5 = f(5, x, y + 1)
+                f_6 = f(6, x - 1, y - 1)
+                f_7 = f(7, x + 1, y - 1)
+                f_8 = f(8, x + 1, y + 1)
+                f_9 = f(9, x - 1, y + 1)
 
-                    src_x = x - C_X(i)
-                    src_y = y - C_Y(i)
-
-                    f_pulled(i) = f(i, src_x, src_y)
-
-                    rho_val = rho_val + f_pulled(i)
-                    u_x_val = u_x_val + f_pulled(i) * C_X_FP(i)
-                    u_y_val = u_y_val + f_pulled(i) * C_Y_FP(i)
-                end do
+                rho_val = f_1 + f_2 + f_3 + f_4 + f_5 + f_6 + f_7 + f_8 + f_9
+                u_x_val = f_2 - f_4 + f_6 - f_7 - f_8 + f_9
+                u_y_val = f_3 - f_5 + f_6 + f_7 - f_8 - f_9
 
                 ! debug check
             #ifdef FFB_DENSITY_CHECKS
@@ -120,23 +122,56 @@ contains
                 end if
 
                 ! collide and stream locally
-                do i = 1, N_DIRS
+                ! 1: (0, 0)
+                f_next(1, x, y) = f_1 + omega * ((4.0_FP/9.0_FP) * rho_val * ( &
+                    1.0_FP - 1.5_FP * u_squ) - f_1)
 
-                    ! compute equilibrium distribution function for channel i
-                    c_dot_u = C_X_FP(i) * u_x_val + C_Y_FP(i) * u_y_val
-                    f_eq_val = W(i) * rho_val * ( &
-                        1.0_FP + &
-                        3.0_FP * c_dot_u + &
-                        4.5_FP * c_dot_u * c_dot_u - &
-                        1.5_FP * u_squ)
+                ! 2: (1, 0)
+                f_next(2, x, y) = f_2 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
+                    1.0_FP + 3.0_FP * u_x_val + 4.5_FP * u_x_val * u_x_val - &
+                    1.5_FP * u_squ) - f_2)
 
-                    ! relax towards equilibrium and write to destination channel
-                    f_next_val = f_pulled(i) + omega * (f_eq_val - f_pulled(i))
-                    f_next(i, x, y) = f_next_val
-                end do
+                ! 3: (0, 1)
+                f_next(3, x, y) = f_3 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
+                    1.0_FP + 3.0_FP * u_y_val + 4.5_FP * u_y_val * u_y_val - &
+                    1.5_FP * u_squ) - f_3)
+
+                ! 4: (-1, 0)
+                f_next(4, x, y) = f_4 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
+                    1.0_FP - 3.0_FP * u_x_val + 4.5_FP * u_x_val * u_x_val - &
+                    1.5_FP * u_squ) - f_4)
+
+                ! 5: (0, -1)
+                f_next(5, x, y) = f_5 + omega * ((1.0_FP/9.0_FP) * rho_val * ( &
+                    1.0_FP - 3.0_FP * u_y_val + 4.5_FP * u_y_val * u_y_val - &
+                    1.5_FP * u_squ) - f_5)
+
+                ! 6: (1, 1)
+                f_next(6, x, y) = f_6 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
+                    1.0_FP + 3.0_FP * (u_x_val + u_y_val) + &
+                    4.5_FP * (u_x_val + u_y_val) * (u_x_val + u_y_val) - &
+                    1.5_FP * u_squ) - f_6)
+
+                ! 7: (-1, 1)
+                f_next(7, x, y) = f_7 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
+                    1.0_FP + 3.0_FP * (-u_x_val + u_y_val) + &
+                    4.5_FP * (-u_x_val + u_y_val) * (-u_x_val + u_y_val) - &
+                    1.5_FP * u_squ) - f_7)
+
+                ! 8: (-1, -1)
+                f_next(8, x, y) = f_8 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
+                    1.0_FP - 3.0_FP * (u_x_val + u_y_val) + &
+                    4.5_FP * (u_x_val + u_y_val) * (u_x_val + u_y_val) - &
+                    1.5_FP * u_squ) - f_8)
+
+                ! 9: (1, -1)
+                f_next(9, x, y) = f_9 + omega * ((1.0_FP/36.0_FP) * rho_val * ( &
+                    1.0_FP + 3.0_FP * (u_x_val - u_y_val) + &
+                    4.5_FP * (u_x_val - u_y_val) * (u_x_val - u_y_val) - &
+                    1.5_FP * u_squ) - f_9)
             end do
         end do
-    end subroutine fuzed_pull_streaming_collision_local_universal
+    end subroutine fuzed_pull_streaming_collision_local_unrolled_universal
 
 
     subroutine prepare_sliding_lid_halos_SL( &
