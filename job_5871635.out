@@ -1,0 +1,1637 @@
+-- The Fortran compiler identification is IntelLLVM 2025.0.4
+-- Detecting Fortran compiler ABI info
+-- Detecting Fortran compiler ABI info - done
+-- Check for working Fortran compiler: /software/bwhpc/common/toolkit/Intel_OneAPI/compiler/2025.0/bin/ifx - skipped
+-- Configuring done (6.1s)
+-- Generating done (0.1s)
+-- Build files have been written to: /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635
+[1/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/hardware_info.f90-pp.f90
+[2/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/domain.f90-pp.f90
+[3/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/export.f90-pp.f90
+[4/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/simulation.f90-pp.f90
+[5/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/domain.f90-pp.f90
+[6/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/reporting.f90-pp.f90
+[7/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/reporting.f90-pp.f90
+[8/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/settings.f90-pp.f90
+[9/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/modes/sliding_lid.f90-pp.f90
+[10/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/settings.f90-pp.f90
+[11/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/initialization.f90-pp.f90
+[12/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/hardware_info.f90-pp.f90
+[13/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/main.f90-pp.f90
+[14/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/initialization.f90-pp.f90
+[15/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/exchange.f90-pp.f90
+[16/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/export.f90-pp.f90
+[17/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/export.f90-pp.f90
+[18/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/modes/couette_flow.f90-pp.f90
+[19/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/hardware_info.f90-pp.f90
+[20/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/checkpoint_0/simulation.f90-pp.f90
+[21/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/exchange.f90-pp.f90
+[22/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/modes/poiseuille_flow.f90-pp.f90
+[23/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/domain.f90-pp.f90
+[24/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/modes/shear_wave.f90-pp.f90
+[25/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/hardware_info.f90-pp.f90
+[26/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/main.f90-pp.f90
+[27/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/checkpoint_1/simulation.f90-pp.f90
+[28/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/domain.f90-pp.f90
+[29/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/initialization.f90-pp.f90
+[30/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/main.f90-pp.f90
+[31/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/export.f90-pp.f90
+[32/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/reporting.f90-pp.f90
+[33/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/exchange.f90-pp.f90
+[34/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/settings.f90-pp.f90
+[35/88] Generating Fortran dyndep file CMakeFiles/FFB.dir/Fortran.dd
+[36/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/reporting.f90-pp.f90
+[37/88] Generating Fortran dyndep file CMakeFiles/FFB_CHECKPOINT_0.dir/Fortran.dd
+[38/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/settings.f90-pp.f90
+[39/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/checkpoint_2/simulation.f90-pp.f90
+[40/88] Generating Fortran dyndep file CMakeFiles/FFB_CHECKPOINT_1.dir/Fortran.dd
+[41/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/exchange.f90-pp.f90
+[42/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/main.f90-pp.f90
+[43/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/initialization.f90-pp.f90
+[44/88] Generating Fortran dyndep file CMakeFiles/FFB_CHECKPOINT_2.dir/Fortran.dd
+[45/88] Building Fortran object CMakeFiles/FFB.dir/source/settings.f90.o
+[46/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/settings.f90.o
+[47/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/settings.f90.o
+[48/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/settings.f90.o
+[49/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/hardware_info.f90.o
+[50/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/hardware_info.f90.o
+[51/88] Building Fortran object CMakeFiles/FFB.dir/source/hardware_info.f90.o
+[52/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/hardware_info.f90.o
+[53/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/initialization.f90.o
+[54/88] Building Fortran object CMakeFiles/FFB.dir/source/domain.f90.o
+[55/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/initialization.f90.o
+[56/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/initialization.f90.o
+[57/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/modes/couette_flow.f90.o
+[58/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/domain.f90.o
+[59/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/domain.f90.o
+[60/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/domain.f90.o
+[61/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/modes/shear_wave.f90.o
+[62/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/modes/sliding_lid.f90.o
+[63/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/modes/poiseuille_flow.f90.o
+[64/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/reporting.f90.o
+[65/88] Building Fortran object CMakeFiles/FFB.dir/source/reporting.f90.o
+[66/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/initialization.f90.o
+[67/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/reporting.f90.o
+[68/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/reporting.f90.o
+[69/88] Building Fortran object CMakeFiles/FFB.dir/source/export.f90.o
+[70/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/export.f90.o
+[71/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/export.f90.o
+[72/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/export.f90.o
+[73/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/exchange.f90.o
+[74/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/exchange.f90.o
+[75/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/exchange.f90.o
+[76/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/exchange.f90.o
+[77/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/checkpoint_1/simulation.f90.o
+/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/experiments/checkpoint_1/simulation.f90(14): remark #7712: This variable has not been used.   [HALO_BUFFERS]
+        domain_info, halo_buffers, n_x_local, n_y_local, &
+---------------------^
+[78/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/checkpoint_2/simulation.f90.o
+/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/experiments/checkpoint_2/simulation.f90(14): remark #7712: This variable has not been used.   [HALO_BUFFERS]
+        domain_info, halo_buffers, n_x_local, n_y_local, &
+---------------------^
+[79/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/main.f90.o
+[80/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/main.f90.o
+[81/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/checkpoint_0/simulation.f90.o
+/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/experiments/checkpoint_0/simulation.f90(14): remark #7712: This variable has not been used.   [HALO_BUFFERS]
+        domain_info, halo_buffers, n_x_local, n_y_local, &
+---------------------^
+[82/88] Linking Fortran executable bin/FFB_CHECKPOINT_1
+[83/88] Linking Fortran executable bin/FFB_CHECKPOINT_2
+[84/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/simulation.f90.o
+[85/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/main.f90.o
+[86/88] Linking Fortran executable bin/FFB_CHECKPOINT_0
+[87/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/main.f90.o
+[88/88] Linking Fortran executable bin/FFB
+ID/NAME:    5871635 / bench_E
+USER:       fr_fl184
+PARTITION:  cpu_il
+TASKS:      16(x24) tasks/node x 24 nodes = 384 tasks
+NODES:      uc2n[727-732,853-870]
+COMPILER:
+ifx (IFX) 2025.0.4 20241205
+Copyright (C) 1985-2024 Intel Corporation. All rights reserved.
+
+MPI:
+Intel(R) MPI Library for Linux* OS, Version 2021.14 Build 20241121 (id: e7829d6)
+Copyright 2003-2024, Intel Corporation.
+
+----- [ launching job script in sweep execution mode ] -----
+
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 1 / 44
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635/bin/FFB
+runs                      = 5
+images                    = 1
+image grid                = 1 x 1
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5871635
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 1
+image grid [X/Y]          = [ 1 / 1 ]
+local domain [X/Y]        = [ 14400 / 14400 ]
+halo cells                = 0.028 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.868
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.845
+
+--- [ benchmark runs started at 2026-07-18 12:03:34 ] --------------------------
+001 | avg step time: 2700.394 ms | total time: 810.118 sec | MLUPS: 76
+002 | avg step time: 2566.586 ms | total time: 769.976 sec | MLUPS: 80
+003 | avg step time: 2550.389 ms | total time: 765.117 sec | MLUPS: 81
+004 | avg step time: 2557.548 ms | total time: 767.264 sec | MLUPS: 81
+005 | avg step time: 2565.476 ms | total time: 769.643 sec | MLUPS: 80
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 80
+best                      = 81
+worst                     = 76
+mean                      = 79
+stddev                    = 2.605 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |       769.623  |       769.623  |           1.00x
+halo sync                    |         0.000  |         0.000  |           1.00x
+halo transfer                |         0.000  |         0.000  |           1.00x
+other                        |         0.020  |         0.020  |           1.00x
+total                        |       769.643  |       769.643  |           1.00x
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 2 / 44
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635/bin/FFB
+runs                      = 5
+images                    = 2
+image grid                = 1 x 2
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5871635
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 2
+image grid [X/Y]          = [ 1 / 2 ]
+local domain [X/Y]        = [ 14400 / 7200 ]
+halo cells                = 0.042 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.872
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.849
+
+--- [ benchmark runs started at 2026-07-18 13:09:05 ] --------------------------
+001 | avg step time: 1245.555 ms | total time: 373.666 sec | MLUPS: 166
+002 | avg step time: 1247.975 ms | total time: 374.393 sec | MLUPS: 166
+003 | avg step time: 1217.459 ms | total time: 365.238 sec | MLUPS: 170
+004 | avg step time: 1213.801 ms | total time: 364.140 sec | MLUPS: 170
+005 | avg step time: 1245.730 ms | total time: 373.719 sec | MLUPS: 166
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 166
+best                      = 170
+worst                     = 166
+mean                      = 167
+stddev                    = 1.307 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |       364.093  |       372.577  |           1.00x
+halo sync                    |         0.199  |         1.492  |           7.49x
+halo transfer                |         0.219  |         0.220  |           1.02x
+other                        |         0.006  |         0.032  |           1.90x
+total                        |       373.666  |       373.666  |           1.00x
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 3 / 44
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635/bin/FFB
+runs                      = 5
+images                    = 3
+image grid                = 1 x 3
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5871635
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 3
+image grid [X/Y]          = [ 1 / 3 ]
+local domain [X/Y]        = [ 14400 / 4800 ]
+halo cells                = 0.056 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.876
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.853
+
+--- [ benchmark runs started at 2026-07-18 13:40:31 ] --------------------------
+001 | avg step time: 929.018 ms | total time: 278.705 sec | MLUPS: 223
+002 | avg step time: 935.227 ms | total time: 280.568 sec | MLUPS: 221
+003 | avg step time: 928.837 ms | total time: 278.651 sec | MLUPS: 223
+004 | avg step time: 930.817 ms | total time: 279.245 sec | MLUPS: 222
+005 | avg step time: 929.306 ms | total time: 278.792 sec | MLUPS: 223
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 223
+best                      = 223
+worst                     = 221
+mean                      = 222
+stddev                    = 0.402 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |       278.004  |       278.491  |           1.00x
+halo sync                    |         0.132  |         0.877  |           7.52x
+halo transfer                |         0.126  |         0.211  |           1.65x
+other                        |         0.001  |         0.006  |           6.63x
+total                        |       278.792  |       278.792  |           1.00x
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 4 / 44
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635/bin/FFB
+runs                      = 5
+images                    = 4
+image grid                = 1 x 4
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5871635
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 4
+image grid [X/Y]          = [ 1 / 4 ]
+local domain [X/Y]        = [ 14400 / 3600 ]
+halo cells                = 0.069 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.881
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.857
+
+--- [ benchmark runs started at 2026-07-18 14:04:18 ] --------------------------
+001 | avg step time: 694.787 ms | total time: 208.436 sec | MLUPS: 298
+002 | avg step time: 694.938 ms | total time: 208.481 sec | MLUPS: 298
+003 | avg step time: 698.823 ms | total time: 209.647 sec | MLUPS: 296
+004 | avg step time: 726.033 ms | total time: 217.810 sec | MLUPS: 285
+005 | avg step time: 734.966 ms | total time: 220.490 sec | MLUPS: 282
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 296
+best                      = 298
+worst                     = 282
+mean                      = 291
+stddev                    = 2.637 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |       199.901  |       209.178  |           1.04x
+halo sync                    |         0.238  |         8.825  |          40.89x
+halo transfer                |         0.236  |         0.672  |           1.54x
+other                        |         0.001  |         0.071  |          54.30x
+total                        |       209.647  |       209.647  |           1.00x
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 5 / 44
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635/bin/FFB
+runs                      = 5
+images                    = 5
+image grid                = 1 x 5
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5871635
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 5
+image grid [X/Y]          = [ 1 / 5 ]
+local domain [X/Y]        = [ 14400 / 2880 ]
+halo cells                = 0.083 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.885
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.861
+
+--- [ benchmark runs started at 2026-07-18 14:22:32 ] --------------------------
+001 | avg step time: 648.448 ms | total time: 194.534 sec | MLUPS: 319
+002 | avg step time: 647.623 ms | total time: 194.287 sec | MLUPS: 320
+003 | avg step time: 648.702 ms | total time: 194.611 sec | MLUPS: 319
+004 | avg step time: 647.780 ms | total time: 194.334 sec | MLUPS: 320
+005 | avg step time: 655.747 ms | total time: 196.724 sec | MLUPS: 316
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 319
+best                      = 320
+worst                     = 316
+mean                      = 318
+stddev                    = 0.515 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |       192.599  |       193.982  |           1.01x
+halo sync                    |         0.076  |         1.458  |          25.80x
+halo transfer                |         0.164  |         0.331  |           1.72x
+other                        |         0.001  |         0.024  |          17.56x
+total                        |       194.534  |       194.534  |           1.00x
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 6 / 44
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635/bin/FFB
+runs                      = 5
+images                    = 6
+image grid                = 1 x 6
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5871635
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 6
+image grid [X/Y]          = [ 1 / 6 ]
+local domain [X/Y]        = [ 14400 / 2400 ]
+halo cells                = 0.097 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.889
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.866
+
+--- [ benchmark runs started at 2026-07-18 14:39:20 ] --------------------------
+001 | avg step time: 619.689 ms | total time: 185.907 sec | MLUPS: 334
+002 | avg step time: 620.969 ms | total time: 186.291 sec | MLUPS: 333
+003 | avg step time: 616.134 ms | total time: 184.840 sec | MLUPS: 336
+004 | avg step time: 624.355 ms | total time: 187.307 sec | MLUPS: 332
+005 | avg step time: 616.352 ms | total time: 184.906 sec | MLUPS: 336
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 334
+best                      = 336
+worst                     = 332
+mean                      = 334
+stddev                    = 0.535 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |       179.138  |       185.642  |           1.04x
+halo sync                    |         0.141  |         7.772  |          55.21x
+halo transfer                |         0.150  |         0.609  |           3.34x
+other                        |         0.002  |         0.032  |          15.56x
+total                        |       185.907  |       185.907  |           1.00x
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 7 / 44
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635/bin/FFB
+runs                      = 5
+images                    = 8
+image grid                = 1 x 8
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5871635
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 8
+image grid [X/Y]          = [ 1 / 8 ]
+local domain [X/Y]        = [ 14400 / 1800 ]
+halo cells                = 0.125 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.897
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.874
+
+--- [ benchmark runs started at 2026-07-18 14:55:19 ] --------------------------
+001 | avg step time: 621.616 ms | total time: 186.485 sec | MLUPS: 333
+002 | avg step time: 619.802 ms | total time: 185.941 sec | MLUPS: 334
+003 | avg step time: 624.468 ms | total time: 187.340 sec | MLUPS: 332
+004 | avg step time: 652.931 ms | total time: 195.879 sec | MLUPS: 317
+005 | avg step time: 625.274 ms | total time: 187.582 sec | MLUPS: 331
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 332
+best                      = 334
+worst                     = 317
+mean                      = 329
+stddev                    = 2.132 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |       179.317  |       185.785  |           1.04x
+halo sync                    |         0.172  |         6.553  |          34.75x
+halo transfer                |         0.340  |         1.123  |           2.84x
+other                        |         0.003  |         0.083  |          32.04x
+total                        |       187.340  |       187.340  |           1.00x
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 8 / 44
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635/bin/FFB
+runs                      = 5
+images                    = 9
+image grid                = 1 x 9
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5871635
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 9
+image grid [X/Y]          = [ 1 / 9 ]
+local domain [X/Y]        = [ 14400 / 1600 ]
+halo cells                = 0.139 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.901
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.878
+
+--- [ benchmark runs started at 2026-07-18 15:11:36 ] --------------------------
+001 | avg step time: 609.687 ms | total time: 182.906 sec | MLUPS: 340
+002 | avg step time: 607.984 ms | total time: 182.395 sec | MLUPS: 341
+003 | avg step time: 607.060 ms | total time: 182.118 sec | MLUPS: 341
+004 | avg step time: 608.819 ms | total time: 182.646 sec | MLUPS: 340
+005 | avg step time: 611.880 ms | total time: 183.564 sec | MLUPS: 338
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 340
+best                      = 341
+worst                     = 338
+mean                      = 340
+stddev                    = 0.360 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |       178.918  |       181.614  |           1.01x
+halo sync                    |         0.127  |         2.759  |          28.50x
+halo transfer                |         0.262  |         0.947  |           3.72x
+other                        |         0.004  |         0.019  |           4.59x
+total                        |       182.646  |       182.646  |           1.00x
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 9 / 44
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635/bin/FFB
+runs                      = 5
+images                    = 10
+image grid                = 1 x 10
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5871635
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 10
+image grid [X/Y]          = [ 1 / 10 ]
+local domain [X/Y]        = [ 14400 / 1440 ]
+halo cells                = 0.153 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.905
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.882
+
+--- [ benchmark runs started at 2026-07-18 15:27:23 ] --------------------------
+001 | avg step time: 606.084 ms | total time: 181.825 sec | MLUPS: 342
+002 | avg step time: 606.571 ms | total time: 181.971 sec | MLUPS: 341
+003 | avg step time: 613.215 ms | total time: 183.964 sec | MLUPS: 338
+004 | avg step time: 607.378 ms | total time: 182.213 sec | MLUPS: 341
+005 | avg step time: 606.277 ms | total time: 181.883 sec | MLUPS: 342
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 341
+best                      = 342
+worst                     = 338
+mean                      = 340
+stddev                    = 0.482 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |       178.770  |       181.217  |           1.01x
+halo sync                    |         0.210  |         2.488  |          10.69x
+halo transfer                |         0.293  |         0.903  |           2.73x
+other                        |         0.002  |         0.017  |          10.98x
+total                        |       181.971  |       181.971  |           1.00x
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 10 / 44
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635/bin/FFB
+runs                      = 5
+images                    = 12
+image grid                = 1 x 12
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5871635
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 12
+image grid [X/Y]          = [ 1 / 12 ]
+local domain [X/Y]        = [ 14400 / 1200 ]
+halo cells                = 0.181 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.914
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.890
+
+--- [ benchmark runs started at 2026-07-18 15:43:07 ] --------------------------
+001 | avg step time: 603.468 ms | total time: 181.041 sec | MLUPS: 343
+002 | avg step time: 604.323 ms | total time: 181.297 sec | MLUPS: 343
+003 | avg step time: 606.646 ms | total time: 181.994 sec | MLUPS: 341
+004 | avg step time: 603.164 ms | total time: 180.949 sec | MLUPS: 343
+005 | avg step time: 602.590 ms | total time: 180.777 sec | MLUPS: 344
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 343
+best                      = 344
+worst                     = 341
+mean                      = 342
+stddev                    = 0.320 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |       175.784  |       180.514  |           1.03x
+halo sync                    |         0.144  |         4.852  |          26.64x
+halo transfer                |         0.219  |         0.431  |           1.93x
+other                        |         0.001  |         0.053  |          33.14x
+total                        |       181.040  |       181.041  |           1.00x
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 11 / 44
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635/bin/FFB
+runs                      = 5
+images                    = 15
+image grid                = 1 x 15
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5871635
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 15
+image grid [X/Y]          = [ 1 / 15 ]
+local domain [X/Y]        = [ 14400 / 960 ]
+halo cells                = 0.222 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.926
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.903
+
+--- [ benchmark runs started at 2026-07-18 15:58:47 ] --------------------------
+001 | avg step time: 483.874 ms | total time: 145.162 sec | MLUPS: 428
+002 | avg step time: 484.060 ms | total time: 145.218 sec | MLUPS: 428
+003 | avg step time: 484.227 ms | total time: 145.268 sec | MLUPS: 428
+004 | avg step time: 484.296 ms | total time: 145.289 sec | MLUPS: 428
+005 | avg step time: 484.349 ms | total time: 145.305 sec | MLUPS: 428
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 428
+best                      = 428
+worst                     = 428
+mean                      = 428
+stddev                    = 0.000 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |        55.396  |       144.330  |           2.60x
+halo sync                    |         0.334  |        89.054  |         266.41x
+halo transfer                |         0.240  |         0.763  |           3.09x
+other                        |         0.003  |         0.294  |         116.50x
+total                        |       145.268  |       145.268  |           1.00x
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 12 / 44
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635/bin/FFB
+runs                      = 5
+images                    = 16
+image grid                = 1 x 16
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5871635
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 16
+image grid [X/Y]          = [ 1 / 16 ]
+local domain [X/Y]        = [ 14400 / 900 ]
+halo cells                = 0.236 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.930
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.907
+
+--- [ benchmark runs started at 2026-07-18 16:11:40 ] --------------------------
+001 | avg step time: 454.064 ms | total time: 136.219 sec | MLUPS: 456
+002 | avg step time: 453.640 ms | total time: 136.092 sec | MLUPS: 457
+003 | avg step time: 454.287 ms | total time: 136.286 sec | MLUPS: 456
+004 | avg step time: 455.163 ms | total time: 136.549 sec | MLUPS: 455
+005 | avg step time: 453.395 ms | total time: 136.019 sec | MLUPS: 457
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 456
+best                      = 457
+worst                     = 455
+mean                      = 456
+stddev                    = 0.183 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |        45.483  |       135.580  |           2.99x
+halo sync                    |         0.151  |        90.451  |         594.64x
+halo transfer                |         0.118  |         0.540  |           4.24x
+other                        |         0.002  |         0.589  |         239.60x
+total                        |       136.219  |       136.219  |           1.00x
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 13 / 44
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635/bin/FFB
+runs                      = 5
+images                    = 18
+image grid                = 1 x 18
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 2
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5871635
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 18
+image grid [X/Y]          = [ 1 / 18 ]
+local domain [X/Y]        = [ 14400 / 800 ]
+halo cells                = 0.264 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.939
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.915
+
+--- [ benchmark runs started at 2026-07-18 16:23:36 ] --------------------------
+001 | avg step time: 407.074 ms | total time: 122.122 sec | MLUPS: 509
+002 | avg step time: 406.769 ms | total time: 122.031 sec | MLUPS: 509
+003 | avg step time: 406.826 ms | total time: 122.048 sec | MLUPS: 509
+004 | avg step time: 406.970 ms | total time: 122.091 sec | MLUPS: 509
+005 | avg step time: 407.461 ms | total time: 122.238 sec | MLUPS: 508
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 509
+best                      = 509
+worst                     = 508
+mean                      = 508
+stddev                    = 0.088 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |        40.114  |       121.426  |           3.03x
+halo sync                    |         0.151  |        80.771  |         535.47x
+halo transfer                |         0.196  |         1.244  |           5.92x
+other                        |         0.003  |         0.796  |         275.08x
+total                        |       122.089  |       122.091  |           1.00x
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 14 / 44
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635/bin/FFB
+runs                      = 5
+images                    = 20
+image grid                = 1 x 20
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 2
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5871635
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 20
+image grid [X/Y]          = [ 1 / 20 ]
+local domain [X/Y]        = [ 14400 / 720 ]
+halo cells                = 0.292 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |          29.947
+macro field buffers                           |            24  |           4.977
+total                                         |           168  |          34.924
+
+--- [ benchmark runs started at 2026-07-18 16:34:22 ] --------------------------
+001 | avg step time: 363.971 ms | total time: 109.191 sec | MLUPS: 569
+002 | avg step time: 363.519 ms | total time: 109.056 sec | MLUPS: 570
+003 | avg step time: 363.397 ms | total time: 109.019 sec | MLUPS: 570
+004 | avg step time: 363.339 ms | total time: 109.002 sec | MLUPS: 570
+005 | avg step time: 363.813 ms | total time: 109.144 sec | MLUPS: 569
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 570
+best                      = 570
+worst                     = 569
+mean                      = 569
+stddev                    = 0.096 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |        36.350  |       108.399  |           2.98x
+halo sync                    |         0.125  |        71.308  |         569.82x
+halo transfer                |         0.176  |         1.502  |           7.52x
+other                        |         0.003  |         0.931  |         318.76x
+total                        |       109.056  |       109.056  |           1.00x
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 15 / 44
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635/bin/FFB
+runs                      = 5
+images                    = 24
+image grid                = 1 x 24
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 2
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5871635
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 24
+image grid [X/Y]          = [ 1 / 24 ]
+local domain [X/Y]        = [ 14400 / 600 ]
+halo cells                = 0.347 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           145  |          29.964
+macro field buffers                           |            24  |           4.977
+total                                         |           169  |          34.940
+
+--- [ benchmark runs started at 2026-07-18 16:44:01 ] --------------------------
+001 | avg step time: 302.054 ms | total time: 90.616 sec | MLUPS: 686
+002 | avg step time: 302.405 ms | total time: 90.721 sec | MLUPS: 685
+003 | avg step time: 302.924 ms | total time: 90.877 sec | MLUPS: 684
+004 | avg step time: 301.844 ms | total time: 90.553 sec | MLUPS: 686
+005 | avg step time: 302.373 ms | total time: 90.712 sec | MLUPS: 685
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 685
+best                      = 686
+worst                     = 684
+mean                      = 685
+stddev                    = 0.122 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |        31.781  |        90.078  |           2.83x
+halo sync                    |         0.134  |        58.310  |         433.74x
+halo transfer                |         0.183  |         1.557  |           8.13x
+other                        |         0.004  |         1.115  |         284.92x
+total                        |        90.711  |        90.712  |           1.00x
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 16 / 44
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635/bin/FFB
+runs                      = 5
+images                    = 25
+image grid                = 1 x 25
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 2
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5871635
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 25
+image grid [X/Y]          = [ 1 / 25 ]
+local domain [X/Y]        = [ 14400 / 576 ]
+halo cells                = 0.361 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           145  |          29.968
+macro field buffers                           |            24  |           4.977
+total                                         |           169  |          34.944
+
+--- [ benchmark runs started at 2026-07-18 16:52:15 ] --------------------------
+001 | avg step time: 288.979 ms | total time: 86.694 sec | MLUPS: 717
+002 | avg step time: 289.409 ms | total time: 86.823 sec | MLUPS: 716
+003 | avg step time: 289.249 ms | total time: 86.775 sec | MLUPS: 716
+004 | avg step time: 288.972 ms | total time: 86.692 sec | MLUPS: 717
+005 | avg step time: 289.322 ms | total time: 86.797 sec | MLUPS: 716
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 716
+best                      = 717
+worst                     = 716
+mean                      = 716
+stddev                    = 0.076 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |        31.760  |        86.069  |           2.71x
+halo sync                    |         0.193  |        54.343  |         280.56x
+halo transfer                |         0.207  |         1.640  |           8.07x
+other                        |         0.003  |         1.002  |         288.18x
+total                        |        86.774  |        86.775  |           1.00x
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 17 / 44
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635/bin/FFB
+runs                      = 5
+images                    = 30
+image grid                = 1 x 30
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 2
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5871635
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 30
+image grid [X/Y]          = [ 1 / 30 ]
+local domain [X/Y]        = [ 14400 / 480 ]
+halo cells                = 0.431 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           145  |          29.988
+macro field buffers                           |            24  |           4.977
+total                                         |           169  |          34.965
+
+--- [ benchmark runs started at 2026-07-18 17:00:19 ] --------------------------
+001 | avg step time: 281.190 ms | total time: 84.357 sec | MLUPS: 737
+002 | avg step time: 281.599 ms | total time: 84.480 sec | MLUPS: 736
+003 | avg step time: 281.618 ms | total time: 84.485 sec | MLUPS: 736
+004 | avg step time: 281.293 ms | total time: 84.388 sec | MLUPS: 737
+005 | avg step time: 281.520 ms | total time: 84.456 sec | MLUPS: 736
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 736
+best                      = 737
+worst                     = 736
+mean                      = 736
+stddev                    = 0.074 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |        24.152  |        82.429  |           3.42x
+halo sync                    |         0.622  |        59.746  |          96.00x
+halo transfer                |         0.149  |         1.545  |          10.34x
+other                        |         0.004  |         1.526  |         353.17x
+total                        |        84.456  |        84.456  |           1.00x
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 18 / 44
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635/bin/FFB
+runs                      = 5
+images                    = 32
+image grid                = 1 x 32
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 2
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5871635
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 32
+image grid [X/Y]          = [ 1 / 32 ]
+local domain [X/Y]        = [ 14400 / 450 ]
+halo cells                = 0.458 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           145  |          29.997
+macro field buffers                           |            24  |           4.977
+total                                         |           169  |          34.973
+
+--- [ benchmark runs started at 2026-07-18 17:07:54 ] --------------------------
+001 | avg step time: 299.307 ms | total time: 89.792 sec | MLUPS: 692
+002 | avg step time: 299.444 ms | total time: 89.833 sec | MLUPS: 692
+003 | avg step time: 299.377 ms | total time: 89.813 sec | MLUPS: 692
+004 | avg step time: 299.563 ms | total time: 89.869 sec | MLUPS: 692
+005 | avg step time: 299.602 ms | total time: 89.881 sec | MLUPS: 692
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 692
+best                      = 692
+worst                     = 692
+mean                      = 692
+stddev                    = 0.000 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |        22.536  |        88.711  |           3.94x
+halo sync                    |         0.650  |        66.682  |         102.62x
+halo transfer                |         0.156  |         0.467  |           2.99x
+other                        |         0.004  |         1.717  |         401.97x
+total                        |        89.833  |        89.833  |           1.00x
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 19 / 44
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635/bin/FFB
+runs                      = 5
+images                    = 36
+image grid                = 1 x 36
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 3
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5871635
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 36
+image grid [X/Y]          = [ 1 / 36 ]
+local domain [X/Y]        = [ 14400 / 400 ]
+halo cells                = 0.514 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           145  |          30.013
+macro field buffers                           |            24  |           4.977
+total                                         |           169  |          34.990
+
+--- [ benchmark runs started at 2026-07-18 17:15:56 ] --------------------------
+001 | avg step time: 267.109 ms | total time: 80.133 sec | MLUPS: 776
+002 | avg step time: 267.224 ms | total time: 80.167 sec | MLUPS: 775
+003 | avg step time: 266.975 ms | total time: 80.092 sec | MLUPS: 776
+004 | avg step time: 267.011 ms | total time: 80.103 sec | MLUPS: 776
+005 | avg step time: 267.104 ms | total time: 80.131 sec | MLUPS: 776
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 776
+best                      = 776
+worst                     = 775
+mean                      = 775
+stddev                    = 0.058 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |        20.124  |        79.219  |           3.94x
+halo sync                    |         0.433  |        59.405  |         137.32x
+halo transfer                |         0.150  |         1.322  |           8.79x
+other                        |         0.006  |         1.550  |         274.58x
+total                        |        80.131  |        80.131  |           1.00x
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 20 / 44
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635/bin/FFB
+runs                      = 5
+images                    = 40
+image grid                = 1 x 40
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 3
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5871635
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 40
+image grid [X/Y]          = [ 1 / 40 ]
+local domain [X/Y]        = [ 14400 / 360 ]
+halo cells                = 0.570 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           145  |          30.030
+macro field buffers                           |            24  |           4.977
+total                                         |           169  |          35.007
+
+--- [ benchmark runs started at 2026-07-18 17:23:11 ] --------------------------
+001 | avg step time: 240.009 ms | total time: 72.003 sec | MLUPS: 863
+002 | avg step time: 240.098 ms | total time: 72.029 sec | MLUPS: 863
+003 | avg step time: 240.302 ms | total time: 72.091 sec | MLUPS: 862
+004 | avg step time: 240.176 ms | total time: 72.053 sec | MLUPS: 863
+005 | avg step time: 239.947 ms | total time: 71.984 sec | MLUPS: 864
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 863
+best                      = 864
+worst                     = 862
+mean                      = 863
+stddev                    = 0.082 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |        19.245  |        70.836  |           3.68x
+halo sync                    |         0.715  |        52.209  |          73.08x
+halo transfer                |         0.151  |         1.475  |           9.83x
+other                        |         0.008  |         1.363  |         161.44x
+total                        |        72.027  |        72.029  |           1.00x
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 21 / 44
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635/bin/FFB
+runs                      = 5
+images                    = 45
+image grid                = 1 x 45
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 3
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5871635
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 45
+image grid [X/Y]          = [ 1 / 45 ]
+local domain [X/Y]        = [ 14400 / 320 ]
+halo cells                = 0.639 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           145  |          30.051
+macro field buffers                           |            24  |           4.977
+total                                         |           169  |          35.027
+
+--- [ benchmark runs started at 2026-07-18 17:29:46 ] --------------------------
+001 | avg step time: 213.713 ms | total time: 64.114 sec | MLUPS: 970
+002 | avg step time: 214.108 ms | total time: 64.232 sec | MLUPS: 968
+003 | avg step time: 213.912 ms | total time: 64.174 sec | MLUPS: 969
+004 | avg step time: 213.628 ms | total time: 64.089 sec | MLUPS: 970
+005 | avg step time: 213.766 ms | total time: 64.130 sec | MLUPS: 970
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 970
+best                      = 970
+worst                     = 968
+mean                      = 969
+stddev                    = 0.092 %
+
+image execution time spread  |    best [sec]  |   worst [sec]  |      worst/best
+--------------------------------------------------------------------------------
+kernel compute               |        16.971  |        63.264  |           3.74x
+halo sync                    |         0.367  |        46.656  |         127.21x
+halo transfer                |         0.149  |         1.281  |           8.37x
+other                        |         0.008  |         1.201  |         144.54x
+total                        |        64.129  |        64.130  |           1.00x
+
+--- [ benchmark script settings ] ----------------------------------------------
+case                      = 22 / 44
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5871635/bin/FFB
+runs                      = 5
+images                    = 48
+image grid                = 1 x 48
+sim size                  = 14400 x 14400
+mpi pinning preset        = core_scatter
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=scatter
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 3
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 10560.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 14400
+N_Y_TOTAL                 = 14400
+N_STEPS                   = 300
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5871635
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 48
+image grid [X/Y]          = [ 1 / 48 ]
+local domain [X/Y]        = [ 14400 / 300 ]
+halo cells                = 0.681 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           145  |          30.063
+macro field buffers                           |            24  |           4.977
+total                                         |           169  |          35.040
+
+--- [ benchmark runs started at 2026-07-18 17:35:39 ] --------------------------
+001 | avg step time: 202.504 ms | total time: 60.751 sec | MLUPS: 1023
+002 | avg step time: 201.990 ms | total time: 60.597 sec | MLUPS: 1026
+003 | avg step time: 201.966 ms | total time: 60.590 sec | MLUPS: 1026
+004 | avg step time: 202.277 ms | total time: 60.683 sec | MLUPS: 1025
+
+============================= JOB FEEDBACK =============================
+
+NodeName=uc2n[727-732,853-870]
+Job ID: 5871635
+Cluster: uc3
+User/Group: fr_fl184/fr_fr
+State: TIMEOUT (exit code 0)
+Nodes: 24
+Cores per node: 32
+CPU Utilized: 00:00:21
+CPU Efficiency: 0.00% of 256-02:33:36 core-walltime
+Job Wall-clock time: 08:00:12
+Memory Utilized: 38.95 GB
+Memory Efficiency: 2.60% of 1.46 TB (1.95 GB/core)
+The task which had the largest memory consumption differs by 100.02% from the average task max memory consumption

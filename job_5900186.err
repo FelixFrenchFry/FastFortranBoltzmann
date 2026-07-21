@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 954, in <module>
+  File "/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 949, in main
+  File "/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 887, in run_case
+    f"total time: {total_seconds:.3f} sec | MLUPS: {int(mlups)}"
+  File "/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 772, in run_once
+    timing_spread,
+RuntimeError: run 1 failed with exit code 255

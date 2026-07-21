@@ -1,0 +1,4 @@
+[2026-07-19T19:30:13.372] error: Detected 1 oom_kill event in StepId=5889272.0. Some of the step tasks have been OOM Killed.
+[mpiexec@uc2n848.localdomain] Error: Downstream from host uc2n848 exited abnormally
+[mpiexec@uc2n848.localdomain] Trying to close other downstreams
+srun: error: uc2n848: task 0: Out Of Memory

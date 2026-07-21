@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 990, in <module>
+    print_param("stddev", f"{mlups_stats['stddev_percent']:.3f} %")
+  File "/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 985, in main
+    print_header("MLUPS metrics")
+  File "/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 925, in run_case
+    if images != ix * iy:
+  File "/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 813, in run_once
+    for i, host in enumerate(hosts):
+  File "/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/scripts/benchmark_sweep.py", line 707, in parse_last
+    definition = definition.strip()
+RuntimeError: could not parse step time

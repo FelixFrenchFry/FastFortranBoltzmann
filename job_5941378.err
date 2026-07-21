@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/scripts/benchmark_run.py", line 466, in <module>
+    main()
+  File "/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/scripts/benchmark_run.py", line 430, in main
+    step_ms, mlups, timing_spread, output = run_once(
+  File "/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/scripts/benchmark_run.py", line 295, in run_once
+    completed = run_process([exe], env, timeout, run_num)
+  File "/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/scripts/benchmark_run.py", line 123, in run_process
+    process = subprocess.Popen(
+  File "/usr/lib64/python3.9/subprocess.py", line 951, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+  File "/usr/lib64/python3.9/subprocess.py", line 1837, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+FileNotFoundError: [Errno 2] No such file or directory: '/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5941378/bin/FFB_CHECKPOINT_2'
