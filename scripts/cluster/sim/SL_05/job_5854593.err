@@ -1,4 +1,0 @@
-[2026-07-18T01:53:02.856] error: Detected 1 oom_kill event in StepId=5854593.0. Some of the step tasks have been OOM Killed.
-[mpiexec@node_group_B_057.localdomain] Error: Downstream from host node_group_B_066 exited abnormally
-[mpiexec@node_group_B_057.localdomain] Trying to close other downstreams
-srun: error: node_group_B_066: task 9: Out Of Memory
