@@ -1,0 +1,520 @@
+-- The Fortran compiler identification is IntelLLVM 2025.0.4
+-- Detecting Fortran compiler ABI info
+-- Detecting Fortran compiler ABI info - done
+-- Check for working Fortran compiler: /software/bwhpc/common/toolkit/Intel_OneAPI/compiler/2025.0/bin/ifx - skipped
+-- Found MPI_Fortran: /software/bwhpc/common/toolkit/Intel_OneAPI/mpi/2021.14/lib/libmpifort.so (found version "3.1") 
+-- Found MPI: TRUE (found version "3.1") found components: Fortran 
+-- Configuring done (14.5s)
+-- Generating done (0.2s)
+-- Build files have been written to: /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5948606
+[1/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/hardware_info.f90-pp.f90
+[2/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/reporting.f90-pp.f90
+[3/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/initialization.f90-pp.f90
+[4/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/modes/sliding_lid.f90-pp.f90
+[5/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/domain.f90-pp.f90
+[6/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/export.f90-pp.f90
+[7/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/hardware_info.f90-pp.f90
+[8/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/modes/couette_flow.f90-pp.f90
+[9/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/main.f90-pp.f90
+[10/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/initialization.f90-pp.f90
+[11/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/main.f90-pp.f90
+[12/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/domain.f90-pp.f90
+[13/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/checkpoint_2/simulation.f90-pp.f90
+[14/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/settings.f90-pp.f90
+[15/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/settings.f90-pp.f90
+[16/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/settings.f90-pp.f90
+[17/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/modes/poiseuille_flow.f90-pp.f90
+[18/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/reporting.f90-pp.f90
+[19/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/exchange.f90-pp.f90
+[20/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/domain.f90-pp.f90
+[21/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/checkpoint_0/simulation.f90-pp.f90
+[22/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/modes/shear_wave.f90-pp.f90
+[23/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/export.f90-pp.f90
+[24/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/checkpoint_1/simulation.f90-pp.f90
+[25/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/initialization.f90-pp.f90
+[26/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/export.f90-pp.f90
+[27/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/exchange.f90-pp.f90
+[28/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/export.f90-pp.f90
+[29/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/simulation.f90-pp.f90
+[30/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/exchange.f90-pp.f90
+[31/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/hardware_info.f90-pp.f90
+[32/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/initialization.f90-pp.f90
+[33/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_0.dir/source/domain.f90-pp.f90
+[34/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/settings.f90-pp.f90
+[35/88] Building Fortran preprocessed CMakeFiles/FFB.dir/source/layouts/xyd/exchange.f90-pp.f90
+[36/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/reporting.f90-pp.f90
+[37/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/reporting.f90-pp.f90
+[38/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/main.f90-pp.f90
+[39/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/main.f90-pp.f90
+[40/88] Building Fortran preprocessed CMakeFiles/FFB_CHECKPOINT_2.dir/source/hardware_info.f90-pp.f90
+[41/88] Generating Fortran dyndep file CMakeFiles/FFB_CHECKPOINT_0.dir/Fortran.dd
+[42/88] Generating Fortran dyndep file CMakeFiles/FFB.dir/Fortran.dd
+[43/88] Generating Fortran dyndep file CMakeFiles/FFB_CHECKPOINT_1.dir/Fortran.dd
+[44/88] Generating Fortran dyndep file CMakeFiles/FFB_CHECKPOINT_2.dir/Fortran.dd
+[45/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/settings.f90.o
+[46/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/settings.f90.o
+[47/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/settings.f90.o
+[48/88] Building Fortran object CMakeFiles/FFB.dir/source/settings.f90.o
+[49/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/initialization.f90.o
+[50/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/initialization.f90.o
+[51/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/domain.f90.o
+[52/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/domain.f90.o
+[53/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/domain.f90.o
+[54/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/initialization.f90.o
+[55/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/hardware_info.f90.o
+[56/88] Building Fortran object CMakeFiles/FFB.dir/source/hardware_info.f90.o
+[57/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/hardware_info.f90.o
+[58/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/hardware_info.f90.o
+[59/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/modes/shear_wave.f90.o
+[60/88] Building Fortran object CMakeFiles/FFB.dir/source/domain.f90.o
+[61/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/modes/couette_flow.f90.o
+[62/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/modes/sliding_lid.f90.o
+[63/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/modes/poiseuille_flow.f90.o
+[64/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/initialization.f90.o
+[65/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/reporting.f90.o
+[66/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/reporting.f90.o
+[67/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/reporting.f90.o
+[68/88] Building Fortran object CMakeFiles/FFB.dir/source/reporting.f90.o
+[69/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/export.f90.o
+/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/export.f90(314): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_ALLGATHER]
+        call MPI_Allgather( &
+-------------^
+/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/export.f90(349): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHER]
+            call MPI_Gather( &
+-----------------^
+/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/export.f90(353): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHER]
+            call MPI_Gather( &
+-----------------^
+[70/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/export.f90.o
+/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/export.f90(314): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_ALLGATHER]
+        call MPI_Allgather( &
+-------------^
+/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/export.f90(349): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHER]
+            call MPI_Gather( &
+-----------------^
+/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/export.f90(353): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHER]
+            call MPI_Gather( &
+-----------------^
+[71/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/export.f90.o
+/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/export.f90(314): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_ALLGATHER]
+        call MPI_Allgather( &
+-------------^
+/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/export.f90(349): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHER]
+            call MPI_Gather( &
+-----------------^
+/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/export.f90(353): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHER]
+            call MPI_Gather( &
+-----------------^
+[72/88] Building Fortran object CMakeFiles/FFB.dir/source/export.f90.o
+/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/export.f90(314): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_ALLGATHER]
+        call MPI_Allgather( &
+-------------^
+/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/export.f90(349): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHER]
+            call MPI_Gather( &
+-----------------^
+/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/export.f90(353): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHER]
+            call MPI_Gather( &
+-----------------^
+[73/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/exchange.f90.o
+[74/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/exchange.f90.o
+[75/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/exchange.f90.o
+[76/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/exchange.f90.o
+[77/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/checkpoint_1/simulation.f90.o
+/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/experiments/checkpoint_1/simulation.f90(14): remark #7712: This variable has not been used.   [HALO_BUFFERS]
+        domain_info, halo_buffers, n_x_local, n_y_local, &
+---------------------^
+[78/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/checkpoint_2/simulation.f90.o
+/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/experiments/checkpoint_2/simulation.f90(14): remark #7712: This variable has not been used.   [HALO_BUFFERS]
+        domain_info, halo_buffers, n_x_local, n_y_local, &
+---------------------^
+[79/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_1.dir/source/experiments/main.f90.o
+[80/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/checkpoint_0/simulation.f90.o
+/pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/source/experiments/checkpoint_0/simulation.f90(14): remark #7712: This variable has not been used.   [HALO_BUFFERS]
+        domain_info, halo_buffers, n_x_local, n_y_local, &
+---------------------^
+[81/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_2.dir/source/experiments/main.f90.o
+[82/88] Linking Fortran executable bin/FFB_CHECKPOINT_1
+[83/88] Building Fortran object CMakeFiles/FFB_CHECKPOINT_0.dir/source/experiments/main.f90.o
+[84/88] Linking Fortran executable bin/FFB_CHECKPOINT_2
+[85/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/simulation.f90.o
+[86/88] Linking Fortran executable bin/FFB_CHECKPOINT_0
+[87/88] Building Fortran object CMakeFiles/FFB.dir/source/layouts/xyd/main.f90.o
+[88/88] Linking Fortran executable bin/FFB
+ID/NAME:    5948606 / check_A
+USER:       fr_fl184
+PARTITION:  cpu_il
+TASKS:      64 tasks/node x 1 nodes = 64 tasks
+NODES:      uc2n751
+COMPILER:
+ifx (IFX) 2025.0.4 20241205
+Copyright (C) 1985-2024 Intel Corporation. All rights reserved.
+
+MPI:
+Intel(R) MPI Library for Linux* OS, Version 2021.14 Build 20241121 (id: e7829d6)
+Copyright 2003-2024, Intel Corporation.
+
+--- [ launching checkpoint comparison ] ---
+
+
+--- [ benchmark script settings ] ----------------------------------------------
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5948606/bin/FFB_CHECKPOINT_0
+runs                      = 10
+timeout                   = 600 sec
+images                    = 4
+image grid                = 2 x 2
+sim size                  = 2520 x 2520
+mpi pinning preset        = core_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=spread
+mpi per host option       = disabled
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+latest commit             = 77a40a1
+
+image | [    X /    Y ] | host
+--------------------------------------------------------------------------------
+    1 | [    1 /    1 ] | uc2n751.localdomain
+    2 | [    2 /    1 ] | uc2n751.localdomain
+    3 | [    1 /    2 ] | uc2n751.localdomain
+    4 | [    2 /    2 ] | uc2n751.localdomain
+
+host | images
+--------------------------------------------------------------------------------
+uc2n751.localdomain | [ 1, 2, 3, 4 ]
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 1848.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 2520
+N_Y_TOTAL                 = 2520
+N_STEPS                   = 1000
+dist_func_layout          = dxy
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5948606
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 4
+image grid [X/Y]          = [ 2 / 2 ]
+local domain [X/Y]        = [ 1260 / 1260 ]
+halo cells                = 0.318 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |           0.917
+macro field buffers                           |            24  |           0.152
+total                                         |           168  |           1.070
+
+--- [ benchmark runs started at 2026-07-21 16:39:18 ] --------------------------
+001 | avg step time: 73.351 ms | total time: 73.351 sec | MLUPS: 86
+002 | avg step time: 72.023 ms | total time: 72.023 sec | MLUPS: 88
+003 | avg step time: 72.028 ms | total time: 72.028 sec | MLUPS: 88
+004 | avg step time: 72.020 ms | total time: 72.020 sec | MLUPS: 88
+005 | avg step time: 72.165 ms | total time: 72.165 sec | MLUPS: 87
+006 | avg step time: 72.337 ms | total time: 72.337 sec | MLUPS: 87
+007 | avg step time: 72.035 ms | total time: 72.035 sec | MLUPS: 88
+008 | avg step time: 72.590 ms | total time: 72.590 sec | MLUPS: 87
+009 | avg step time: 73.655 ms | total time: 73.655 sec | MLUPS: 86
+010 | avg step time: 72.195 ms | total time: 72.195 sec | MLUPS: 87
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 87
+best                      = 88
+worst                     = 86
+mean                      = 87
+stddev                    = 0.905 %
+
+image execution time spread  |      best [sec] (image) |     worst [sec] (image)
+--------------------------------------------------------------------------------
+kernel compute               |              67.982 (4) |              68.864 (1)
+halo sync                    |               1.233 (3) |               2.157 (4)
+halo transfer                |               1.943 (1) |               2.191 (4)
+other                        |               0.003 (3) |               0.035 (1)
+total                        |              72.195 (3) |              72.195 (1)
+
+--- [ benchmark script settings ] ----------------------------------------------
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5948606/bin/FFB_CHECKPOINT_1
+runs                      = 10
+timeout                   = 600 sec
+images                    = 4
+image grid                = 2 x 2
+sim size                  = 2520 x 2520
+mpi pinning preset        = core_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=spread
+mpi per host option       = disabled
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+latest commit             = 77a40a1
+
+image | [    X /    Y ] | host
+--------------------------------------------------------------------------------
+    1 | [    1 /    1 ] | uc2n751.localdomain
+    2 | [    2 /    1 ] | uc2n751.localdomain
+    3 | [    1 /    2 ] | uc2n751.localdomain
+    4 | [    2 /    2 ] | uc2n751.localdomain
+
+host | images
+--------------------------------------------------------------------------------
+uc2n751.localdomain | [ 1, 2, 3, 4 ]
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 1848.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 2520
+N_Y_TOTAL                 = 2520
+N_STEPS                   = 1000
+dist_func_layout          = dxy
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5948606
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 4
+image grid [X/Y]          = [ 2 / 2 ]
+local domain [X/Y]        = [ 1260 / 1260 ]
+halo cells                = 0.318 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |           0.917
+macro field buffers                           |            24  |           0.152
+total                                         |           168  |           1.070
+
+--- [ benchmark runs started at 2026-07-21 16:52:23 ] --------------------------
+001 | avg step time: 44.276 ms | total time: 44.276 sec | MLUPS: 143
+002 | avg step time: 44.173 ms | total time: 44.173 sec | MLUPS: 143
+003 | avg step time: 44.119 ms | total time: 44.119 sec | MLUPS: 143
+004 | avg step time: 44.168 ms | total time: 44.168 sec | MLUPS: 143
+005 | avg step time: 44.192 ms | total time: 44.192 sec | MLUPS: 143
+006 | avg step time: 44.253 ms | total time: 44.253 sec | MLUPS: 143
+007 | avg step time: 44.143 ms | total time: 44.143 sec | MLUPS: 143
+008 | avg step time: 44.370 ms | total time: 44.370 sec | MLUPS: 143
+009 | avg step time: 44.280 ms | total time: 44.280 sec | MLUPS: 143
+010 | avg step time: 44.266 ms | total time: 44.266 sec | MLUPS: 143
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 143
+best                      = 143
+worst                     = 143
+mean                      = 143
+stddev                    = 0.000 %
+
+image execution time spread  |      best [sec] (image) |     worst [sec] (image)
+--------------------------------------------------------------------------------
+kernel compute               |              40.608 (2) |              40.931 (2)
+halo sync                    |               1.170 (4) |               1.619 (1)
+halo transfer                |               1.919 (1) |               2.178 (4)
+other                        |               0.002 (4) |               0.035 (1)
+total                        |              44.253 (4) |              44.253 (1)
+
+--- [ benchmark script settings ] ----------------------------------------------
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5948606/bin/FFB_CHECKPOINT_2
+runs                      = 10
+timeout                   = 600 sec
+images                    = 4
+image grid                = 2 x 2
+sim size                  = 2520 x 2520
+mpi pinning preset        = core_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=spread
+mpi per host option       = disabled
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+latest commit             = 77a40a1
+
+image | [    X /    Y ] | host
+--------------------------------------------------------------------------------
+    1 | [    1 /    1 ] | uc2n751.localdomain
+    2 | [    2 /    1 ] | uc2n751.localdomain
+    3 | [    1 /    2 ] | uc2n751.localdomain
+    4 | [    2 /    2 ] | uc2n751.localdomain
+
+host | images
+--------------------------------------------------------------------------------
+uc2n751.localdomain | [ 1, 2, 3, 4 ]
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 1848.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 2520
+N_Y_TOTAL                 = 2520
+N_STEPS                   = 1000
+dist_func_layout          = dxy
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5948606
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 4
+image grid [X/Y]          = [ 2 / 2 ]
+local domain [X/Y]        = [ 1260 / 1260 ]
+halo cells                = 0.318 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |           0.917
+macro field buffers                           |            24  |           0.152
+total                                         |           168  |           1.070
+
+--- [ benchmark runs started at 2026-07-21 17:00:57 ] --------------------------
+001 | avg step time: 39.196 ms | total time: 39.196 sec | MLUPS: 162
+002 | avg step time: 39.166 ms | total time: 39.166 sec | MLUPS: 162
+003 | avg step time: 39.236 ms | total time: 39.236 sec | MLUPS: 161
+004 | avg step time: 39.228 ms | total time: 39.228 sec | MLUPS: 161
+005 | avg step time: 39.346 ms | total time: 39.346 sec | MLUPS: 161
+006 | avg step time: 39.237 ms | total time: 39.237 sec | MLUPS: 161
+007 | avg step time: 39.326 ms | total time: 39.326 sec | MLUPS: 161
+008 | avg step time: 39.200 ms | total time: 39.200 sec | MLUPS: 162
+009 | avg step time: 39.303 ms | total time: 39.303 sec | MLUPS: 161
+010 | avg step time: 39.197 ms | total time: 39.197 sec | MLUPS: 162
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 161
+best                      = 162
+worst                     = 161
+mean                      = 161
+stddev                    = 0.320 %
+
+image execution time spread  |      best [sec] (image) |     worst [sec] (image)
+--------------------------------------------------------------------------------
+kernel compute               |              35.768 (4) |              35.914 (3)
+halo sync                    |               1.301 (4) |               1.540 (1)
+halo transfer                |               1.887 (1) |               2.160 (4)
+other                        |               0.002 (4) |               0.035 (1)
+total                        |              39.236 (3) |              39.236 (1)
+
+--- [ benchmark script settings ] ----------------------------------------------
+executable                = /pfs/work9/workspace/scratch/fr_fl184-FFB_Runs/FastFortranBoltzmann/build/release-fp64-native-5948606/bin/FFB
+runs                      = 10
+timeout                   = 600 sec
+images                    = 4
+image grid                = 2 x 2
+sim size                  = 2520 x 2520
+mpi pinning preset        = core_spread
+mpi pinning env           = I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=spread
+mpi per host option       = disabled
+
+--- [ hardware ] ---------------------------------------------------------------
+cpu model                 = Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz
+logical threads/node      = 128
+compute nodes             = 1
+compiler                  = IntelLLVM 2025.0.4
+flags                     = -O3 -march=native
+latest commit             = 77a40a1
+
+image | [    X /    Y ] | host
+--------------------------------------------------------------------------------
+    1 | [    1 /    1 ] | uc2n751.localdomain
+    2 | [    2 /    1 ] | uc2n751.localdomain
+    3 | [    1 /    2 ] | uc2n751.localdomain
+    4 | [    2 /    2 ] | uc2n751.localdomain
+
+host | images
+--------------------------------------------------------------------------------
+uc2n751.localdomain | [ 1, 2, 3, 4 ]
+
+--- [ simulation parameters ] --------------------------------------------------
+SIM_MODE                  = sliding_lid
+rho_0                     = 1.000000
+omega                     = 1.100000
+u_lid                     = 0.100000
+reynolds                  = 1848.000000
+
+--- [ other parameters ] -------------------------------------------------------
+N_X_TOTAL                 = 2520
+N_Y_TOTAL                 = 2520
+N_STEPS                   = 1000
+dist_func_layout          = xyd
+use_unrolled_kernels      = T
+export_macros             = F
+export_endpoint_states    = T
+export_interval           = 10000
+output_dir                = output/run_5948606
+
+--- [ domain decomposition ] ---------------------------------------------------
+coarray images            = 4
+image grid [X/Y]          = [ 2 / 2 ]
+local domain [X/Y]        = [ 1260 / 1260 ]
+halo cells                = 0.318 %
+
+memory usage                                  |  per cell [B]  |  all cells [GB]
+--------------------------------------------------------------------------------
+dist function buffers                         |           144  |           0.917
+macro field buffers                           |            24  |           0.152
+total                                         |           168  |           1.070
+
+--- [ benchmark runs started at 2026-07-21 17:08:28 ] --------------------------
+001 | avg step time: 22.997 ms | total time: 22.997 sec | MLUPS: 276
+002 | avg step time: 22.786 ms | total time: 22.786 sec | MLUPS: 278
+003 | avg step time: 22.762 ms | total time: 22.762 sec | MLUPS: 278
+004 | avg step time: 23.041 ms | total time: 23.041 sec | MLUPS: 275
+005 | avg step time: 25.202 ms | total time: 25.202 sec | MLUPS: 251
+006 | avg step time: 22.723 ms | total time: 22.723 sec | MLUPS: 279
+007 | avg step time: 23.558 ms | total time: 23.558 sec | MLUPS: 269
+008 | avg step time: 22.983 ms | total time: 22.983 sec | MLUPS: 276
+009 | avg step time: 22.816 ms | total time: 22.816 sec | MLUPS: 278
+010 | avg step time: 25.215 ms | total time: 25.215 sec | MLUPS: 251
+
+--- [ MLUPS metrics ] ----------------------------------------------------------
+median                    = 276
+best                      = 279
+worst                     = 251
+mean                      = 271
+stddev                    = 4.042 %
+
+image execution time spread  |      best [sec] (image) |     worst [sec] (image)
+--------------------------------------------------------------------------------
+kernel compute               |              17.539 (4) |              18.228 (1)
+halo sync                    |               1.209 (4) |               1.975 (1)
+halo transfer                |               3.156 (1) |               3.879 (4)
+other                        |               0.002 (3) |               0.035 (1)
+total                        |              22.997 (2) |              22.997 (1)
+
+============================= JOB FEEDBACK =============================
+
+NodeName=uc2n751
+Job ID: 5948606
+Cluster: uc3
+User/Group: fr_fl184/fr_fr
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 128
+CPU Utilized: 00:00:30
+CPU Efficiency: 0.01% of 3-01:33:52 core-walltime
+Job Wall-clock time: 00:34:29
+Memory Utilized: 1.49 GB
+Memory Efficiency: 0.60% of 250.00 GB (1.95 GB/core)
