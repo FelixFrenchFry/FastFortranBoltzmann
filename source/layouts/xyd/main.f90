@@ -4,7 +4,7 @@ program main
     use domain, only: domain_t, initialize_domain
     use exchange, only: halo_buffers_t, exchange_plan_t, exchange_timing_t, &
         BUF_MACRO_LEFT, BUF_MACRO_RIGHT, allocate_halo_buffers, build_exchange_plan, exchange_halos, &
-        exchange_poiseuille_macro_halos
+        exchange_poiseuille_macro_halos, deallocate_halo_buffers
     use export, only: should_export_step, export_buffers_t, allocate_export_buffers, &
         deallocate_export_buffers, export_selected_data_distributed, export_metadata
     use hardware_info, only: hardware_info_t, collect_hardware_info, collect_image_host_names
@@ -331,8 +331,13 @@ program main
             seconds_per_step, mlups)
     end if
 
+    sync all
+
     flush(output_unit)
     call deallocate_export_buffers(export_buffers)
+    call deallocate_simulation_buffers(f_a, f_b, rho, u_x, u_y)
+    call deallocate_halo_buffers(halo_buffers)
+
     sync all
 
     call MPI_Finalize(mpi_ierr)
@@ -342,5 +347,34 @@ program main
     end if
 
     call c_exit(0_c_int)
+
+contains
+
+    subroutine deallocate_simulation_buffers( &
+        f_a, f_b, rho, u_x, u_y &
+        )
+        ! input/output
+        real(FP), allocatable, intent(inout) :: f_a(:, :, :)[:]
+        real(FP), allocatable, intent(inout) :: f_b(:, :, :)[:]
+        real(FP), allocatable, intent(inout) :: rho(:,:)
+        real(FP), allocatable, intent(inout) :: u_x(:,:)
+        real(FP), allocatable, intent(inout) :: u_y(:,:)
+
+        if (allocated(f_a)) then
+            deallocate(f_a)
+        end if
+        if (allocated(f_b)) then
+            deallocate(f_b)
+        end if
+        if (allocated(rho)) then
+            deallocate(rho)
+        end if
+        if (allocated(u_x)) then
+            deallocate(u_x)
+        end if
+        if (allocated(u_y)) then
+            deallocate(u_y)
+        end if
+    end subroutine deallocate_simulation_buffers
 
 end program main
