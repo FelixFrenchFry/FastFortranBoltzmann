@@ -11,6 +11,7 @@ module exchange
     public :: exchange_plan_t
     public :: exchange_timing_t
     public :: allocate_halo_buffers
+    public :: deallocate_halo_buffers
     public :: BUF_SEND_LEFT
     public :: BUF_SEND_RIGHT
     public :: BUF_MACRO_LEFT
@@ -133,6 +134,29 @@ contains
         allocate(halo_buffers%recv_macro_right(domain_info%n_y, 3))
     end subroutine allocate_halo_buffers
 
+
+    subroutine deallocate_halo_buffers( &
+        halo_buffers &
+        )
+        ! input/output
+        type(halo_buffers_t), intent(inout) :: halo_buffers
+
+        if (allocated(halo_buffers%window)) then
+            deallocate(halo_buffers%window)
+        end if
+        if (allocated(halo_buffers%recv_left)) then
+            deallocate(halo_buffers%recv_left)
+        end if
+        if (allocated(halo_buffers%recv_right)) then
+            deallocate(halo_buffers%recv_right)
+        end if
+        if (allocated(halo_buffers%recv_macro_left)) then
+            deallocate(halo_buffers%recv_macro_left)
+        end if
+        if (allocated(halo_buffers%recv_macro_right)) then
+            deallocate(halo_buffers%recv_macro_right)
+        end if
+    end subroutine deallocate_halo_buffers
 
     subroutine exchange_halos( &
         domain_info, halo_buffers, n_x_local, n_y_local, f, exchange_plan, clock_rate, exchange_timing &
