@@ -33,9 +33,9 @@ STEP_END = None       # None -> uses N_STEPS from config.json
 STEP_STRIDE = None    # None -> uses export_interval from config.json
 COLOR_LIMIT = None    # None -> uses max(|u|) across all selected steps
 STREAM_STRIDE = 5
-STREAM_DENSITY = 1.5
+STREAM_DENSITY = 1.0
 STREAM_LINEWIDTH = 1.0
-STREAM_ARROWSIZE = 1.2
+STREAM_ARROWSIZE = 1.5
 
 # path config
 SCRIPT_DIR = Path(__file__).resolve().parent
