@@ -64,3 +64,41 @@ python3 scripts/benchmark_sweep.py --exe build/release-fp64-native/bin/FFB --run
 | `--skip` | Number of image grids `benchmark_sweep.py` skips at the start | Non-negative integer below the sweep length, `0` (default) | No |
 | `--timeout` | Time limit per solver run in seconds | Positive integer, `900` (default) | No |
 | `--per-host` | Generates a balanced hostfile inside a Slurm allocation | Flag, off (default) | No |
+
+## How to configure
+
+Simulation settings are fixed at compile time in [source/settings.f90](source/settings.f90), so rebuild after changing them (This is not good design, but allows the compiler to optimize as much as possible). The available settings and their default values are:
+
+```fortran
+! grid size and duration
+integer(int32), parameter :: N_X = 2520               ! lattice cells along the x-axis, divisible by I_X
+integer(int32), parameter :: N_Y = 2520               ! lattice cells along the y-axis, divisible by I_Y
+integer(int32), parameter :: N_STEPS = 1000           ! number of simulated timesteps
+
+! simulation mode
+integer(int32), parameter :: SIM_MODE = 4             ! 1 = shear-wave decay, 2 = Couette, 3 = Poiseuille, 4 = lid-driven cavity
+
+! physical parameters in lattice units,
+! FP = real32/real64 depending on build preset
+real(FP), parameter :: RHO_0 = 1.0_FP                 ! initial density
+real(FP), parameter :: OMEGA = 1.1_FP                 ! collision relaxation rate between 0 and 2, sets the viscosity
+real(FP), parameter :: U_MAX = 0.1_FP                 ! shear-wave decay: initial velocity amplitude
+real(FP), parameter :: N_SIN = 2.0_FP                 ! shear-wave decay: number of sine periods along the y-axis
+real(FP), parameter :: U_WALL = 0.1_FP                ! Couette: velocity of the moving top wall
+real(FP), parameter :: U_LID = 0.1_FP                 ! lid-driven cavity: velocity of the moving lid
+real(FP), parameter :: RHO_IN = 1.00005_FP            ! Poiseuille: inlet density, greater than RHO_OUT
+real(FP), parameter :: RHO_OUT = 0.99995_FP           ! Poiseuille: outlet density
+
+! kernel selection
+logical, parameter :: USE_UNROLLED_KERNELS = .true.   ! manually unrolled streaming and collision kernels
+
+! field export
+logical, parameter :: EXPORT_MACROS = .false.         ! export density and velocity fields (in addition to velocity magnitude)
+logical, parameter :: EXPORT_ENDPOINT_STATES = .true. ! also export at the initial and final sim states
+integer(int32), parameter :: EXPORT_INTERVAL = 10000  ! timesteps between field exports, 0 disables field export
+character(len=*), parameter :: EXPORT_NUM = "run_000" ! output directory under output/
+
+! console output
+logical, parameter :: INTERACTIVE_PROGRESS = .true.   ! update the progress line in place
+integer(int32), parameter :: PROGRESS_INTERVAL = 1    ! timesteps between progress updates
+```
