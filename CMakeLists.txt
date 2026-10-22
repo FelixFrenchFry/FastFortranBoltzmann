@@ -72,13 +72,18 @@ set(FFB_ACTIVE_FORTRAN_FLAGS "${CMAKE_Fortran_FLAGS} ${CMAKE_Fortran_FLAGS_${FFB
 string(STRIP "${FFB_ACTIVE_FORTRAN_FLAGS}" FFB_ACTIVE_FORTRAN_FLAGS)
 
 function(configure_ffb_target target_name dist_func_layout)
+    set(coarray_mode distributed)
+    if(ARGC GREATER 2)
+        set(coarray_mode "${ARGV2}")
+    endif()
+
     set_target_properties(${target_name} PROPERTIES
         Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/mod/${target_name}"
     )
 
     # debug flags for ifx
     target_compile_options(${target_name} PRIVATE
-        -coarray=distributed
+        -coarray=${coarray_mode}
         -fpp
         -warn all
         -standard-semantics
@@ -111,7 +116,7 @@ function(configure_ffb_target target_name dist_func_layout)
     endif()
 
     target_link_options(${target_name} PRIVATE
-        -coarray=distributed
+        -coarray=${coarray_mode}
     )
 endfunction()
 

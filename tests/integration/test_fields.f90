@@ -28,6 +28,7 @@ program test_fields
     real(FP) :: fields(N_X, N_Y, N_FIELDS)
     real(FP) :: initial_fields(N_X, N_Y, N_FIELDS)
     real(FP) :: reference_fields(N_X, N_Y, N_FIELDS)
+    real(FP) :: velocity_mag(N_X, N_Y)
 
     ! comparison tolerances
     real(real64) :: relative_tolerance
@@ -75,9 +76,8 @@ program test_fields
         step = endpoint * N_STEPS
         call read_fields(".", step, fields)
         call check(all(fields(:, :, FIELD_DENSITY) > 0.0_FP), "nonpositive exported density")
-        call compare_fields( &
-            "velocity magnitude", fields(:, :, FIELD_VELOCITY_MAG), &
-            sqrt(fields(:, :, FIELD_VELOCITY_X)**2 + fields(:, :, FIELD_VELOCITY_Y)**2))
+        velocity_mag = sqrt(fields(:, :, FIELD_VELOCITY_X)**2 + fields(:, :, FIELD_VELOCITY_Y)**2)
+        call compare_fields("velocity magnitude", fields(:, :, FIELD_VELOCITY_MAG), velocity_mag)
 
         if (endpoint == 0) then
             initial_fields = fields

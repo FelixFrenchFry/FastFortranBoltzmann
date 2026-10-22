@@ -1,6 +1,6 @@
 option(FFB_TEST_EXTENDED "Include four-image decomposition tests" OFF)
 
-# compile the production modules once per flow, with isolated module files
+# compile the production modules with isolated module files
 set(FFB_TEST_SOURCES ${FFB_SHARED_SOURCES} ${FFB_XYD_SOURCES})
 list(REMOVE_ITEM FFB_TEST_SOURCES source/layouts/xyd/main.f90)
 list(TRANSFORM FFB_TEST_SOURCES PREPEND "${PROJECT_SOURCE_DIR}/")
@@ -9,8 +9,6 @@ set(FFB_TEST_ENVIRONMENT
     "I_MPI_PIN=0"
     "I_MPI_FABRICS=shm"
     "I_MPI_HYDRA_BOOTSTRAP=fork"
-    "I_MPI_FORCE_CLEANUP=yes"
-    "I_MPI_FAIL_FAST=yes"
 )
 set(FFB_TEST_ENVIRONMENT_MODIFICATIONS
     "FOR_COARRAY_CONFIG_FILE=unset:"
@@ -20,7 +18,7 @@ set(FFB_TEST_ENVIRONMENT_MODIFICATIONS
     "I_MPI_PIN_PROCESSOR_LIST=unset:"
 )
 
-function(add_ffb_test_solver target_name sim_mode)
+function(add_ffb_test_core target_name sim_mode coarray_mode)
     # local overrides keep tests independent of benchmark configuration
     set(FFB_EXPORT_NUM "")
     set(FFB_SETTINGS_DEFINITIONS
@@ -34,11 +32,14 @@ function(add_ffb_test_solver target_name sim_mode)
         FFB_EXPORT_INTERVAL=20 "FFB_EXPORT_NUM=\"test\""
         FFB_INTERACTIVE_PROGRESS=.false. FFB_PROGRESS_INTERVAL=80
     )
-    add_library(${target_name}_core OBJECT EXCLUDE_FROM_ALL ${FFB_TEST_SOURCES})
-    configure_ffb_target(${target_name}_core xyd)
-    target_include_directories(${target_name}_core PUBLIC "${CMAKE_BINARY_DIR}/mod/${target_name}_core")
-    target_link_libraries(${target_name}_core PUBLIC MPI::MPI_Fortran)
+    add_library(${target_name} OBJECT EXCLUDE_FROM_ALL ${FFB_TEST_SOURCES})
+    configure_ffb_target(${target_name} xyd ${coarray_mode})
+    target_include_directories(${target_name} PUBLIC "${CMAKE_BINARY_DIR}/mod/${target_name}")
+    target_link_libraries(${target_name} PUBLIC MPI::MPI_Fortran)
+endfunction()
 
+function(add_ffb_test_solver target_name sim_mode)
+    add_ffb_test_core(${target_name}_core ${sim_mode} distributed)
     add_executable(${target_name} EXCLUDE_FROM_ALL "${PROJECT_SOURCE_DIR}/source/layouts/xyd/main.f90")
     configure_ffb_target(${target_name} xyd)
     target_link_libraries(${target_name} PRIVATE ${target_name}_core)
@@ -50,6 +51,7 @@ function(configure_ffb_test name images ix iy labels)
         LABELS "${labels}"
         PROCESSORS ${images}
         TIMEOUT 40
+        FAIL_REGULAR_EXPRESSION "forrtl: warning [(]406[)]"
         ENVIRONMENT "${FFB_TEST_ENVIRONMENT};FOR_COARRAY_NUM_IMAGES=${images};I_X=${ix};I_Y=${iy}"
         ENVIRONMENT_MODIFICATION "${FFB_TEST_ENVIRONMENT_MODIFICATIONS}"
     )
@@ -74,8 +76,8 @@ endfunction()
 function(add_ffb_test_program name source_file)
     set(target_name FFB_TEST_${name})
     add_executable(${target_name} EXCLUDE_FROM_ALL support/assertions.f90 ${source_file})
-    configure_ffb_target(${target_name} xyd)
-    target_link_libraries(${target_name} PRIVATE FFB_TEST_shear_wave_core)
+    configure_ffb_target(${target_name} xyd single)
+    target_link_libraries(${target_name} PRIVATE FFB_TEST_serial_core)
     add_dependencies(ffb_tests ${target_name})
 endfunction()
 
@@ -87,7 +89,10 @@ foreach(mode IN LISTS FFB_TEST_MODES)
     add_ffb_test_solver(FFB_TEST_${mode} ${FFB_SIM_MODE})
 endforeach()
 
-foreach(name collision boundaries)
+# validation helpers run in one process so diagnostics do not depend on MPI shutdown
+add_ffb_test_core(FFB_TEST_serial_core 1 single)
+
+foreach(name collision boundaries domain)
     add_ffb_test_program(${name} unit/test_${name}.f90)
     add_test(NAME unit.${name} COMMAND FFB_TEST_${name})
     configure_ffb_test(unit.${name} 1 1 1 "unit")
@@ -146,7 +151,11 @@ foreach(mode IN LISTS FFB_TEST_MODES)
     endforeach()
 endforeach()
 
-add_ffb_run(configuration.positive FFB_TEST_shear_wave "${FFB_TEST_ROOT}/invalid/positive" 1 0 1 "" "configuration"
+add_ffb_run(configuration.positive FFB_TEST_domain "${FFB_TEST_ROOT}/invalid/positive" 1 0 1 "" "configuration"
     "-DFFB_EXPECTED_ERROR=I_X and I_Y must be positive")
-add_ffb_run(configuration.product FFB_TEST_shear_wave "${FFB_TEST_ROOT}/invalid/product" 1 2 1 "" "configuration"
+add_ffb_run(configuration.product FFB_TEST_domain "${FFB_TEST_ROOT}/invalid/product" 1 2 1 "" "configuration"
+    "-DFFB_EXPECTED_ERROR=I_X * I_Y must match coarray images")
+
+# the solver must reject a grid that does not match the real image count
+add_ffb_run(configuration.solver FFB_TEST_shear_wave "${FFB_TEST_ROOT}/invalid/solver" 2 1 1 "" "configuration;distributed"
     "-DFFB_EXPECTED_ERROR=I_X * I_Y must match coarray images")

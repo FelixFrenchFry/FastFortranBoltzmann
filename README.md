@@ -1,4 +1,4 @@
-![Fortran 2018](https://img.shields.io/badge/Fortran-2018-734f96) ![Intel ifx](https://img.shields.io/badge/compiler-Intel%20ifx-0071c5)
+[![MIT license](https://img.shields.io/badge/license-MIT-blue)](LICENSE) ![Fortran 2018](https://img.shields.io/badge/Fortran-2018-734f96) ![Intel ifx](https://img.shields.io/badge/compiler-Intel%20ifx-0071c5) [![Tests](https://img.shields.io/github/actions/workflow/status/FelixFrenchFry/FastFortranBoltzmann/tests.yml?branch=main&label=Tests&logo=github)](https://github.com/FelixFrenchFry/FastFortranBoltzmann/actions/workflows/tests.yml)
 
 # FastFortranBoltzmann 🧮
 
