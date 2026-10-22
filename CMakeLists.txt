@@ -127,3 +127,10 @@ target_link_libraries(FFB_CHECKPOINT_1 PRIVATE MPI::MPI_Fortran)
 add_executable(FFB_CHECKPOINT_2 ${FFB_SHARED_SOURCES} ${FFB_EXPERIMENT_SHARED_SOURCES} source/experiments/checkpoint_2/simulation.f90)
 configure_ffb_target(FFB_CHECKPOINT_2 dxy)
 target_link_libraries(FFB_CHECKPOINT_2 PRIVATE MPI::MPI_Fortran)
+
+# correctness tests, only built with -DBUILD_TESTING=ON
+option(BUILD_TESTING "Build the correctness tests" OFF)
+include(CTest)
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()

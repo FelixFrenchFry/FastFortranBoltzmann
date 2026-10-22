@@ -1,0 +1,85 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: ifx 2025.3 / Fortran 2018 / ${{ matrix.build_type }} / FP${{ matrix.precision }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      # total of 4 combinations (2 build types x 2 FP precisions)
+      matrix:
+        build_type: [Release, Debug]
+        precision: [32, 64]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      # pin the compiler and MPI version series, but allow patch updates
+      - name: Install Intel Fortran and MPI
+        run: |
+          curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB |
+            gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" |
+            sudo tee /etc/apt/sources.list.d/oneAPI.list
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            intel-oneapi-compiler-fortran-2025.3 intel-oneapi-mpi-devel-2021.18 \
+            ninja-build
+
+      # each step uses a fresh shell, so initialize the Intel environment in each one
+      - name: Configure tests
+        run: >-
+          source /opt/intel/oneapi/compiler/2025.3/env/vars.sh &&
+          source /opt/intel/oneapi/mpi/2021.18/env/vars.sh &&
+          ifx --version &&
+          cmake -S . -B build/ci -G Ninja
+          -DCMAKE_Fortran_COMPILER=/opt/intel/oneapi/compiler/2025.3/bin/ifx
+          -DMPI_Fortran_COMPILER=/opt/intel/oneapi/mpi/2021.18/bin/mpiifx
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DFFB_FP64=${{ matrix.precision == 64 && 'ON' || 'OFF' }}
+          -DFFB_DENSITY_CHECKS=${{ matrix.build_type == 'Debug' && 'ON' || 'OFF' }}
+          -DBUILD_TESTING=ON
+
+      - name: Build tests
+        run: >-
+          source /opt/intel/oneapi/compiler/2025.3/env/vars.sh &&
+          source /opt/intel/oneapi/mpi/2021.18/env/vars.sh &&
+          cmake --build build/ci --target FFB ffb_tests --parallel 2
+
+      - name: Run tests
+        run: >-
+          source /opt/intel/oneapi/compiler/2025.3/env/vars.sh &&
+          source /opt/intel/oneapi/mpi/2021.18/env/vars.sh &&
+          ctest --test-dir build/ci --output-on-failure --parallel 2 --output-junit test-results.xml
+
+      # retain logs and exported fields for failed test runs
+      - name: Upload test diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: tests-${{ matrix.build_type }}-fp${{ matrix.precision }}
+          path: |
+            build/ci/Testing/
+            build/ci/test-results.xml
+            build/ci/tests/runs/
+            build/ci/CMakeFiles/CMakeConfigureLog.yaml
+          if-no-files-found: ignore
+          retention-days: 7
