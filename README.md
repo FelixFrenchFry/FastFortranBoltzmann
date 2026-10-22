@@ -28,10 +28,12 @@ Choose a build preset from [CMakePresets.json](CMakePresets.json) using the tabl
 
 ## How to run
 
-For example, run one simulation on 8 coarray images in a 2 × 4 decomposition with MPI processes pinned to cores. This prints the hardware and simulation setup, live progress, and a final timing and throughput summary, and writes run metadata to `output/run_000/config.json`:
+For example, run one simulation on 8 coarray images in a 2 × 4 decomposition with MPI processes pinned to cores. This prints the hardware and simulation setup, live progress, and a final timing and throughput summary, and writes run metadata to `output/EXPORT_NUM/config.json`:
 
 ```bash
-I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=spread I_X=2 I_Y=4 FOR_COARRAY_NUM_IMAGES=8 ./build/release-fp64-native/bin/FFB
+I_MPI_PIN=1 I_MPI_PIN_DOMAIN=core I_MPI_PIN_ORDER=spread \
+    I_X=2 I_Y=4 FOR_COARRAY_NUM_IMAGES=8 \
+    ./build/release-fp64-native/bin/FFB
 ```
 
 | Variable | Meaning | Range | Required |
@@ -48,10 +50,12 @@ For example, benchmark one configuration with [benchmark_run.py](scripts/benchma
 
 ```bash
 # benchmark one configuration, computing statistics over 5 runs
-python3 scripts/benchmark_run.py --exe build/release-fp64-native/bin/FFB --runs 5 --images 8 --ix 2 --iy 4 --pin core_spread
+python3 scripts/benchmark_run.py --exe build/release-fp64-native/bin/FFB \
+    --runs 5 --images 8 --ix 2 --iy 4 --pin core_spread
 
 # benchmark several configurations in a "custom" config file, computing statistics over 5 runs each
-python3 scripts/benchmark_sweep.py --exe build/release-fp64-native/bin/FFB --runs 5 --case custom --skip 0 --pin core_spread
+python3 scripts/benchmark_sweep.py --exe build/release-fp64-native/bin/FFB \
+    --runs 5 --case custom --skip 0 --pin core_spread
 ```
 
 | Option | Meaning | Range | Required |
@@ -71,31 +75,32 @@ Simulation settings are fixed at compile time in [source/settings.f90](source/se
 
 ```fortran
 ! grid size and duration
-integer(int32), parameter :: N_X = 2520               ! lattice cells along the x-axis, divisible by I_X
-integer(int32), parameter :: N_Y = 2520               ! lattice cells along the y-axis, divisible by I_Y
+integer(int32), parameter :: N_X = 2520               ! lattice cells along the x-axis
+integer(int32), parameter :: N_Y = 2520               ! lattice cells along the y-axis
 integer(int32), parameter :: N_STEPS = 1000           ! number of simulated timesteps
 
 ! simulation mode
-integer(int32), parameter :: SIM_MODE = 4             ! 1 = shear-wave decay, 2 = Couette, 3 = Poiseuille, 4 = lid-driven cavity
+integer(int32), parameter :: SIM_MODE = 4             ! 1 = shear-wave decay, 2 = Couette,
+													  ! 3 = Poiseuille, 4 = lid-driven cavity
 
 ! physical parameters in lattice units,
 ! FP = real32/real64 depending on build preset
 real(FP), parameter :: RHO_0 = 1.0_FP                 ! initial density
-real(FP), parameter :: OMEGA = 1.1_FP                 ! collision relaxation rate between 0 and 2, sets the viscosity
+real(FP), parameter :: OMEGA = 1.1_FP                 ! collision relaxation rate between 0 and 2
 real(FP), parameter :: U_MAX = 0.1_FP                 ! shear-wave decay: initial velocity amplitude
-real(FP), parameter :: N_SIN = 2.0_FP                 ! shear-wave decay: number of sine periods along the y-axis
+real(FP), parameter :: N_SIN = 2.0_FP                 ! shear-wave decay: sine periods along y-axis
 real(FP), parameter :: U_WALL = 0.1_FP                ! Couette: velocity of the moving top wall
 real(FP), parameter :: U_LID = 0.1_FP                 ! lid-driven cavity: velocity of the moving lid
 real(FP), parameter :: RHO_IN = 1.00005_FP            ! Poiseuille: inlet density, greater than RHO_OUT
 real(FP), parameter :: RHO_OUT = 0.99995_FP           ! Poiseuille: outlet density
 
 ! kernel selection
-logical, parameter :: USE_UNROLLED_KERNELS = .true.   ! manually unrolled streaming and collision kernels
+logical, parameter :: USE_UNROLLED_KERNELS = .true.   ! manually unrolled compute kernels
 
 ! field export
-logical, parameter :: EXPORT_MACROS = .false.         ! export density and velocity fields (in addition to velocity magnitude)
+logical, parameter :: EXPORT_MACROS = .false.         ! export density and velocity fields
 logical, parameter :: EXPORT_ENDPOINT_STATES = .true. ! also export at the initial and final sim states
-integer(int32), parameter :: EXPORT_INTERVAL = 10000  ! timesteps between field exports, 0 disables field export
+integer(int32), parameter :: EXPORT_INTERVAL = 10000  ! timesteps between field exports, 0 disables it
 character(len=*), parameter :: EXPORT_NUM = "run_000" ! output directory under output/
 
 ! console output
