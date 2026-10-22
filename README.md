@@ -81,7 +81,7 @@ integer(int32), parameter :: N_STEPS = 1000           ! number of simulated time
 
 ! simulation mode
 integer(int32), parameter :: SIM_MODE = 4             ! 1 = shear-wave decay, 2 = Couette,
-													  ! 3 = Poiseuille, 4 = lid-driven cavity
+                                                      ! 3 = Poiseuille, 4 = lid-driven cavity
 
 ! physical parameters in lattice units,
 ! FP = real32/real64 depending on build preset
@@ -107,3 +107,62 @@ character(len=*), parameter :: EXPORT_NUM = "run_000" ! output directory under o
 logical, parameter :: INTERACTIVE_PROGRESS = .true.   ! update the progress line in place
 integer(int32), parameter :: PROGRESS_INTERVAL = 1    ! timesteps between progress updates
 ```
+
+## Benchmarks
+
+All of the displayed benchmarks ran the lid-driven cavity with FP64 precision on cluster nodes with two Intel Xeon Platinum 8358 CPUs (64 cores per node), built with IntelLLVM 2025.0.4. Each MLUPS value is the median of repeated runs, and the [job summaries](scripts/cluster/) list every measurement with its exact configuration, hardware, commit, and console output.
+
+### Coarray scaling
+
+A 14400 × 14400 grid for 300 timesteps on 48, 64, 80 nodes with 12 Slurm tasks per node, using up to 960 Fortran coarray images:
+
+![Throughput in MLUPS over up to 960 coarray images on 48, 64, and 80 nodes with 12 Slurm tasks per node](assets/readme/strong_scaling.png)
+
+*X-axis: coarray images. Y-axis: MLUPS. The vertical lines mark the number of allocated Slurm tasks (576, 768, 960).*
+
+### Task distribution
+
+A 14400 × 14400 grid for 300 timesteps, where 384 Slurm tasks are equally distributed over 6 to 48 nodes:
+
+![Throughput in MLUPS over coarray images for 384 Slurm tasks equally distributed over 6 to 48 nodes](assets/readme/cluster_scaling.png)
+
+*X-axis: coarray images. Y-axis: MLUPS. The vertical line marks the number of allocated Slurm tasks (384).*
+
+### Bandwidth contention
+
+A 14400 × 14400 grid for 300 timesteps with MPI pinning disabled, where 384 Slurm tasks are equally distributed over 6 or 32 nodes:
+
+![Throughput in MLUPS over coarray images for 384 Slurm tasks equally distributed over 6 or 32 nodes with MPI pinning disabled](assets/readme/memory_bandwidth.png)
+
+*X-axis: coarray images. Y-axis: MLUPS. The vertical line marks the number of allocated Slurm tasks (384).*
+
+### Decomposition shape
+
+A 14400 × 14400 grid for 300 timesteps, where 576 coarray images on 48 nodes split the grid cells in every possible `I_X × I_Y` layout:
+
+![Throughput in MLUPS for 576 coarray images on 48 nodes in every possible I_X × I_Y layout](assets/readme/decomposition_shape.png)
+
+*X-axis: `I_X × I_Y` decomposition. Y-axis: MLUPS. The color gradient indicates the decompositions shape from horizontal (green) to squared (blue) to vertical (brown).*
+
+## Features
+
+- 4 simulation scenarios with shared streaming and collision kernels
+- Periodic, bounce-back, moving-wall, and pressure-driven boundary conditions
+- Two-dimensional domain decomposition and explicit coarray halo exchanges
+- Fuzed and unrolled kernels, with checkpoints for earlier optimization stages
+- FP32 and FP64 builds, debug checks, and optional native CPU optimizations
+- Per-run timing, hardware metadata, and benchmark measurement scripts
+- Distributed export of density and velocity fields with run metadata
+- Python scripts for plotting exported fields and benchmark results
+
+## Limitations
+
+- Requires Intel `ifx` with distributed coarray runtime and Intel MPI
+- Simulation settings are compile-time constants and require a rebuild
+- D2Q9 lattice with a single-relaxation-time (BGK) collision model only
+
+## Documentation
+
+- [Simulation settings](source/settings.f90): Grid dimensions, scenario selection, physical parameters, and export options
+- [Build presets](CMakePresets.json): FP precision, debug checks, and compiler optimization flags
+- [Cluster jobs](scripts/cluster/): Archived Slurm scripts and detailed console outputs
